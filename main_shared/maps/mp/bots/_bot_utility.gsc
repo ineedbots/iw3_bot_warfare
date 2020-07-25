@@ -119,6 +119,16 @@ ClearScriptGoal()
 	self SetScriptGoal(undefined, 0);
 }
 
+SetScriptAimPos(pos)
+{
+	self.bot.script_aimpos = pos;
+}
+
+ClearScriptAimPos()
+{
+	self SetScriptAimPos(undefined);
+}
+
 /*
 	Sets the script enemy for a bot.
 */
