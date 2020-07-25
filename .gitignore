@@ -1,0 +1,9 @@
+# Ignore everything in repository root 
+/*
+
+# Files to not ignore
+!/.gitignore
+!/botnames.txt
+
+# Folder to not ignore
+!/main_shared/
