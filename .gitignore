@@ -4,6 +4,8 @@
 # Files to not ignore
 !/.gitignore
 !/botnames.txt
+!/z_devserver.bat
+!/z_serverdev.bat
 
 # Folder to not ignore
 !/main_shared/
