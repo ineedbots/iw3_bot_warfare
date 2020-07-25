@@ -929,14 +929,21 @@ aim()
 		self ads(false);
 		self stopNading();
 		
-		lookat = self.bot.script_aimpos;
-		if(self.bot.second_next_wp != -1 && !self.bot.issprinting)
-			lookat = level.waypoints[self.bot.second_next_wp].origin;
-		else if(isDefined(self.bot.towards_goal))
-			lookat = self.bot.towards_goal;
-		
-		if(isDefined(lookat))
-			self botLookAt(lookat + (0, 0, self getEyeHeight()), aimspeed);
+		if (!isDefined(self.bot.script_aimpos))
+		{
+			lookat = undefined;
+			if(self.bot.second_next_wp != -1 && !self.bot.issprinting)
+				lookat = level.waypoints[self.bot.second_next_wp].origin;
+			else if(isDefined(self.bot.towards_goal))
+				lookat = self.bot.towards_goal;
+			
+			if(isDefined(lookat))
+				self botLookAt(lookat + (0, 0, self getEyeHeight()), aimspeed);
+		}
+		else
+		{
+			self botLookAt(self.bot.script_aimpos, aimspeed);
+		}
 	}
 }
 
