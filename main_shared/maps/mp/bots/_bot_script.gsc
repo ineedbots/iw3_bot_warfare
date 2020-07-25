@@ -1194,10 +1194,10 @@ bot_kill_chopper()
 		if(level.chopper.team == self.team && level.teamBased)
 			continue;
 			
-		if(!bulletTracePassed( self getEyePos(), level.chopper.origin + (0, 0, 5), false, level.chopper ))
+		if(!bulletTracePassed( self getEyePos(), level.chopper.origin + (0, 0, -5), false, level.chopper ))
 			continue;
 			
-		self SetScriptEnemy( level.chopper );
+		self SetScriptEnemy( level.chopper, (0, 0, -5) );
 		self bot_chopper_attack(level.chopper);
 		self ClearScriptEnemy();
 	}
@@ -1263,7 +1263,7 @@ bot_kill_equipment()
 			if (item.name != "c4_mp" && item.name != "claymore_mp")
 				continue;
 				
-			if(!hasDetectExp && !bulletTracePassed(myEye, item.origin+(0, 0, 5), false, item))
+			if(!hasDetectExp && !bulletTracePassed(myEye, item.origin+(0, 0, 0), false, item))
 				continue;
 				
 			if(getConeDot(item.origin, self.origin, myAngles) < 0.6)
@@ -1278,7 +1278,7 @@ bot_kill_equipment()
 		
 		if(isDefined(target))
 		{
-			self SetScriptEnemy( target );
+			self SetScriptEnemy( target, (0, 0, 0) );
 			self bot_equipment_attack(target);
 			self ClearScriptEnemy();
 		}

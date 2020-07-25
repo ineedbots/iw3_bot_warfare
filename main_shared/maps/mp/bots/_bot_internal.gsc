@@ -104,8 +104,9 @@ onDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint
 resetBotVars()
 {
 	self.bot.script_target = undefined;
-	self.bot.targets = [];
+	self.bot.script_target_offset = undefined;
 	self.bot.target = undefined;
+	self.bot.targets = [];
 	self.bot.target_this_frame = undefined;
 	
 	self.bot.script_aimpos = undefined;
@@ -489,7 +490,9 @@ target()
 			daDist = distanceSquared(self.origin, ent.origin);
 			obj = self.bot.targets[key];
 			isObjDef = isDefined(obj);
-			entOrigin = ent.origin + (0, 0, 5);
+			entOrigin = ent.origin;
+			if (isDefined(self.bot.script_target_offset))
+				entOrigin += self.bot.script_target_offset;
 			
 			for(;;)
 			{
@@ -515,6 +518,8 @@ target()
 						obj.trace_time_time = 0;
 						obj.rand = randomInt(100);
 						obj.didlook = false;
+						obj.isplay = isPlayer(ent);
+						obj.offset = self.bot.script_target_offset;
 						
 						self.bot.targets[key] = obj;
 					}
@@ -577,6 +582,8 @@ target()
 				obj.trace_time_time = 0;
 				obj.rand = randomInt(100);
 				obj.didlook = false;
+				obj.isplay = isPlayer(player);
+				obj.offset = undefined;
 				
 				self.bot.targets[key] = obj;
 			}
@@ -626,6 +633,8 @@ target()
 					obj.trace_time_time = 0;
 					obj.rand = randomInt(100);
 					obj.didlook = false;
+					obj.isplay = isPlayer(player);
+					obj.offset = undefined;
 					
 					self.bot.targets[key] = obj;
 				}
@@ -713,7 +722,7 @@ onNewEnemy()
 		if(!isDefined(self.bot.target))
 			continue;
 			
-		if(!isDefined(self.bot.target.entity) || !isPlayer(self.bot.target.entity))
+		if(!isDefined(self.bot.target.entity) || !self.bot.target.isplay)
 			continue;
 			
 		if(self.bot.target.didlook)
@@ -815,7 +824,8 @@ aim()
 			last_pos = self.bot.target.last_seen_pos;
 			target = self.bot.target.entity;
 			conedot = 0;
-			isplay = isPlayer(target);
+			isplay = self.bot.target.isplay;
+			offset = self.bot.target.offset;
 			dist = self.bot.target.dist;
 			curweap = self getCurrentWeapon();
 			eyePos = self getEyePos();
@@ -873,8 +883,7 @@ aim()
 				
 				if(!nadeAimOffset && conedot > 0.999)
 				{
-					//self botLookAtPlayer(target, "j_spineupper");//cod4x is crashing when this is called
-					self botLookAt(aimpos, aimspeed);
+					self botLookAtPlayer(target, "j_spineupper");
 				}
 				else
 				{
@@ -883,7 +892,10 @@ aim()
 			}
 			else
 			{
-				aimpos = target.origin + (0, 0, 5 + nadeAimOffset);
+				aimpos = target.origin;
+				if (isDefined(offset))
+					aimpos += offset;
+				aimpos += (0, 0, nadeAimOffset);
 				conedot = getConeDot(aimpos, eyePos, angles);
 				self botLookAt(aimpos, aimspeed);
 			}
@@ -905,7 +917,8 @@ aim()
 			
 			canADS = self canAds(dist, curweap);
 			self ads(canADS);
-			if((!canADS || self playerads() == 1.0) && conedot > 0.999 && trace_time > reaction_time)
+			
+			if((!canADS || self playerads() == 1.0) && (conedot > 0.999 || dist < level.bots_maxKnifeDistance) && trace_time > reaction_time)
 			{
 				self botFire();
 			}
@@ -1074,7 +1087,7 @@ walk()
 				continue;
 			}
 			
-			if(isPlayer(self.bot.target.entity) && self.bot.target.trace_time && self canFire(curweap) && self isInRange(self.bot.target.dist, curweap))
+			if(self.bot.target.isplay && self.bot.target.trace_time && self canFire(curweap) && self isInRange(self.bot.target.dist, curweap))
 			{
 				if(self.bot.target.rand <= self.pers["bots"]["behavior"]["strafe"])
 					self strafe(self.bot.target.entity);

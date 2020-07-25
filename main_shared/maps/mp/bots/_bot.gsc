@@ -53,7 +53,7 @@ init()
 		setDvar("bots_loadout_allow_op", true);
 	
 	level.defuseObject = undefined;
-	level.bots_smokeList = [];
+	level.bots_smokeList = List();
 	level.tbl_PerkData[0]["reference_full"] = true;
 	for(h = 1; h < 6; h++)
 		for(i = 0; i < 3; i++)
@@ -293,13 +293,14 @@ diffBots()
 		var_allies_med = getDVarInt("bots_skill_allies_med");
 		var_axis_hard = getDVarInt("bots_skill_axis_hard");
 		var_axis_med = getDVarInt("bots_skill_axis_med");
+		var_skill = getDvarInt("bots_skill");
 		
 		allies_hard = 0;
 		allies_med = 0;
 		axis_hard = 0;
 		axis_med = 0;
 		
-		if(getDvarInt("bots_skill") == 8)
+		if(var_skill == 8)
 		{
 			playercount = level.players.size;
 			for(i = 0; i < playercount; i++)
@@ -342,6 +343,19 @@ diffBots()
 					else
 						player.pers["bots"]["skill"]["base"] = 0;
 				}
+			}
+		}
+		else if (var_skill != 0 && var_skill != 9) 
+		{
+			playercount = level.players.size;
+			for(i = 0; i < playercount; i++)
+			{
+				player = level.players[i];
+				
+				if(!player is_bot())
+					continue;
+					
+				player.pers["bots"]["skill"]["base"] = var_skill;
 			}
 		}
 	}
@@ -604,49 +618,31 @@ onGrenadeFire()
 */
 AddToSmokeList()
 {
-	index = level.bots_smokeList.size;
-	level.bots_smokeList[index] = spawnstruct();
-	level.bots_smokeList[index].origin = self getOrigin();
-	level.bots_smokeList[index].state = "moving";
-	level.bots_smokeList[index] thread thinkSmoke(self);
+	grenade = spawnstruct();
+	grenade.origin = self getOrigin();
+	grenade.state = "moving";
+	grenade.grenade = self;
+	
+	grenade thread thinkSmoke();
+	
+	level.bots_smokeList ListAdd(grenade);
 }
 
 /*
 	The smoke grenade logic.
 */
-thinkSmoke(gnade)
+thinkSmoke()
 {
-	while(isDefined(gnade))
+	while(isDefined(self.grenade))
 	{
-		self.origin = gnade getOrigin();
+		self.origin = self.grenade getOrigin();
 		self.state = "moving";
 		wait 0.05;
 	}
 	self.state = "smoking";
 	wait 11.5;
 	
-	removeSmokeNade(self);
-}
-
-/*
-	Removes the smoke grenade inplace of the array.
-*/
-removeSmokeNade(nade)
-{
-	sizeof = level.bots_smokeList.size;
-	for ( entry = 0; entry < sizeof; entry++ )
-	{
-		if ( level.bots_smokeList[entry] == nade )
-		{
-			while ( entry < sizeof-1 )
-			{
-				level.bots_smokeList[entry] = level.bots_smokeList[entry+1];
-				entry++;
-			}
-			level.bots_smokeList[entry] = undefined;
-			break;
-		}
-	}
+	level.bots_smokeList ListRemove(self);
 }
 
 /*

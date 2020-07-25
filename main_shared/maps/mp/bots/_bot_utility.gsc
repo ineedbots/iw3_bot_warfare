@@ -122,9 +122,10 @@ ClearScriptGoal()
 /*
 	Sets the script enemy for a bot.
 */
-SetScriptEnemy(enemy)
+SetScriptEnemy(enemy, offset)
 {
 	self.bot.script_target = enemy;
+	self.bot.script_target_offset = offset;
 }
 
 /*
@@ -132,7 +133,7 @@ SetScriptEnemy(enemy)
 */
 ClearScriptEnemy()
 {
-	self SetScriptEnemy(undefined);
+	self SetScriptEnemy(undefined, undefined);
 }
 
 /*
@@ -177,24 +178,9 @@ HasThreat()
 */
 GetEyeHeight()
 {
-	h = 0;
-	switch(self getStance())
-	{
-		case "stand":
-			h = 60;
-			break;
-		case "crouch":
-			h = 40;
-			break;
-		case "prone":
-			h = 11;
-			break;
-	}
+	myEye = self GetEyePos();
 	
-	if(isDefined(self.lastStand))
-		h = 22;
-	
-	return h;
+	return myEye[2] - self.origin[2];
 }
 
 /*
@@ -202,7 +188,7 @@ GetEyeHeight()
 */
 GetEyePos()
 {
-	return self getEye() + (0, 0, self GetEyeHeight() - 40);
+	return self getTagOrigin("tag_eye");
 }
 
 /*
@@ -400,10 +386,9 @@ RaySphereIntersect(start, end, spherePos, radius)
 */
 SmokeTrace(start, end, rad)
 {
-	sizeof = level.bots_smokeList.size;
-	for(i = 0; i < sizeof; i++)
+	for(i = level.bots_smokeList.count - 1; i >= 0; i--)
 	{
-		nade = level.bots_smokeList[i];
+		nade = level.bots_smokeList.data[i];
 		
 		if(nade.state != "smoking")
 			continue;
@@ -418,13 +403,21 @@ SmokeTrace(start, end, rad)
 }
 
 /*
-	Returns the cone dot (like fov, or distance from the center of our screen).
+	Returns the cone dot (like fov, or distance from the center of our screen). 1.0 = directly looking at, 0.0 = completely right angle, -1.0, completely 180
 */
 getConeDot(to, from, dir)
 {
     dirToTarget = VectorNormalize(to-from);
     forward = AnglesToForward(dir);
     return vectordot(dirToTarget, forward);
+}
+
+DistanceSquared2D(to, from)
+{
+	to = (to[0], to[1], 0);
+	from = (from[0], from[1], 0);
+	
+	return DistanceSquared(to, from);
 }
 
 /*
@@ -779,6 +772,64 @@ _WaypointsToKDTree(waypoints, dem)
 	_WaypointsToKDTree(left, (dem+1)%3);
 	
 	_WaypointsToKDTree(right, (dem+1)%3);
+}
+
+/*
+	Returns a new list.
+*/
+List()
+{
+	list = spawnStruct();
+	list.count = 0;
+	list.data = [];
+	
+	return list;
+}
+
+/*
+	Adds a new thing to the list.
+*/
+ListAdd(thing)
+{
+	self.data[self.count] = thing;
+	
+	self.count++;
+}
+
+/*
+	Adds to the start of the list.
+*/
+ListAddFirst(thing)
+{
+	for (i = self.count - 1; i >= 0; i--)
+	{
+		self.data[i + 1] = self.data[i];
+	}
+
+	self.data[0] = thing;
+	self.count++;
+}
+
+/*
+	Removes the thing from the list.
+*/
+ListRemove(thing)
+{
+	for ( i = 0; i < self.count; i++ )
+	{
+		if ( self.data[i] == thing )
+		{
+			while ( i < self.count-1 )
+			{
+				self.data[i] = self.data[i+1];
+				i++;
+			}
+			
+			self.data[i] = undefined;
+			self.count--;
+			break;
+		}
+	}
 }
 
 /*
