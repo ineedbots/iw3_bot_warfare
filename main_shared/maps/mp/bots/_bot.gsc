@@ -252,6 +252,12 @@ connected()
 
 	if(!self is_bot())
 		return;
+
+	if (!isDefined(self.pers["isBot"]))
+	{
+		// fast restart...
+		self.pers["isBot"] = true;
+	}
 	
 	if (!isDefined(self.pers["isBotWarfare"]))
 	{

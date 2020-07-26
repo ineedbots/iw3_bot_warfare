@@ -1075,7 +1075,7 @@ walk()
 		
 		self botMoveTo(self.origin);
 		
-		if(self.bot.isfrozen)
+		if(level.inPrematchPeriod || level.gameEnded || self.bot.isfrozen)
 			continue;
 			
 		if(self maps\mp\_flashgrenades::isFlashbanged())
