@@ -227,6 +227,7 @@ onWeaponChange()
 	self endon("disconnect");
 	self endon("death");
 	
+	self.bot.is_cur_full_auto = WeaponIsFullAuto(self GetCurrentWeapon());
 	for(;;)
 	{
 		self waittill( "weapon_change", newWeapon );
