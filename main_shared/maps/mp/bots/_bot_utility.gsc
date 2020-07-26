@@ -34,6 +34,16 @@ BotGetRandom()
 	return self.bot.rand;
 }
 
+BotPressFrag(time)
+{
+	self maps\mp\bots\_bot_internal::frag(time);
+}
+
+BotPressSmoke(time)
+{
+	self maps\mp\bots\_bot_internal::smoke(time);
+}
+
 /*
 	Returns if the bot is fragging.
 */

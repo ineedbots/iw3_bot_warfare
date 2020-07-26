@@ -795,8 +795,16 @@ bot_think_camp()
 			
 		if(randomInt(100) > self.pers["bots"]["behavior"]["camp"])
 			continue;
+
+		if (true)
+			continue;
 			
-		
+		self SetScriptAimPos((0,0,0));
+		self SetScriptGoal(self.origin, 64);
+		if (randomInt(2) > 1)
+			self thread BotPressFrag(1);
+		else
+			self thread BotPressSmoke(1);
 	}
 }
 
