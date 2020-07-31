@@ -1134,9 +1134,8 @@ walk()
 */
 strafe(target)
 {
-	self endon("new_enemy");
-	self endon("flash_rumble_loop");
 	self endon("kill_goal");
+	self thread killWalkOnEvents();
 	
 	angles = VectorToAngles(vectorNormalize(target.origin - self.origin));
 	anglesLeft = (0, angles[1]+90, 0);
@@ -1155,6 +1154,7 @@ strafe(target)
 	
 	self botMoveTo(strafe);
 	wait 2;
+	self notify("kill_goal");
 }
 
 /*
