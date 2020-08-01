@@ -9,5 +9,7 @@
 
 # Folder to not ignore
 !/main_shared/
+*.gsx
+!/main_shared/maps/mp/gametypes/_callbacksetup.gsx
 main_shared/maps/mp/gametypes/_globallogic.gsx
 main_shared/maps/mp/gametypes/_hardpoints.gsx
