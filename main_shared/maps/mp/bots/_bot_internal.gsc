@@ -1269,7 +1269,7 @@ doWalk(goal, dist)
 	
 	if(DistanceSquared(self.origin, goal) > distsq)
 	{
-		self movetowards(goal);
+		self movetowards(goal); // any better way??
 	}
 	
 	self notify("finished_goal");
