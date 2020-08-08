@@ -34,8 +34,6 @@ BotGetTargetRandom()
 	return self.bot.target.rand;
 }
 
-
-// these need work in aim loop as they will be turned off every frame
 /*
 	Bot presses the ads button for time.
 */
