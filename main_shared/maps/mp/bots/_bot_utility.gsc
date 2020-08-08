@@ -11,14 +11,6 @@ is_bot()
 }
 
 /*
-	Bot presses the ads button for time.
-*/
-BotPressADS(time)
-{
-	self maps\mp\bots\_bot_internal::pressADS(time);
-}
-
-/*
 	Bot presses the button for time.
 */
 BotPressAttack(time)
@@ -32,6 +24,24 @@ BotPressAttack(time)
 BotGetRandom()
 {
 	return self.bot.rand;
+}
+
+BotGetTargetRandom()
+{
+	if (!isDefined(self.bot.target))
+		return undefined;
+
+	return self.bot.target.rand;
+}
+
+
+// these need work in aim loop as they will be turned off every frame
+/*
+	Bot presses the ads button for time.
+*/
+BotPressADS(time)
+{
+	self maps\mp\bots\_bot_internal::pressADS(time);
 }
 
 BotPressFrag(time)
