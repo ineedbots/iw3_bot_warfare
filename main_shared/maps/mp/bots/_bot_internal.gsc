@@ -852,8 +852,6 @@ aim()
 				{
 					if(no_trace_time > no_trace_ads_time)
 					{
-						self ads(false);
-						
 						if(isplay)
 						{
 							//better room to nade? cook time function with dist?
@@ -871,17 +869,11 @@ aim()
 								}
 							}
 						}
-						else
-						{
-							self stopNading();
-						}
 					}
 					
 					self botLookAt(last_pos + (0, 0, self getEyeHeight() + nadeAimOffset), aimspeed);
 					continue;
 				}
-				
-				self stopNading();
 				
 				if(isplay)
 				{
@@ -909,21 +901,20 @@ aim()
 				
 				if(isplay && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time)
 				{
-					self ads(false);
 					self knife();
 					continue;
 				}
 				
 				if(!self canFire(curweap) || !self isInRange(dist, curweap))
 				{
-					self ads(false);
 					continue;
 				}
 				
 				//c4 logic here, but doesnt work anyway
 				
 				canADS = self canAds(dist, curweap);
-				self ads(canADS);
+				if (canADS)
+					self thread pressADS();
 				
 				if((!canADS || self playerads() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && trace_time > reaction_time)
 				{
@@ -933,9 +924,6 @@ aim()
 				continue;
 			}
 		}
-		
-		self ads(false);
-		self stopNading();
 		
 		if (!isDefined(self.bot.script_aimpos))
 		{
@@ -986,17 +974,6 @@ doSemiTime()
 	self.bot.semi_time = true;
 	wait self.pers["bots"]["skill"]["semi_time"];
 	self.bot.semi_time = false;
-}
-
-/*
-	Stop the bot from nading.
-*/
-stopNading()
-{
-	if(self.bot.isfragging)
-		self thread frag(0);
-	if(self.bot.issmoking)
-		self thread smoke(0);
 }
 
 /*
