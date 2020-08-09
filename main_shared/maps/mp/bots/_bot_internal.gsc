@@ -499,14 +499,6 @@ target()
 			
 			for(;;)
 			{
-				if(daDist > distsq)
-				{
-					if(isObjDef)
-						self.bot.targets[key] = undefined;
-				
-					break;
-				}
-				
 				if(SmokeTrace(myEye, entOrigin, level.smokeRadius) && bulletTracePassed(myEye, entOrigin, false, ent))
 				{
 					if(!isObjDef)
