@@ -10,7 +10,7 @@ init()
 {
 	load_waypoints();
 	cac_init_patch();
-	hook_callbacks();
+	thread hook_callbacks();
 	
 	//menu?
 	//waypoint editor?
@@ -147,6 +147,7 @@ onPlayerKilled(eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHi
 */
 hook_callbacks()
 {
+	wait 0.05;
 	level.prevCallbackPlayerDamage = level.callbackPlayerDamage;
 	level.callbackPlayerDamage = ::onPlayerDamage;
 	
