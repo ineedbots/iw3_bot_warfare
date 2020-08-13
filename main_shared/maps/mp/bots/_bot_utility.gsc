@@ -338,6 +338,21 @@ isItemUnlocked(what, lvl)
 	}
 }
 
+isWeaponDroppable(weap)
+{
+	return (maps\mp\gametypes\_weapons::mayDropWeapon(weap));
+}
+
+IsDefusing()
+{
+	return (isDefined(self.isDefusing) && self.isDefusing);
+}
+
+isPlanting()
+{
+	return (isDefined(self.isPlanting) && self.isPlanting);
+}
+
 /*
 	Returns if we are stunned.
 */

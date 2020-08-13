@@ -59,7 +59,7 @@ onKilled(eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, 
 	if(level.teamBased && eAttacker.team == self.team)
 		return;
 
-	if ( IsDefined( eInflictor ) && (eInflictor.classname == "script_vehicle" || eInflictor.classname == "grenade" ))
+	if ( !IsDefined( eInflictor ) || eInflictor.classname != "player")
 		return;
 		
 	if(!isAlive(eAttacker))
@@ -94,7 +94,7 @@ onDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint
 	if(level.teamBased && eAttacker.team == self.team)
 		return;
 
-	if ( IsDefined( eInflictor ) && (eInflictor.classname == "script_vehicle" || eInflictor.classname == "grenade" ))
+	if ( !IsDefined( eInflictor ) || eInflictor.classname != "player")
 		return;
 		
 	if(!isAlive(eAttacker))
@@ -935,13 +935,13 @@ bot_weapon_think()
 		if(self IsBotReloading() || self IsBotSmoking() || self IsBotFragging())
 			continue;
 			
-		if(isDefined(self.isDefusing) && self.isDefusing)
+		if(self isDefusing() || self isPlanting())
 			continue;
-			
-		if(isDefined(self.isPlanting) && self.isPlanting)
+
+		curWeap = self GetCurrentWeapon();
+		if (!isWeaponDroppable(curWeap))
 			continue;
 		
-		curWeap = self getCurrentWeapon();
 		hasTarget = self hasThreat();
 		
 		if(hasTarget)
@@ -1016,13 +1016,14 @@ bot_killstreak_think()
 		if(self HasThreat())
 			continue;
 		
-		if(self IsBotReloading() || self IsBotSmoking() || IsBotFragging())
+		if(self IsBotReloading() || self IsBotSmoking() || self IsBotFragging())
 			continue;
 			
-		if(isDefined(self.isDefusing) && self.isDefusing)
+		if(self isDefusing() || self isPlanting())
 			continue;
-			
-		if(isDefined(self.isPlanting) && self.isPlanting)
+
+		curWeap = self GetCurrentWeapon();
+		if (!isWeaponDroppable(curWeap))
 			continue;
 			
 		targetPos = undefined;
