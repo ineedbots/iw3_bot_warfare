@@ -862,6 +862,11 @@ aim()
 							}
 						}
 					}
+					else
+					{
+						if (self canAds(dist, curweap))
+							self thread pressADS();
+					}
 					
 					self botLookAt(last_pos + (0, 0, self getEyeHeight() + nadeAimOffset), aimspeed);
 					continue;
