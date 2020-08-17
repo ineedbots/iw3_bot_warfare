@@ -353,6 +353,11 @@ isPlanting()
 	return (isDefined(self.isPlanting) && self.isPlanting);
 }
 
+inLastStand()
+{
+	return (isDefined(self.lastStand) && self.lastStand);
+}
+
 /*
 	Returns if we are stunned.
 */

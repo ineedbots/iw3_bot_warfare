@@ -243,7 +243,7 @@ onWeaponChange()
 		//fix for when switchtoweapon doesnt work and weapons get disabled from climbing or somethings
 		if(newWeapon == "none")
 		{
-			if(!isDefined(self.lastStand) || !self.lastStand)
+			if(!self inLastStand())
 			{
 				if(isDefined(self.lastDroppableWeapon) && self.lastDroppableWeapon != "none")
 					self setSpawnWeapon(self.lastDroppableWeapon);
