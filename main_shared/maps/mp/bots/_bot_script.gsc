@@ -931,15 +931,14 @@ bot_weapon_think()
 	for(;;)
 	{
 		wait randomIntRange(2, 4);
+
+		if(self BotIsFrozen())
+			continue;
 		
 		if(self IsBotReloading() || self IsBotSmoking() || self IsBotFragging())
 			continue;
 			
 		if(self isDefusing() || self isPlanting())
-			continue;
-
-		curWeap = self GetCurrentWeapon();
-		if (!isWeaponDroppable(curWeap))
 			continue;
 		
 		hasTarget = self hasThreat();
