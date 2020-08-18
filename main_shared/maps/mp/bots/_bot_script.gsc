@@ -1022,8 +1022,6 @@ bot_killstreak_think()
 			continue;
 
 		curWeap = self GetCurrentWeapon();
-		if (!isWeaponDroppable(curWeap))
-			continue;
 			
 		targetPos = undefined;
 		switch(self.pers["hardPointItem"])
