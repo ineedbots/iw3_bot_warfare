@@ -942,6 +942,7 @@ bot_weapon_think()
 			continue;
 		
 		hasTarget = self hasThreat();
+		curWeap = self GetCurrentWeapon();
 		
 		if(hasTarget)
 		{
