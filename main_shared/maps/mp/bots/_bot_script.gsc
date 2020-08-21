@@ -784,6 +784,7 @@ onBotSpawned()
 		self thread bot_think_camp();
 		self thread bot_think_follow();
 		// grenade and claymore spots
+		// use equipment
 		
 		//sab and sd
 		
@@ -1114,7 +1115,7 @@ bot_uav_think()
 			continue;
 			
 		dist = self.pers["bots"]["skill"]["help_dist"];
-		dist *= dist * 8;
+		dist *= 8;
 		
 		for ( i = level.players.size - 1; i >= 0; i-- )
 		{
