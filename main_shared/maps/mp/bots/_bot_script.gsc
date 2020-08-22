@@ -1115,7 +1115,7 @@ bot_uav_think()
 			continue;
 			
 		dist = self.pers["bots"]["skill"]["help_dist"];
-		dist *= 8;
+		dist *= dist * 8;
 		
 		for ( i = level.players.size - 1; i >= 0; i-- )
 		{
