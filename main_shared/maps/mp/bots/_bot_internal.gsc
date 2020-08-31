@@ -1088,7 +1088,41 @@ walk()
 		if(level.waypointCount)
 			goal = level.waypoints[randomInt(level.waypointCount)].origin;
 		else
-			goal = (0, 0, 0);
+		{
+			stepDist = 64;
+			forward = AnglesToForward(self GetPlayerAngles())*stepDist;
+			forward = (forward[0], forward[1], 0);
+			myOrg = self.origin + (0, 0, 32);
+
+			goal = playerPhysicsTrace(myOrg, myOrg + forward, false, self);
+			goal = PhysicsTrace(goal + (0, 0, 50), goal + (0, 0, -40), false, self);
+
+			// too small, lets bounce off the wall
+			if (Distance(goal, myOrg) < stepDist - 1 || randomInt(100) < 5)
+			{
+				trace = bulletTrace(myOrg, myOrg + forward, false, self);
+
+				if (trace["surfacetype"] == "none" || randomInt(100) < 25)
+				{
+					// didnt hit anything, just choose a random direction then
+					dir = (0,randomIntRange(-180, 180),0);
+					goal = playerPhysicsTrace(myOrg, myOrg + AnglesToForward(dir) * stepDist, false, self);
+					goal = PhysicsTrace(goal + (0, 0, 50), goal + (0, 0, -40), false, self);
+				}
+				else
+				{
+					// hit a surface, lets get the reflection vector
+					// r = d - 2 (d . n) n
+					d = VectorNormalize(trace["position"] - myOrg);
+					n = trace["normal"];
+					
+					r = d - 2 * (VectorDot(d, n)) * n;
+
+					goal = playerPhysicsTrace(myOrg, myOrg + (r[0], r[1], 0) * stepDist, false, self);
+					goal = PhysicsTrace(goal + (0, 0, 50), goal + (0, 0, -40), false, self);
+				}
+			}
+		}
 		
 		isScriptGoal = false;
 		if(isDefined(self.bot.script_goal) && !hasTarget)
