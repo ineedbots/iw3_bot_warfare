@@ -1043,6 +1043,17 @@ isInRange(dist, curweap)
 	return true;
 }
 
+killWalkCauseNoWaypoints()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("kill_goal");
+
+	wait 2;
+
+	self notify("kill_goal");
+}
+
 /*
 	This is the main walking logic for the bot.
 */
@@ -1089,6 +1100,7 @@ walk()
 			goal = level.waypoints[randomInt(level.waypointCount)].origin;
 		else
 		{
+			self thread killWalkCauseNoWaypoints();
 			stepDist = 64;
 			forward = AnglesToForward(self GetPlayerAngles())*stepDist;
 			forward = (forward[0], forward[1], 0);
