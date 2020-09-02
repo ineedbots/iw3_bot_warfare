@@ -8,7 +8,7 @@
 */
 init()
 {
-	load_waypoints();
+	thread load_waypoints();
 	cac_init_patch();
 	thread hook_callbacks();
 	

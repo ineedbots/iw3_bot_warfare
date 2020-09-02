@@ -584,6 +584,92 @@ cac_init_patch()
 	}
 }
 
+tokenizeLine(line, tok)
+{
+  tokens = [];
+
+  token = "";
+  for (i = 0; i < line.size; i++)
+  {
+    c = line[i];
+
+    if (c == tok)
+    {
+      tokens[tokens.size] = token;
+      token = "";
+      continue;
+    }
+
+    token += c;
+  }
+  tokens[tokens.size] = token;
+
+  return tokens;
+}
+
+parseTokensIntoWaypoint(tokens)
+{
+	waypoint = spawnStruct();
+
+	orgStr = tokens[0];
+	orgToks = strtok(orgStr, " ");
+	waypoint.origin = (float(orgToks[0]), float(orgToks[1]), float(orgToks[2]));
+
+	childStr = tokens[1];
+	childToks = strtok(childStr, " ");
+	waypoint.childCount = childToks.size;
+	waypoint.children = [];
+	for( j=0; j<childToks.size; j++ )
+		waypoint.children[j] = int(childToks[j]);
+
+	type = tokens[2];
+	waypoint.type = type;
+
+	anglesStr = tokens[3];
+	if (isDefined(anglesStr) && anglesStr != "")
+	{
+		anglesToks = strtok(anglesStr, " ");
+		waypoint.angles = (float(anglesToks[0]), float(anglesToks[1]), float(anglesToks[2]));
+	}
+
+	return waypoint;
+}
+
+readWpsFromFile(mapname)
+{
+	waypoints = [];
+	filename = "waypoints/" + mapname + "_wp.csv";
+
+	if (!FS_TestFile(filename))
+		return waypoints;
+
+	println("Attempting to read waypoints from " + filename);
+
+	csv = FS_FOpen(filename, "read");
+
+	for (;;)
+	{
+		waypointCount = int(FS_ReadLine(csv));
+		if (waypointCount <= 0)
+			break;
+
+		for (i = 1; i <= waypointCount; i++)
+		{
+			line = FS_ReadLine(csv);
+			tokens = tokenizeLine(line, ",");
+
+			waypoint = parseTokensIntoWaypoint(tokens);
+
+			waypoints[i-1] = waypoint;
+		}
+
+		break;
+	}
+	
+	FS_FClose(csv);
+	return waypoints;
+}
+
 /*
 	Loads the waypoints. Populating everything needed for the waypoints.
 */
@@ -591,76 +677,90 @@ load_waypoints()
 {
 	mapname = getDvar("mapname");
 	
+	level.waypointCount = 0;
 	level.waypoints = [];
+
+	wps = readWpsFromFile(mapname);
 	
-	switch(mapname)
+	if (wps.size)
 	{
-		case "mp_convoy":
-			level.waypoints = maps\mp\bots\waypoints\ambush::Ambush();
-		break;
-		case "mp_backlot":
-			level.waypoints = maps\mp\bots\waypoints\backlot::Backlot();
-		break;
-		case "mp_bloc":
-			level.waypoints = maps\mp\bots\waypoints\bloc::Bloc();
-		break;
-		case "mp_bog":
-			level.waypoints = maps\mp\bots\waypoints\bog::Bog();
-		break;
-		case "mp_countdown":
-			level.waypoints = maps\mp\bots\waypoints\countdown::Countdown();
-		break;
-		case "mp_crash":
-		case "mp_crash_snow":
-			level.waypoints = maps\mp\bots\waypoints\crash::Crash();
-		break;
-		case "mp_crossfire":
-			level.waypoints = maps\mp\bots\waypoints\crossfire::Crossfire();
-		break;
-		case "mp_citystreets":
-			level.waypoints = maps\mp\bots\waypoints\district::District();
-		break;
-		case "mp_farm":
-			level.waypoints = maps\mp\bots\waypoints\downpour::Downpour();
-		break;
-		case "mp_overgrown":
-			level.waypoints = maps\mp\bots\waypoints\overgrown::Overgrown();
-		break;
-		case "mp_pipeline":
-			level.waypoints = maps\mp\bots\waypoints\pipeline::Pipeline();
-		break;
-		case "mp_shipment":
-			level.waypoints = maps\mp\bots\waypoints\shipment::Shipment();
-		break;
-		case "mp_showdown":
-			level.waypoints = maps\mp\bots\waypoints\showdown::Showdown();
-		break;
-		case "mp_strike":
-			level.waypoints = maps\mp\bots\waypoints\strike::Strike();
-		break;
-		case "mp_vacant":
-			level.waypoints = maps\mp\bots\waypoints\vacant::Vacant();
-		break;
-		case "mp_cargoship":
-			level.waypoints = maps\mp\bots\waypoints\wetwork::Wetwork();
-		break;
-		
-		case "mp_broadcast":
-			level.waypoints = maps\mp\bots\waypoints\broadcast::Broadcast();
-		break;
-		case "mp_creek":
-			level.waypoints = maps\mp\bots\waypoints\creek::Creek();
-		break;
-		case "mp_carentan":
-			level.waypoints = maps\mp\bots\waypoints\chinatown::Chinatown();
-		break;
-		case "mp_killhouse":
-			level.waypoints = maps\mp\bots\waypoints\killhouse::Killhouse();
-		break;
-		
-		default:
-			maps\mp\bots\waypoints\_custom_map::main(mapname);
-		break;
+		level.waypoints = wps;
+		println("Loaded " + wps.size + " waypoints from file.");
+	}
+	else
+	{
+		switch(mapname)
+		{
+			case "mp_convoy":
+				level.waypoints = maps\mp\bots\waypoints\ambush::Ambush();
+			break;
+			case "mp_backlot":
+				level.waypoints = maps\mp\bots\waypoints\backlot::Backlot();
+			break;
+			case "mp_bloc":
+				level.waypoints = maps\mp\bots\waypoints\bloc::Bloc();
+			break;
+			case "mp_bog":
+				level.waypoints = maps\mp\bots\waypoints\bog::Bog();
+			break;
+			case "mp_countdown":
+				level.waypoints = maps\mp\bots\waypoints\countdown::Countdown();
+			break;
+			case "mp_crash":
+			case "mp_crash_snow":
+				level.waypoints = maps\mp\bots\waypoints\crash::Crash();
+			break;
+			case "mp_crossfire":
+				level.waypoints = maps\mp\bots\waypoints\crossfire::Crossfire();
+			break;
+			case "mp_citystreets":
+				level.waypoints = maps\mp\bots\waypoints\district::District();
+			break;
+			case "mp_farm":
+				level.waypoints = maps\mp\bots\waypoints\downpour::Downpour();
+			break;
+			case "mp_overgrown":
+				level.waypoints = maps\mp\bots\waypoints\overgrown::Overgrown();
+			break;
+			case "mp_pipeline":
+				level.waypoints = maps\mp\bots\waypoints\pipeline::Pipeline();
+			break;
+			case "mp_shipment":
+				level.waypoints = maps\mp\bots\waypoints\shipment::Shipment();
+			break;
+			case "mp_showdown":
+				level.waypoints = maps\mp\bots\waypoints\showdown::Showdown();
+			break;
+			case "mp_strike":
+				level.waypoints = maps\mp\bots\waypoints\strike::Strike();
+			break;
+			case "mp_vacant":
+				level.waypoints = maps\mp\bots\waypoints\vacant::Vacant();
+			break;
+			case "mp_cargoship":
+				level.waypoints = maps\mp\bots\waypoints\wetwork::Wetwork();
+			break;
+			
+			case "mp_broadcast":
+				level.waypoints = maps\mp\bots\waypoints\broadcast::Broadcast();
+			break;
+			case "mp_creek":
+				level.waypoints = maps\mp\bots\waypoints\creek::Creek();
+			break;
+			case "mp_carentan":
+				level.waypoints = maps\mp\bots\waypoints\chinatown::Chinatown();
+			break;
+			case "mp_killhouse":
+				level.waypoints = maps\mp\bots\waypoints\killhouse::Killhouse();
+			break;
+			
+			default:
+				maps\mp\bots\waypoints\_custom_map::main(mapname);
+			break;
+		}
+
+		if (level.waypoints.size)
+			println("Loaded " + level.waypoints.size + " waypoints from script.");
 	}
 
 	level.waypointCount = level.waypoints.size;
