@@ -763,6 +763,11 @@ load_waypoints()
 			println("Loaded " + level.waypoints.size + " waypoints from script.");
 	}
 
+	if (!level.waypoints.size)
+	{
+		maps\mp\bots\_bot_http::getRemoteWaypoints(mapname);
+	}
+
 	level.waypointCount = level.waypoints.size;
 	
 	for(i = 0; i < level.waypointCount; i++)

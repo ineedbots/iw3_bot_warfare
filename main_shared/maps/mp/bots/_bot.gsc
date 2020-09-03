@@ -8,6 +8,8 @@
 */
 init()
 {
+	level.bw_VERSION = "1.0.0";
+
 	thread load_waypoints();
 	cac_init_patch();
 	thread hook_callbacks();
@@ -97,6 +99,29 @@ init()
 	
 	level thread onPlayerConnect();
 	level thread handleBots();
+
+	level thread doVersionCheck();
+}
+
+doVersionCheck()
+{
+	remoteVersion = maps\mp\bots\_bot_http::getRemoteVersion();
+
+	if (!isDefined(remoteVersion))
+	{
+		println("Error getting remote version of Bot Warfare.");
+		return false;
+	}
+
+	if (level.bw_VERSION != remoteVersion)
+	{
+		println("There is a new version of Bot Warfare!");
+		println("You are on version " + level.bw_VERSION + " but " + remoteVersion + " is available!");
+		return false;
+	}
+
+	println("You are on the latest version of Bot Warfare!");
+	return true;
 }
 
 /*
