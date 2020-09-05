@@ -776,6 +776,8 @@ load_waypoints()
 		level.waypoints[i].bots = [];
 		level.waypoints[i].bots["allies"] = 1;
 		level.waypoints[i].bots["axis"] = 1;
+
+		level.waypoints[i].childCount = level.waypoints[i].children.size;
 	}
 	
 	level.waypointsKDTree = WaypointsToKDTree();
@@ -841,6 +843,57 @@ getGoodMapAmount()
 	}
 	
 	return 2;
+}
+
+getMapName(map)
+{
+	switch(map)
+	{
+		case "mp_convoy":
+			return "Ambush";
+		case "mp_backlot":
+			return "Backlot";
+		case "mp_bloc":
+			return "Bloc";
+		case "mp_bog":
+			return "Bog";
+		case "mp_countdown":
+			return "Countdown";
+		case "mp_crash":
+			return "Crash";
+		case "mp_crash_snow":
+			return "Winter Crash";
+		case "mp_crossfire":
+			return "Crossfire";
+		case "mp_citystreets":
+			return "District";
+		case "mp_farm":
+			return "Downpour";
+		case "mp_overgrown":
+			return "Overgrown";
+		case "mp_pipeline":
+			return "Pipeline";
+		case "mp_shipment":
+			return "Shipment";
+		case "mp_showdown":
+			return "Showdown";
+		case "mp_strike":
+			return "Strike";
+		case "mp_vacant":
+			return "Vacant";
+		case "mp_cargoship":
+			return "Wetwork";
+		case "mp_broadcast":
+			return "Broadcast";
+		case "mp_creek":
+			return "Creek";
+		case "mp_carentan":
+			return "Chinatown";
+		case "mp_killhouse":
+			return "Killhouse";
+	}
+	
+	return map;
 }
 
 /*
