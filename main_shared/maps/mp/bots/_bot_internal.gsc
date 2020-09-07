@@ -809,6 +809,7 @@ aim()
 			continue;
 			
 		aimspeed = self.pers["bots"]["skill"]["aim_time"];
+		eyePos = self getEyePos();
 		if(self IsStunned() || self isArtShocked())
 			aimspeed = 1;
 		
@@ -827,7 +828,6 @@ aim()
 				offset = self.bot.target.offset;
 				dist = self.bot.target.dist;
 				curweap = self getCurrentWeapon();
-				eyePos = self getEyePos();
 				angles = self GetPlayerAngles();
 				rand = self.bot.target.rand;
 				no_trace_ads_time = self.pers["bots"]["skill"]["no_trace_ads_time"];
@@ -850,7 +850,7 @@ aim()
 							if(!self.bot.isfraggingafter && !self.bot.issmokingafter)
 							{
 								nade = self getValidGrenade();
-								if(isDefined(nade) && rand <= self.pers["bots"]["behavior"]["nade"] && bulletTracePassed(myEye, myEye + (0, 0, 75), false, self) && bulletTracePassed(last_pos, last_pos + (0, 0, 100), false, target)) // level.bots_minGrenadeDistance
+								if(isDefined(nade) && rand <= self.pers["bots"]["behavior"]["nade"] && bulletTracePassed(myEye, myEye + (0, 0, 75), false, self) && bulletTracePassed(last_pos, last_pos + (0, 0, 100), false, target) && dist > level.bots_minGrenadeDistance && dist < level.bots_maxGrenadeDistance)
 								{
 									if(nade == "frag_grenade_mp")
 										self thread frag(2.5);
@@ -922,7 +922,17 @@ aim()
 			}
 		}
 		
-		if (!isDefined(self.bot.script_aimpos))
+		if (self.bot.next_wp != -1 && isDefined(level.waypoints[self.bot.next_wp].angles) && false)
+		{
+			forwardPos = anglesToForward(level.waypoints[self.bot.next_wp].angles) * 1024;
+
+			self botLookAt(eyePos + forwardPos, aimspeed);
+		}
+		else if (isDefined(self.bot.script_aimpos))
+		{
+			self botLookAt(self.bot.script_aimpos, aimspeed);
+		}
+		else
 		{
 			lookat = undefined;
 			if(self.bot.second_next_wp != -1 && !self.bot.issprinting)
@@ -932,10 +942,6 @@ aim()
 			
 			if(isDefined(lookat))
 				self botLookAt(lookat + (0, 0, self getEyeHeight()), aimspeed);
-		}
-		else
-		{
-			self botLookAt(self.bot.script_aimpos, aimspeed);
 		}
 	}
 }
@@ -1290,19 +1296,22 @@ doWalk(goal, dist, isScriptGoal)
 	self thread watchOnGoal(goal, distsq);
 	
 	current = self initAStar(goal);
-	while(current >= 0)
-	{
-		self.bot.next_wp = self.bot.astar[current];
-		self.bot.second_next_wp = -1;
-		if(current != 0)
-			self.bot.second_next_wp = self.bot.astar[current-1];
+	//if (current >= 0 && DistanceSquared(self.origin, level.waypoints[self.bot.astar[current]].origin) < DistanceSquared(self.origin, goal))
+	//{
+		while(current >= 0)
+		{
+			self.bot.next_wp = self.bot.astar[current];
+			self.bot.second_next_wp = -1;
+			if(current != 0)
+				self.bot.second_next_wp = self.bot.astar[current-1];
+			
+			self notify("new_static_waypoint");
+			
+			self movetowards(level.waypoints[self.bot.next_wp].origin);
 		
-		self notify("new_static_waypoint");
-		
-		self movetowards(level.waypoints[self.bot.next_wp].origin);
-	
-		current = self removeAStar();
-	}
+			current = self removeAStar();
+		}
+	//}
 	
 	self.bot.next_wp = -1;
 	self.bot.second_next_wp = -1;

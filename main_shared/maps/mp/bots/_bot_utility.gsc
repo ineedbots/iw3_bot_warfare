@@ -116,7 +116,12 @@ SetAttacker(att)
 */
 HasScriptGoal()
 {
-	return (isDefined(self.bot.script_goal));
+	return (isDefined(self GetScriptGoal()));
+}
+
+GetScriptGoal()
+{
+	return self.bot.script_goal;
 }
 
 /*
@@ -124,6 +129,8 @@ HasScriptGoal()
 */
 SetScriptGoal(goal, dist)
 {
+	if (!isDefined(dist))
+		dist = 16;
 	self.bot.script_goal = goal;
 	self.bot.script_goal_dist = dist;
 	waittillframeend;
