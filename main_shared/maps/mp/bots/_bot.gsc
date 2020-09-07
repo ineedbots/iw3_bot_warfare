@@ -10,6 +10,12 @@ init()
 {
 	level.bw_VERSION = "1.0.0";
 
+	if(getDvar("bots_main") == "")
+		setDvar("bots_main", true);
+
+	if (!getDvarInt("bots_main"))
+		return;
+
 	thread load_waypoints();
 	cac_init_patch();
 	thread hook_callbacks();
@@ -278,6 +284,9 @@ connected()
 {
 	self endon("disconnect");
 
+	if (!isDefined(self.pers["bot_host"]))
+		self thread doHostCheck();
+
 	if(!self is_bot())
 		return;
 
@@ -297,6 +306,8 @@ connected()
 	
 	self thread maps\mp\bots\_bot_internal::connected();
 	self thread maps\mp\bots\_bot_script::connected();
+
+	level notify("bot_connected", self);
 }
 
 /*
