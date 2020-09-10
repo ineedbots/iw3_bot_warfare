@@ -1,0 +1,3 @@
+[submodule "main_shared/waypoints"]
+	path = main_shared/waypoints
+	url = https://github.com/ineedbots/cod4x_waypoints
