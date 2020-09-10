@@ -15,4 +15,3 @@ _other:
 menu
 code comments
 documentation and tutorials
-push remote to git
