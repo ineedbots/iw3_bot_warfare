@@ -652,6 +652,40 @@ parseTokensIntoWaypoint(tokens)
 	return waypoint;
 }
 
+getABotName()
+{
+	if (!isDefined(level.bot_names))
+	{
+		level.bot_names = [];
+		level.bot_name_cursor = 0;
+
+		filename = "botnames.txt";
+
+		if (FS_TestFile(filename))
+		{
+			f = FS_FOpen(filename, "read");
+
+			name = FS_ReadLine(f);
+			while (isDefined(name) && name != "")
+			{
+				level.bot_names[level.bot_names.size] = name;
+
+				name = FS_ReadLine(f);
+			}
+
+			FS_FClose(f);
+		}
+	}
+
+	if (!level.bot_names.size)
+		return undefined;
+
+	name = level.bot_names[level.bot_name_cursor % level.bot_names.size];
+	level.bot_name_cursor++;
+
+	return name;
+}
+
 readWpsFromFile(mapname)
 {
 	waypoints = [];
