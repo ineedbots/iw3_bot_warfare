@@ -1,0 +1,15 @@
+_script:
+bomb gamemodes,
+tube, grenade equipment waypoints use
+follow, camp
+redo goal (use mw2s)
+
+_utility:
+host assignment
+http
+
+_other:
+menu
+code comments
+documentation and tutorials
+push remote to git
