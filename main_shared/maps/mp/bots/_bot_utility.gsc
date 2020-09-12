@@ -204,6 +204,14 @@ WeaponIsFullAuto(weap)
 	return isDefined(weaptoks[0]) && isString(weaptoks[0]) && isdefined(level.bots_fullautoguns[weaptoks[0]]);
 }
 
+BotStopMoving(what)
+{
+	self.bot.stop_move = what;
+
+	if(what)
+		self notify("kill_goal");
+}
+
 /*
 	Returns if the bot has a script enemy.
 */

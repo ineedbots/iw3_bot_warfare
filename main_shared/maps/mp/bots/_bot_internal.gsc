@@ -120,6 +120,7 @@ resetBotVars()
 	self.bot.second_next_wp = -1;
 	self.bot.towards_goal = undefined;
 	self.bot.astar = [];
+	self.bot.stop_move = false;
 	
 	self.bot.isfrozen = false;
 	self.bot.sprintendtime = -1;
@@ -1074,7 +1075,7 @@ walk()
 		
 		self botMoveTo(self.origin);
 		
-		if(level.inPrematchPeriod || level.gameEnded || self.bot.isfrozen)
+		if(level.inPrematchPeriod || level.gameEnded || self.bot.isfrozen || self.bot.stop_move)
 			continue;
 			
 		if(self maps\mp\_flashgrenades::isFlashbanged())
