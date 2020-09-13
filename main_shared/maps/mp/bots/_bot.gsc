@@ -20,9 +20,10 @@ init()
 	cac_init_patch();
 	thread hook_callbacks();
 	
-	//menu?
-	//waypoint editor?
 	setDvar("sv_botsPressAttackBtn", true);
+
+	if(getDvar("bots_main_GUIDs") == "")
+		setDvar("bots_main_GUIDs", "");//guids of players who will be given host powers, comma seperated
 		
 	if(getDvar("bots_manage_add") == "")
 		setDvar("bots_manage_add", 0);//amount of bots to add to the game
