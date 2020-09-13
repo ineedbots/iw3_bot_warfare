@@ -770,29 +770,38 @@ onBotSpawned()
 	{
 		self waittill("bot_spawned");
 		
-		while(level.inPrematchPeriod)
-			wait 0.05;
-		
-		self thread bot_killstreak_think();
-		self thread bot_uav_think();
-		self thread bot_revenge_think();
-		self thread bot_kill_equipment();
-		self thread bot_kill_chopper();
-		self thread bot_weapon_think();
-		self thread bot_listen_to_steps();
-		
-		self thread bot_think_camp();
-		self thread bot_think_follow();
-		// grenade and claymore spots
-		// use equipment
-		
-		//sab and sd
-		
-		self thread bot_dom_def_think();
-		self thread bot_dom_spawn_kill_think();
-		
-		self thread bot_hq();
+		self thread start_bot_threads();
 	}
+}
+
+start_bot_threads()
+{
+	self endon("disconnect");
+	level endon("game_ended");
+	self endon("death");
+
+	while(level.inPrematchPeriod)
+		wait 0.05;
+	
+	self thread bot_killstreak_think();
+	self thread bot_uav_think();
+	self thread bot_revenge_think();
+	self thread bot_kill_equipment();
+	self thread bot_kill_chopper();
+	self thread bot_weapon_think();
+	self thread bot_listen_to_steps();
+	
+	self thread bot_think_camp();
+	self thread bot_think_follow();
+	// grenade and claymore spots
+	// use equipment
+	
+	//sab and sd
+	
+	self thread bot_dom_def_think();
+	self thread bot_dom_spawn_kill_think();
+	
+	self thread bot_hq();
 }
 
 /*
