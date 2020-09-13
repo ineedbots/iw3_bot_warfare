@@ -17,6 +17,7 @@ CodeCallback_StartGameType()
 		level.gametypestarted = true; // so we know that the gametype has been started up
 		
 		level thread maps\mp\bots\_bot::init();
+		level thread maps\mp\bots\_menu::init();
 	}
 }
 
