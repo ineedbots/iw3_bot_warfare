@@ -237,7 +237,7 @@ onWeaponChange()
 		
 		self.bot.is_cur_full_auto = WeaponIsFullAuto(newWeapon);
 		
-		if(level.gameEnded || self.bot.isfrozen)
+		if(level.gameEnded || level.inPrematchPeriod)
 			continue;
 		
 		// A cod4x fix because bots don't switchtoweapon properally. When a bot goes on a ladder or mount, they will by stuck with a none weapon. Also fixes the bot's weapon while going into laststand.
@@ -251,6 +251,7 @@ onWeaponChange()
 			}
 			else
 			{
+				waittillframeend;
 				weaponslist = self getweaponslist();
 				for( i = 0; i < weaponslist.size; i++ )
 				{
@@ -1301,6 +1302,21 @@ doWalk(goal, dist, isScriptGoal)
 	//{
 		while(current >= 0)
 		{
+			for (;;)
+			{
+				if (current <= 0)
+					break;
+
+				ppt = PlayerPhysicsTrace(self.origin + (0,0,32), level.waypoints[self.bot.astar[current-1]].origin, false, self);
+				if (DistanceSquared(level.waypoints[self.bot.astar[current-1]].origin, ppt) > 1.0)
+					break;
+
+				if (level.waypoints[self.bot.astar[current-1]].type == "climb" || level.waypoints[self.bot.astar[current]].type == "climb")
+					break;
+
+				current = self removeAStar();
+			}
+
 			self.bot.next_wp = self.bot.astar[current];
 			self.bot.second_next_wp = -1;
 			if(current != 0)
