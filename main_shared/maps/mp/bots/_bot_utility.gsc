@@ -2,11 +2,17 @@
 #include maps\mp\_utility;
 #include maps\mp\gametypes\_hud_util;
 
+/*
+	Returns if player is the host
+*/
 is_host()
 {
 	return (isDefined(self.pers["bot_host"]) && self.pers["bot_host"]);
 }
 
+/*
+	Setups the host variable on the player
+*/
 doHostCheck()
 {
 	self.pers["bot_host"] = false;
@@ -57,6 +63,9 @@ BotGetRandom()
 	return self.bot.rand;
 }
 
+/*
+	Returns a random number thats different everytime it changes target
+*/
 BotGetTargetRandom()
 {
 	if (!isDefined(self.bot.target))
@@ -73,14 +82,68 @@ BotPressADS(time)
 	self maps\mp\bots\_bot_internal::pressADS(time);
 }
 
+/*
+	Bot presses the frag button for time.
+*/
 BotPressFrag(time)
 {
 	self maps\mp\bots\_bot_internal::frag(time);
 }
 
+/*
+	Bot presses the smoke button for time.
+*/
 BotPressSmoke(time)
 {
 	self maps\mp\bots\_bot_internal::smoke(time);
+}
+
+/*
+	Returns a valid grenade launcher weapon
+*/
+getValidTube()
+{
+	weaps = self getweaponslist();
+
+	for (i = 0; i < weaps.size; i++)
+	{
+		weap = weaps[i];
+
+		if(!self getAmmoCount(weap))
+			continue;
+
+		if (isSubStr(weap, "gl_") && !isSubStr(weap, "_gl_"))
+			return weap;
+	}
+
+	return undefined;
+}
+
+/*
+	Returns a random grenade in the bot's inventory.
+*/
+getValidGrenade()
+{
+	grenadeTypes = [];
+	grenadeTypes[grenadeTypes.size] = "frag_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "smoke_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "flash_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "concussion_grenade_mp";
+	
+	possibles = [];
+	
+	for(i = 0; i < grenadeTypes.size; i++)
+	{
+		if ( !self hasWeapon( grenadeTypes[i] ) )
+			continue;
+			
+		if ( !self getAmmoCount( grenadeTypes[i] ) )
+			continue;
+			
+		possibles[possibles.size] = grenadeTypes[i];
+	}
+	
+	return random(possibles);
 }
 
 /*
@@ -150,6 +213,9 @@ HasScriptGoal()
 	return (isDefined(self GetScriptGoal()));
 }
 
+/*
+	Returns the pos of the bot's goal
+*/
 GetScriptGoal()
 {
 	return self.bot.script_goal;
@@ -177,14 +243,36 @@ ClearScriptGoal()
 	self SetScriptGoal(undefined, 0);
 }
 
+/*
+	Sets the aim position of the bot
+*/
 SetScriptAimPos(pos)
 {
 	self.bot.script_aimpos = pos;
 }
 
+/*
+	Clears the aim position of the bot
+*/
 ClearScriptAimPos()
 {
 	self SetScriptAimPos(undefined);
+}
+
+/*
+	Returns the aim position of the bot
+*/
+GetScriptAimPos()
+{
+	return self.bot.script_aimpos;
+}
+
+/*
+	Returns if the bot has a aim pos
+*/
+HasScriptAimPos()
+{
+	return isDefined(self GetScriptAimPos());
 }
 
 /*
@@ -225,6 +313,9 @@ WeaponIsFullAuto(weap)
 	return isDefined(weaptoks[0]) && isString(weaptoks[0]) && isdefined(level.bots_fullautoguns[weaptoks[0]]);
 }
 
+/*
+	Bot will stop moving
+*/
 BotStopMoving(what)
 {
 	self.bot.stop_move = what;
@@ -386,21 +477,33 @@ isItemUnlocked(what, lvl)
 	}
 }
 
+/*
+	If the weapon  is allowed to be dropped
+*/
 isWeaponDroppable(weap)
 {
 	return (maps\mp\gametypes\_weapons::mayDropWeapon(weap));
 }
 
+/*
+	If the player is defusing
+*/
 IsDefusing()
 {
 	return (isDefined(self.isDefusing) && self.isDefusing);
 }
 
+/*
+	If the play is planting
+*/
 isPlanting()
 {
 	return (isDefined(self.isPlanting) && self.isPlanting);
 }
 
+/*
+	If the player is in laststand
+*/
 inLastStand()
 {
 	return (isDefined(self.lastStand) && self.lastStand);
@@ -508,6 +611,9 @@ getConeDot(to, from, dir)
     return vectordot(dirToTarget, forward);
 }
 
+/*
+	Returns the distance squared in a 2d space
+*/
 DistanceSquared2D(to, from)
 {
 	to = (to[0], to[1], 0);
@@ -630,6 +736,9 @@ cac_init_patch()
 	}
 }
 
+/*
+	Tokenizes a string (strtok has limits...) (only one char tok)
+*/
 tokenizeLine(line, tok)
 {
   tokens = [];
@@ -653,6 +762,9 @@ tokenizeLine(line, tok)
   return tokens;
 }
 
+/*
+	Parses tokens into a waypoint obj
+*/
 parseTokensIntoWaypoint(tokens)
 {
 	waypoint = spawnStruct();
@@ -681,6 +793,9 @@ parseTokensIntoWaypoint(tokens)
 	return waypoint;
 }
 
+/*
+	Returns a bot's name to be used. Reads from botnames.txt
+*/
 getABotName()
 {
 	if (!isDefined(level.bot_names))
@@ -715,6 +830,9 @@ getABotName()
 	return name;
 }
 
+/*
+	Read from file a csv, and returns an array of waypoints
+*/
 readWpsFromFile(mapname)
 {
 	waypoints = [];
@@ -925,6 +1043,9 @@ getGoodMapAmount()
 	return 2;
 }
 
+/*
+	Returns the friendly user name for a given map's codename
+*/
 getMapName(map)
 {
 	switch(map)
