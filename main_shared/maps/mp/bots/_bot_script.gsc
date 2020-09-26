@@ -468,7 +468,6 @@ set_diff()
 */
 set_class(rankxp)
 {
-	self.cac_initialized = undefined;
 	primaryGroups = [];
 	primaryGroups[0] = "weapon_lmg";
 	primaryGroups[1] = "weapon_smg";
