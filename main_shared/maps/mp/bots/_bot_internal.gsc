@@ -1094,7 +1094,7 @@ walk()
 			goal = PhysicsTrace(goal + (0, 0, 50), goal + (0, 0, -40), false, self);
 
 			// too small, lets bounce off the wall
-			if (Distance(goal, myOrg) < stepDist - 1 || randomInt(100) < 5)
+			if (DistanceSquared(goal, myOrg) < stepDist*stepDist - 1 || randomInt(100) < 5)
 			{
 				trace = bulletTrace(myOrg, myOrg + forward, false, self);
 
