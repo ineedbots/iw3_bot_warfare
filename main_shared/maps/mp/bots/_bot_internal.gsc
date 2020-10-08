@@ -977,14 +977,14 @@ aim()
 			aimpos = last_pos + (0, 0, self getEyeHeight() + nadeAimOffset);
 			conedot = getConeDot(aimpos, eyePos, angles);
 
-			self thread bot_lookat(aimpos, aimspeed);
+			self botLookAt(aimpos, aimspeed);
 
 			if(!self canFire(curweap) || !self isInRange(dist, curweap))
 				continue;
 			
 			canADS = self canAds(dist, curweap);
 			if (canADS)
-				self thread pressAds();
+				self thread pressADS();
 
 			if((!canADS || self playerads() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
 				self botFire();
