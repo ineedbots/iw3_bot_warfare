@@ -986,7 +986,7 @@ aim()
 			if (canADS)
 				self thread pressAds();
 
-			if((!canADS || self botAdsAmount() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
+			if((!canADS || self playerads() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
 				self botFire();
 			
 			continue;
