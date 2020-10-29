@@ -875,12 +875,20 @@ aim()
 				target = self.bot.target.entity;
 				conedot = 0;
 				isplay = self.bot.target.isplay;
+			
 				offset = self.bot.target.offset;
+				if (!isDefined(offset))
+					offset = (0, 0, 0);
+
 				dist = self.bot.target.dist;
 				rand = self.bot.target.rand;
 				no_trace_ads_time = self.pers["bots"]["skill"]["no_trace_ads_time"];
 				reaction_time = self.pers["bots"]["skill"]["reaction_time"];
 				nadeAimOffset = 0;
+
+				bone = self.bot.target.bone;
+				if (!isDefined(bone))
+					bone = "j_spineupper";
 				
 				if(self.bot.isfraggingafter || self.bot.issmokingafter)
 					nadeAimOffset = dist/3000;
@@ -923,25 +931,25 @@ aim()
 				{
 					if(isplay)
 					{
-						aimpos = target getTagOrigin( "j_spineupper" ) + (0, 0, nadeAimOffset);
+						aimpos = target getTagOrigin( bone );
+						aimpos += offset;
+						aimpos += (0, 0, nadeAimOffset);
+
 						conedot = getConeDot(aimpos, eyePos, angles);
 						
 						if(!nadeAimOffset && conedot > 0.999)
-						{
-							self botLookAtPlayer(target, "j_spineupper");
-						}
+							self botLookAtPlayer(target, bone);
 						else
-						{
 							self botLookAt(aimpos, aimspeed);
-						}
 					}
 					else
 					{
 						aimpos = target.origin;
-						if (isDefined(offset))
-							aimpos += offset;
+						aimpos += offset;
 						aimpos += (0, 0, nadeAimOffset);
+
 						conedot = getConeDot(aimpos, eyePos, angles);
+
 						self botLookAt(aimpos, aimspeed);
 					}
 					
