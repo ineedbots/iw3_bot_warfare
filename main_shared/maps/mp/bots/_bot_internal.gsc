@@ -638,14 +638,14 @@ target()
 				targetAnkleRight = player getTagOrigin( "j_ankle_ri" );
 
 				canTargetPlayer = ((distanceSquared(BulletTrace(myEye, targetHead, false, self)["position"], targetHead) < 0.05 ||
-					distanceSquared(BulletTrace(myEye, targetAnkleLeft, false, self)["position"], targetAnkleLeft) < 0.05 ||
-					distanceSquared(BulletTrace(myEye, targetAnkleRight, false, self)["position"], targetAnkleRight) < 0.05)
+														distanceSquared(BulletTrace(myEye, targetAnkleLeft, false, self)["position"], targetAnkleLeft) < 0.05 ||
+														distanceSquared(BulletTrace(myEye, targetAnkleRight, false, self)["position"], targetAnkleRight) < 0.05)
 
-				&& (SmokeTrace(myEye, player.origin, level.smokeRadius) ||
-					daDist < level.bots_maxKnifeDistance*4)
+													&& (SmokeTrace(myEye, player.origin, level.smokeRadius) ||
+														daDist < level.bots_maxKnifeDistance*4)
 
-				&& (getConeDot(player.origin, self.origin, myAngles) >= myFov ||
-					(isObjDef && obj.trace_time)));
+													&& (getConeDot(player.origin, self.origin, myAngles) >= myFov ||
+														(isObjDef && obj.trace_time)));
 
 				if (isDefined(self.bot.target_this_frame) && self.bot.target_this_frame == player)
 				{
