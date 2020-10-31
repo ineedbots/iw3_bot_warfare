@@ -203,6 +203,7 @@ spawned()
 	self thread stance();
 	self thread walk();
 	self thread target();
+	self thread updateBones();
 	self thread aim();
 	self thread watchHoldBreath();
 	self thread onNewEnemy();
@@ -460,6 +461,22 @@ reload_thread()
 	
 	if(cursize/maxsize < 0.5)
 		self thread reload();
+}
+
+updateBones()
+{
+	self endon("disconnect");
+	self endon("death");
+	
+	for(;;)
+	{
+		self waittill_notify_or_timeout("new_enemy", self.pers["bots"]["skill"]["bone_update_interval"]);
+
+		if (!isDefined(self.bot.target))
+			continue;
+
+		self.bot.target.bone = random(self.pers["bots"]["skill"]["bones"]);
+	}
 }
 
 createTargetObj(ent, theTime)
