@@ -275,6 +275,13 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 0;
 				self.pers["bots"]["skill"]["semi_time"] = 0.9;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 1;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 1.5;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 4;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_ankle_le";
+				self.pers["bots"]["skill"]["bones"][2] = "j_ankle_ri";
+
 				self.pers["bots"]["behavior"]["strafe"] = 0;
 				self.pers["bots"]["behavior"]["nade"] = 10;
 				self.pers["bots"]["behavior"]["sprint"] = 10;
@@ -298,6 +305,14 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 500;
 				self.pers["bots"]["skill"]["semi_time"] = 0.75;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0.75;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 1;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 3;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_ankle_le";
+				self.pers["bots"]["skill"]["bones"][2] = "j_ankle_ri";
+				self.pers["bots"]["skill"]["bones"][3] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 10;
 				self.pers["bots"]["behavior"]["nade"] = 15;
 				self.pers["bots"]["behavior"]["sprint"] = 15;
@@ -321,6 +336,15 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 750;
 				self.pers["bots"]["skill"]["semi_time"] = 0.65;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0.65;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 0.75;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 2.5;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][2] = "j_ankle_le";
+				self.pers["bots"]["skill"]["bones"][3] = "j_ankle_ri";
+				self.pers["bots"]["skill"]["bones"][4] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 20;
 				self.pers["bots"]["behavior"]["nade"] = 20;
 				self.pers["bots"]["behavior"]["sprint"] = 20;
@@ -344,6 +368,16 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 1000;
 				self.pers["bots"]["skill"]["semi_time"] = 0.5;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0.5;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 0.5;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 2;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][2] = "j_ankle_le";
+				self.pers["bots"]["skill"]["bones"][3] = "j_ankle_ri";
+				self.pers["bots"]["skill"]["bones"][4] = "j_head";
+				self.pers["bots"]["skill"]["bones"][5] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 30;
 				self.pers["bots"]["behavior"]["nade"] = 25;
 				self.pers["bots"]["behavior"]["sprint"] = 30;
@@ -367,6 +401,14 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 1500;
 				self.pers["bots"]["skill"]["semi_time"] = 0.4;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0.35;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 0.35;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 1.5;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][2] = "j_head";
+				self.pers["bots"]["skill"]["bones"][3] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 40;
 				self.pers["bots"]["behavior"]["nade"] = 35;
 				self.pers["bots"]["behavior"]["sprint"] = 40;
@@ -390,6 +432,13 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 2000;
 				self.pers["bots"]["skill"]["semi_time"] = 0.25;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0.25;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 0.25;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 1;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_spineupper";
+				self.pers["bots"]["skill"]["bones"][1] = "j_head";
+				self.pers["bots"]["skill"]["bones"][2] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 50;
 				self.pers["bots"]["behavior"]["nade"] = 45;
 				self.pers["bots"]["behavior"]["sprint"] = 50;
@@ -413,6 +462,11 @@ difficulty()
 				self.pers["bots"]["skill"]["help_dist"] = 3000;
 				self.pers["bots"]["skill"]["semi_time"] = 0.1;
 				self.pers["bots"]["skill"]["shoot_after_time"] = 0;
+				self.pers["bots"]["skill"]["aim_offset_time"] = 0;
+				self.pers["bots"]["skill"]["aim_offset_amount"] = 0;
+				self.pers["bots"]["skill"]["bones"] = [];
+				self.pers["bots"]["skill"]["bones"][0] = "j_head";
+
 				self.pers["bots"]["behavior"]["strafe"] = 65;
 				self.pers["bots"]["behavior"]["nade"] = 65;
 				self.pers["bots"]["behavior"]["sprint"] = 65;
@@ -455,6 +509,14 @@ set_diff()
 			self.pers["bots"]["skill"]["help_dist"] = randomIntRange(500, 25000);
 			self.pers["bots"]["skill"]["semi_time"] = randomFloatRange(0.05, 1);
 			self.pers["bots"]["skill"]["shoot_after_time"] = randomFloatRange(0.05, 1);
+			self.pers["bots"]["skill"]["aim_offset_time"] = randomFloatRange(0.05, 1);
+			self.pers["bots"]["skill"]["aim_offset_amount"] = randomFloatRange(0.05, 1);
+			self.pers["bots"]["skill"]["bones"] = [];
+			self.pers["bots"]["skill"]["bones"][0] = "j_head";
+			self.pers["bots"]["skill"]["bones"][1] = "j_spineupper";
+			self.pers["bots"]["skill"]["bones"][2] = "j_ankle_ri";
+			self.pers["bots"]["skill"]["bones"][3] = "j_ankle_le";
+
 			self.pers["bots"]["behavior"]["strafe"] = randomInt(100);
 			self.pers["bots"]["behavior"]["nade"] = randomInt(100);
 			self.pers["bots"]["behavior"]["sprint"] = randomInt(100);
