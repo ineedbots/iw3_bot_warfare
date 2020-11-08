@@ -128,6 +128,7 @@ resetBotVars()
 	self.bot.towards_goal = undefined;
 	self.bot.astar = [];
 	self.bot.stop_move = false;
+	self.bot.greedy_path = false;
 	
 	self.bot.isfrozen = false;
 	self.bot.sprintendtime = -1;
@@ -137,13 +138,18 @@ resetBotVars()
 	self.bot.issmoking = false;
 	self.bot.isfraggingafter = false;
 	self.bot.issmokingafter = false;
+	self.bot.isknifing = false;
+	self.bot.isknifingafter = false;
 	
 	self.bot.semi_time = false;
 	self.bot.jump_time = undefined;
-	self.bot.greedy_path = false;
+	
 	self.bot.is_cur_full_auto = false;
 	
 	self.bot.rand = randomInt(100);
+
+	self.bot.isswitching = false;
+	self.bot.switch_to_after_none = undefined;
 	
 	self botStop();
 }
@@ -233,7 +239,7 @@ watchHoldBreath()
 /*
 	When the bot changes weapon.
 */
-onWeaponChange()
+onWeaponChange() // !
 {
 	self endon("disconnect");
 	self endon("death");
@@ -996,10 +1002,10 @@ aim()
 						self botLookAt(aimpos, aimspeed);
 					}
 					
-					if(isplay && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time)
+					if(isplay && !self.bot.isknifingafter && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time)
 					{
 						self clear_bot_after_target();
-						self knife();
+						self thread knife();
 						continue;
 					}
 					
@@ -1581,10 +1587,19 @@ knife()
 	self endon("disconnect");
 	self notify("bot_knife");
 	self endon("bot_knife");
+
+	self.bot.isknifing = true;
+	self.bot.isknifingafter = true;
 	
 	self botAction("+melee");
 	wait 0.05;
 	self botAction("-melee");
+
+	self.bot.isknifing = false;
+
+	wait 1;
+
+	self.bot.isknifingafter = false;
 }
 
 /*
