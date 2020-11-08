@@ -52,26 +52,7 @@ is_bot()
 */
 BotPressAttack(time)
 {
-	self maps\mp\bots\_bot_internal::fire(time);
-}
-
-/*
-	Returns the bot's random assigned number.
-*/
-BotGetRandom()
-{
-	return self.bot.rand;
-}
-
-/*
-	Returns a random number thats different everytime it changes target
-*/
-BotGetTargetRandom()
-{
-	if (!isDefined(self.bot.target))
-		return undefined;
-
-	return self.bot.target.rand;
+	self maps\mp\bots\_bot_internal::pressFire(time);
 }
 
 /*
@@ -99,51 +80,22 @@ BotPressSmoke(time)
 }
 
 /*
-	Returns a valid grenade launcher weapon
+	Returns the bot's random assigned number.
 */
-getValidTube()
+BotGetRandom()
 {
-	weaps = self getweaponslist();
-
-	for (i = 0; i < weaps.size; i++)
-	{
-		weap = weaps[i];
-
-		if(!self getAmmoCount(weap))
-			continue;
-
-		if (isSubStr(weap, "gl_") && !isSubStr(weap, "_gl_"))
-			return weap;
-	}
-
-	return undefined;
+	return self.bot.rand;
 }
 
 /*
-	Returns a random grenade in the bot's inventory.
+	Returns a random number thats different everytime it changes target
 */
-getValidGrenade()
+BotGetTargetRandom()
 {
-	grenadeTypes = [];
-	grenadeTypes[grenadeTypes.size] = "frag_grenade_mp";
-	grenadeTypes[grenadeTypes.size] = "smoke_grenade_mp";
-	grenadeTypes[grenadeTypes.size] = "flash_grenade_mp";
-	grenadeTypes[grenadeTypes.size] = "concussion_grenade_mp";
-	
-	possibles = [];
-	
-	for(i = 0; i < grenadeTypes.size; i++)
-	{
-		if ( !self hasWeapon( grenadeTypes[i] ) )
-			continue;
-			
-		if ( !self getAmmoCount( grenadeTypes[i] ) )
-			continue;
-			
-		possibles[possibles.size] = grenadeTypes[i];
-	}
-	
-	return random(possibles);
+	if (!isDefined(self.bot.target))
+		return undefined;
+
+	return self.bot.target.rand;
 }
 
 /*
@@ -197,11 +149,14 @@ BotIsFrozen()
 }
 
 /*
-	Sets the bot's target to be this ent.
+	Bot will stop moving
 */
-SetAttacker(att)
+BotStopMoving(what)
 {
-	self.bot.target_this_frame = att;
+	self.bot.stop_move = what;
+
+	if(what)
+		self notify("kill_goal");
 }
 
 /*
@@ -276,6 +231,14 @@ HasScriptAimPos()
 }
 
 /*
+	Sets the bot's target to be this ent.
+*/
+SetAttacker(att)
+{
+	self.bot.target_this_frame = att;
+}
+
+/*
 	Sets the script enemy for a bot.
 */
 SetScriptEnemy(enemy, offset)
@@ -304,27 +267,6 @@ GetThreat()
 }
 
 /*
-	Returns if the given weapon is full auto.
-*/
-WeaponIsFullAuto(weap)
-{
-	weaptoks = strtok(weap, "_");
-	
-	return isDefined(weaptoks[0]) && isString(weaptoks[0]) && isdefined(level.bots_fullautoguns[weaptoks[0]]);
-}
-
-/*
-	Bot will stop moving
-*/
-BotStopMoving(what)
-{
-	self.bot.stop_move = what;
-
-	if(what)
-		self notify("kill_goal");
-}
-
-/*
 	Returns if the bot has a script enemy.
 */
 HasScriptEnemy()
@@ -338,6 +280,104 @@ HasScriptEnemy()
 HasThreat()
 {
 	return (isDefined(self GetThreat()));
+}
+
+/*
+	If the player is defusing
+*/
+IsDefusing()
+{
+	return (isDefined(self.isDefusing) && self.isDefusing);
+}
+
+/*
+	If the play is planting
+*/
+isPlanting()
+{
+	return (isDefined(self.isPlanting) && self.isPlanting);
+}
+
+/*
+	If the player is in laststand
+*/
+inLastStand()
+{
+	return (isDefined(self.lastStand) && self.lastStand);
+}
+
+/*
+	Returns if we are stunned.
+*/
+IsStunned()
+{
+	return (isdefined(self.concussionEndTime) && self.concussionEndTime > gettime());
+}
+
+/*
+	Returns if we are beingArtilleryShellshocked 
+*/
+isArtShocked()
+{
+	return (isDefined(self.beingArtilleryShellshocked) && self.beingArtilleryShellshocked);
+}
+
+/*
+	Returns a valid grenade launcher weapon
+*/
+getValidTube()
+{
+	weaps = self getweaponslist();
+
+	for (i = 0; i < weaps.size; i++)
+	{
+		weap = weaps[i];
+
+		if(!self getAmmoCount(weap))
+			continue;
+
+		if (isSubStr(weap, "gl_") && !isSubStr(weap, "_gl_"))
+			return weap;
+	}
+
+	return undefined;
+}
+
+/*
+	Returns a random grenade in the bot's inventory.
+*/
+getValidGrenade()
+{
+	grenadeTypes = [];
+	grenadeTypes[grenadeTypes.size] = "frag_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "smoke_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "flash_grenade_mp";
+	grenadeTypes[grenadeTypes.size] = "concussion_grenade_mp";
+	
+	possibles = [];
+	
+	for(i = 0; i < grenadeTypes.size; i++)
+	{
+		if ( !self hasWeapon( grenadeTypes[i] ) )
+			continue;
+			
+		if ( !self getAmmoCount( grenadeTypes[i] ) )
+			continue;
+			
+		possibles[possibles.size] = grenadeTypes[i];
+	}
+	
+	return random(possibles);
+}
+
+/*
+	Returns if the given weapon is full auto.
+*/
+WeaponIsFullAuto(weap)
+{
+	weaptoks = strtok(weap, "_");
+	
+	return isDefined(weaptoks[0]) && isString(weaptoks[0]) && isdefined(level.bots_fullautoguns[weaptoks[0]]);
 }
 
 /*
@@ -483,46 +523,6 @@ isItemUnlocked(what, lvl)
 isWeaponDroppable(weap)
 {
 	return (maps\mp\gametypes\_weapons::mayDropWeapon(weap));
-}
-
-/*
-	If the player is defusing
-*/
-IsDefusing()
-{
-	return (isDefined(self.isDefusing) && self.isDefusing);
-}
-
-/*
-	If the play is planting
-*/
-isPlanting()
-{
-	return (isDefined(self.isPlanting) && self.isPlanting);
-}
-
-/*
-	If the player is in laststand
-*/
-inLastStand()
-{
-	return (isDefined(self.lastStand) && self.lastStand);
-}
-
-/*
-	Returns if we are stunned.
-*/
-IsStunned()
-{
-	return (isdefined(self.concussionEndTime) && self.concussionEndTime > gettime());
-}
-
-/*
-	Returns if we are beingArtilleryShellshocked 
-*/
-isArtShocked()
-{
-	return (isDefined(self.beingArtilleryShellshocked) && self.beingArtilleryShellshocked);
 }
 
 /*
