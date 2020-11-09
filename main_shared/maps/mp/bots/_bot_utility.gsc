@@ -131,6 +131,14 @@ IsBotReloading()
 }
 
 /*
+	Is bot knifing
+*/
+IsBotKnifing()
+{
+	return self.bot.isknifingafter;
+}
+
+/*
 	Freezes the bot's controls.
 */
 BotFreezeControls(what)

@@ -335,6 +335,10 @@ stance()
 		toStance = "stand";
 		if(self.bot.next_wp != -1)
 			toStance = level.waypoints[self.bot.next_wp].type;
+
+		if(toStance == "climb")
+			toStance = "stand";
+			
 		if(toStance != "stand" && toStance != "crouch" && toStance != "prone")
 			toStance = "crouch";
 			
@@ -1203,7 +1207,7 @@ walk()
 		{
 			curweap = self getCurrentWeapon();
 			
-			if(self.bot.target.entity.classname == "script_vehicle" || self.bot.isfraggingafter || self.bot.issmokingafter)
+			if(self.bot.target.entity.classname == "script_vehicle" || self.bot.isfraggingafter || self.bot.issmokingafter || self InLastStand() || self GetStance() == "prone")
 			{
 				continue;
 			}
