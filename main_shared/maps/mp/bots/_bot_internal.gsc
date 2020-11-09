@@ -186,6 +186,7 @@ onPlayerSpawned()
 		
 		self resetBotVars();
 		self thread onWeaponChange();
+		self thread onLastStand();
 		
 		self thread reload_watch();
 		self thread sprint_watch();
@@ -237,9 +238,45 @@ watchHoldBreath()
 }
 
 /*
+	When the bot enters laststand, we fix the weapons
+*/
+onLastStand()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	while (true)
+	{
+		while (!self inLastStand())
+			wait 0.05;
+
+		self notify("kill_goal");
+
+		while (self.disabledWeapon)
+			wait 0.05;
+		waittillframeend;
+
+		weaponslist = self getweaponslist();
+		for( i = 0; i < weaponslist.size; i++ )
+		{
+			weapon = weaponslist[i];
+			
+			if ( maps\mp\gametypes\_weapons::isPistol( weapon ) )
+			{
+				self setSpawnWeapon(weapon);
+				break;
+			}
+		}
+
+		while (self inLastStand())
+			wait 0.05;
+	}
+}
+
+/*
 	When the bot changes weapon.
 */
-onWeaponChange() // !
+onWeaponChange()
 {
 	self endon("disconnect");
 	self endon("death");
@@ -250,36 +287,66 @@ onWeaponChange() // !
 		self waittill( "weapon_change", newWeapon );
 		
 		self.bot.is_cur_full_auto = WeaponIsFullAuto(newWeapon);
-		
+
 		if(level.gameEnded || level.inPrematchPeriod)
 			continue;
 		
 		// A cod4x fix because bots don't switchtoweapon properally. When a bot goes on a ladder or mount, they will by stuck with a none weapon. Also fixes the bot's weapon while going into laststand.
 		//fix for when switchtoweapon doesnt work and weapons get disabled from climbing or somethings
-		if(newWeapon == "none")
+		switch (newWeapon)
 		{
-			if(!self inLastStand())
-			{
-				if(isDefined(self.lastDroppableWeapon) && self.lastDroppableWeapon != "none")
-					self setSpawnWeapon(self.lastDroppableWeapon);
-			}
-			else
-			{
-				waittillframeend;
-				weaponslist = self getweaponslist();
-				for( i = 0; i < weaponslist.size; i++ )
-				{
-					weapon = weaponslist[i];
-					
-					if ( maps\mp\gametypes\_weapons::isPistol( weapon ) )
-					{
-						self setSpawnWeapon(weapon);
-						break;
-					}
-				}
-			}
+			case "none":
+				self thread doNoneSwitch();
+			break;
+			default:
+				self thread doSwitch(newWeapon);
+			break;
 		}
 	}
+}
+
+/*
+	When the bot switches to a none weapon, we fix it
+*/
+doNoneSwitch()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("weapon_change");
+
+	self.bot.isswitching = false;
+
+	while (self.disabledWeapon)
+		wait 0.05;
+
+	weap = self.lastDroppableWeapon;
+	if (isDefined(self.bot.switch_to_after_none))
+	{
+		weap = self.bot.switch_to_after_none;
+		self.bot.switch_to_after_none = undefined;
+	}
+
+	self SetSpawnWeapon(weap);
+}
+
+/*
+	When the bot switches to a weapon, we play the active animation, and shoot delay
+*/
+doSwitch(newWeapon)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("weapon_change");
+
+	waittillframeend;
+	if (self.lastDroppableWeapon != newWeapon)
+		return;
+
+	self.bot.isswitching = true;
+
+	wait 1;  // fast pullout?
+
+	self.bot.isswitching = false;
 }
 
 /*
@@ -1024,7 +1091,7 @@ aim()
 					
 					if (trace_time > reaction_time)
 					{
-						if((!canADS || self playerads() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
+						if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
 							self botFire();
 
 						if (isplay)
@@ -1059,7 +1126,7 @@ aim()
 			if (canADS)
 				self thread pressADS();
 
-			if((!canADS || self playerads() == 1.0) && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
+			if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance))
 				self botFire();
 			
 			continue;
@@ -1787,4 +1854,6 @@ prone()
 {
 	self botAction("-gocrouch");
 	self botAction("+goprone");
+
+	self notify("kill_goal");
 }
