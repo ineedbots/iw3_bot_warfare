@@ -288,11 +288,10 @@ onWeaponChange()
 
 		if (newWeapon == "none")
 		{
-			self changeToWeap(self.lastDroppableWeapon);
 			continue;
 		}
 		
-		self changeToWeap(self GetCurrentWeapon());
+		self changeToWeap(newWeapon);
 	}
 }
 
@@ -1815,14 +1814,5 @@ prone()
 */
 changeToWeap(weap)
 {
-	toks = strtok(weap, "_");
-	if (toks[0] == "gl")
-	{
-		self setSpawnWeapon(weap);
-		//self botWeapon("");
-		return;
-	}
-
-	//self botWeapon(weap);
-	self setSpawnWeapon(weap);
+	self botWeapon(weap);
 }

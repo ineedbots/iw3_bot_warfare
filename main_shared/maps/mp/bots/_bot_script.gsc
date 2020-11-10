@@ -1007,7 +1007,7 @@ bot_weapon_think()
 			
 			if(threat.classname == "script_vehicle" && self getAmmoCount("rpg_mp") && curWeap != "rpg_mp")
 			{
-				self setSpawnWeapon("rpg_mp");
+				self BotChangeToWeapon("rpg_mp");
 				continue;
 			}
 		}
@@ -1047,7 +1047,7 @@ bot_weapon_think()
 		if(weap == "")
 			continue;
 		
-		self setSpawnWeapon(weap);//until switchToWeapon works...
+		self BotChangeToWeapon(weap);//until switchToWeapon works...
 	}
 }
 
@@ -1135,7 +1135,7 @@ bot_killstreak_think()
 			continue;
 			
 		self BotFreezeControls(true);
-		self setSpawnWeapon(self.pers["hardPointItem"]);
+		self BotChangeToWeapon(self.pers["hardPointItem"]);
 		wait 1;
 		if(isAirstrikePos && !isDefined( level.airstrikeInProgress ))
 		{
@@ -1145,7 +1145,7 @@ bot_killstreak_think()
 		self BotFreezeControls(false);
 		
 		if(self getCurrentWeapon() != self.lastDroppableWeapon)
-			self setSpawnWeapon(self.lastDroppableWeapon);
+			self BotChangeToWeapon(self.lastDroppableWeapon);
 	}
 }
 
