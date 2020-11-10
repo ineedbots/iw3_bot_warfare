@@ -147,9 +147,6 @@ resetBotVars()
 	self.bot.is_cur_full_auto = false;
 	
 	self.bot.rand = randomInt(100);
-
-	self.bot.isswitching = false;
-	self.bot.switch_to_after_none = undefined;
 	
 	self botStop();
 }
@@ -251,9 +248,6 @@ onLastStand()
 			wait 0.05;
 
 		self notify("kill_goal");
-
-		while (self.disabledWeapon)
-			wait 0.05;
 		waittillframeend;
 
 		weaponslist = self getweaponslist();
@@ -263,7 +257,7 @@ onLastStand()
 			
 			if ( maps\mp\gametypes\_weapons::isPistol( weapon ) )
 			{
-				self setSpawnWeapon(weapon);
+				self changeToWeap(weapon);
 				break;
 			}
 		}
@@ -281,72 +275,25 @@ onWeaponChange()
 	self endon("disconnect");
 	self endon("death");
 	
-	self.bot.is_cur_full_auto = WeaponIsFullAuto(self GetCurrentWeapon());
+	weap = self GetCurrentWeapon();
+	self.bot.is_cur_full_auto = WeaponIsFullAuto(weap);
+	if (weap != "none")
+		self changeToWeap(weap);
+
 	for(;;)
 	{
 		self waittill( "weapon_change", newWeapon );
 		
 		self.bot.is_cur_full_auto = WeaponIsFullAuto(newWeapon);
 
-		if(level.gameEnded || level.inPrematchPeriod)
-			continue;
-		
-		// A cod4x fix because bots don't switchtoweapon properally. When a bot goes on a ladder or mount, they will by stuck with a none weapon. Also fixes the bot's weapon while going into laststand.
-		//fix for when switchtoweapon doesnt work and weapons get disabled from climbing or somethings
-		switch (newWeapon)
+		if (newWeapon == "none")
 		{
-			case "none":
-				self thread doNoneSwitch();
-			break;
-			default:
-				self thread doSwitch(newWeapon);
-			break;
+			self changeToWeap(self.lastDroppableWeapon);
+			continue;
 		}
+		
+		self changeToWeap(self GetCurrentWeapon());
 	}
-}
-
-/*
-	When the bot switches to a none weapon, we fix it
-*/
-doNoneSwitch()
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("weapon_change");
-
-	self.bot.isswitching = false;
-
-	while (self.disabledWeapon)
-		wait 0.05;
-
-	weap = self.lastDroppableWeapon;
-	if (isDefined(self.bot.switch_to_after_none))
-	{
-		weap = self.bot.switch_to_after_none;
-		self.bot.switch_to_after_none = undefined;
-	}
-
-	self SetSpawnWeapon(weap);
-}
-
-/*
-	When the bot switches to a weapon, we play the active animation, and shoot delay
-*/
-doSwitch(newWeapon)
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("weapon_change");
-
-	waittillframeend;
-	if (self.lastDroppableWeapon != newWeapon)
-		return;
-
-	self.bot.isswitching = true;
-
-	wait 1;  // fast pullout?
-
-	self.bot.isswitching = false;
 }
 
 /*
@@ -921,6 +868,7 @@ watchToLook()
 		
 			self.bot.jump_time = thetime;
 			self prone();
+			self notify("kill_goal");
 			wait 2.5;
 			self crouch();
 		}
@@ -1277,13 +1225,16 @@ walk()
 		{
 			curweap = self getCurrentWeapon();
 			
-			if(self.bot.target.entity.classname == "script_vehicle" || self.bot.isfraggingafter || self.bot.issmokingafter || self InLastStand() || self GetStance() == "prone")
+			if(self.bot.target.entity.classname == "script_vehicle" || self.bot.isfraggingafter || self.bot.issmokingafter)
 			{
 				continue;
 			}
 			
 			if(self.bot.target.isplay && self.bot.target.trace_time && self canFire(curweap) && self isInRange(self.bot.target.dist, curweap))
 			{
+				if (self InLastStand() || self GetStance() == "prone")
+					continue;
+
 				if(self.bot.target.rand <= self.pers["bots"]["behavior"]["strafe"])
 					self strafe(self.bot.target.entity);
 				continue;
@@ -1857,6 +1808,20 @@ prone()
 {
 	self botAction("-gocrouch");
 	self botAction("+goprone");
+}
 
-	self notify("kill_goal");
+/*
+	Changes to the weap
+*/
+changeToWeap(weap)
+{
+	toks = strtok(weap, "_");
+	if (toks[0] == "gl")
+	{
+		self setSpawnWeapon(weap);
+		return;
+	}
+
+	//self botWeapon(weap);
+	self setSpawnWeapon(weap);
 }

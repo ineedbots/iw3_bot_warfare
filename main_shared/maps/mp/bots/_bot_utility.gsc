@@ -48,6 +48,14 @@ is_bot()
 }
 
 /*
+	Bot changes to the weap
+*/
+BotChangeToWeapon(weap)
+{
+	self maps\mp\bots\_bot_internal::changeToWeap(weap);
+}
+
+/*
 	Bot presses the button for time.
 */
 BotPressAttack(time)
