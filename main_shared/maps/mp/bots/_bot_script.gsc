@@ -1137,6 +1137,9 @@ bot_killstreak_think()
 				else if(self.pers["bots"]["skill"]["base"] <= 3)
 					targetPos = self.origin + (randomIntRange(-512, 512), randomIntRange(-512, 512), 0);
 				break;
+
+			default:
+				continue;
 		}
 		
 		isAirstrikePos = isDefined(targetPos);
