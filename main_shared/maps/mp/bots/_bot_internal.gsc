@@ -1814,5 +1814,9 @@ prone()
 */
 changeToWeap(weap)
 {
+#if isSyscallDefined botWeapon
 	self botWeapon(weap);
+#else
+	self setSpawnWeapon(weap);
+#endif
 }
