@@ -687,8 +687,17 @@ chopperWatch()
 		while(!isDefined(level.chopper))
 			wait 0.05;
 
+		chopper = level.chopper;
+
+		if (!isEntity(chopper))
+		{
+			chopper = level.chopper["allies"];
+			if (!isDefined(chopper)
+				chopper = level.chopper["axis"];
+		}
+
 		level.bot_chopper = true;
-		level.chopper watchChopper();
+		chopper watchChopper();
 		level.bot_chopper = false;
 		
 		while(isDefined(level.chopper))
