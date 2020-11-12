@@ -1090,8 +1090,17 @@ bot_killstreak_think()
 				break;
 		
 			case "helicopter_mp":
-				if(isDefined( level.chopper ))
+				chopper = level.chopper;
+
+				if (isDefined(chopper) && !isEntity(chopper))
+					chopper = level.chopper[self.team];
+
+				if (isDefined(chopper))
 					continue;
+
+				if (isDefined( level.mannedchopper ))
+					continue;
+
 				break;
 		
 			case "airstrike_mp":
@@ -1261,24 +1270,31 @@ bot_kill_chopper()
 			
 		if(!self getAmmoCount("rpg_mp") && self BotGetRandom() < 90)
 			continue;
-			
-		if(!isDefined(level.chopper))
+
+		chopper = level.chopper;
+
+		if(isDefined(chopper) && !isEntity(chopper))
+		{
+			chopper = level.chopper[ level.otherTeam[self.team] ];
+		}
+
+		if (!isdefined(chopper))
 			continue;
 		
 		if(!isDefined(level.bot_chopper) || !level.bot_chopper)//must be crashing or leaving
 			continue;
 			
-		if(isDefined(level.chopper.owner) && level.chopper.owner == self)
+		if(isDefined(chopper.owner) && chopper.owner == self)
 			continue;
 			
-		if(level.chopper.team == self.team && level.teamBased)
+		if(chopper.team == self.team && level.teamBased)
 			continue;
 			
-		if(!bulletTracePassed( self getEyePos(), level.chopper.origin + (0, 0, -5), false, level.chopper ))
+		if(!bulletTracePassed( self getEyePos(), chopper.origin + (0, 0, -5), false, chopper ))
 			continue;
 			
-		self SetScriptEnemy( level.chopper, (0, 0, -5) );
-		self bot_chopper_attack(level.chopper);
+		self SetScriptEnemy( chopper, (0, 0, -5) );
+		self bot_chopper_attack(chopper);
 		self ClearScriptEnemy();
 	}
 }
