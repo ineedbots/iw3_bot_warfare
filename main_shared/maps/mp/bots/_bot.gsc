@@ -19,8 +19,6 @@ init()
 	thread load_waypoints();
 	cac_init_patch();
 	thread hook_callbacks();
-	
-	setDvar("sv_botsPressAttackBtn", true);
 
 	if(getDvar("bots_main_GUIDs") == "")
 		setDvar("bots_main_GUIDs", "");//guids of players who will be given host powers, comma seperated
@@ -86,6 +84,8 @@ init()
 	level.bots_listenDist *= level.bots_listenDist;
 	
 	level.smokeRadius = 255;
+
+	level.bots = [];
 	
 	level.bots_fullautoguns = [];
 	level.bots_fullautoguns["rpd"] = true;
@@ -258,6 +258,16 @@ fixPerksAndScriptKick()
 }
 
 /*
+	When a bot disconnects.
+*/
+onDisconnect()
+{
+	self waittill("disconnect");
+	
+	level.bots = array_remove(level.bots, self);
+}
+
+/*
 	Called when a player connects.
 */
 connected()
@@ -287,7 +297,21 @@ connected()
 	self thread maps\mp\bots\_bot_internal::connected();
 	self thread maps\mp\bots\_bot_script::connected();
 
+	level.bots[level.bots.size] = self;
+	self thread onDisconnect();
+
 	level notify("bot_connected", self);
+}
+
+/*
+	When a bot gets added into the game.
+*/
+added()
+{
+	self endon("disconnect");
+	
+	self thread maps\mp\bots\_bot_internal::added();
+	self thread maps\mp\bots\_bot_script::added();
 }
 
 /*
@@ -472,7 +496,12 @@ teamBots()
 						if(player.pers["team"] == toTeam)
 							continue;
 							
-						player notify("menuresponse", game["menu_team"], toTeam);
+						if (toTeam == "allies")
+							player thread [[level.allies]]();
+						else if (toTeam == "axis")
+							player thread [[level.axis]]();
+						else
+							player thread [[level.spectator]]();
 						break;
 					}
 				}
@@ -495,7 +524,7 @@ teamBots()
 				{
 					if(axis > teamAmount)
 					{
-						player notify("menuresponse", game["menu_team"], "allies");
+						player thread [[level.allies]]();
 						break;
 					}
 				}
@@ -503,12 +532,12 @@ teamBots()
 				{
 					if(axis < teamAmount)
 					{
-						player notify("menuresponse", game["menu_team"], "axis");
+						player thread [[level.axis]]();
 						break;
 					}
 					else if(player.pers["team"] != "allies")
 					{
-						player notify("menuresponse", game["menu_team"], "allies");
+						player thread [[level.allies]]();
 						break;
 					}
 				}
@@ -617,17 +646,6 @@ addBots()
 			RemoveTestClient(); //cod4x
 		}
 	}
-}
-
-/*
-	When a bot gets added into the game.
-*/
-added()
-{
-	self endon("disconnect");
-	
-	self thread maps\mp\bots\_bot_internal::added();
-	self thread maps\mp\bots\_bot_script::added();
 }
 
 /*
