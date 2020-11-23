@@ -4,14 +4,9 @@ tube, grenade equipment waypoints use
 follow, camp
 redo goal (use mw2s)
 
-_internal:
-climb? (how)
-
 _utility:
-host assignment
 http
 
 _other:
 menu
-code comments
 documentation and tutorials
