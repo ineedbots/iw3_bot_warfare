@@ -8,5 +8,5 @@ _utility:
 http
 
 _other:
-menu
+menu and dvars
 documentation and tutorials
