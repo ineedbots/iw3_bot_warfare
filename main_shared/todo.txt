@@ -1,12 +1,11 @@
 _script:
-bomb gamemodes,
-tube, grenade equipment waypoints use
-follow, camp
 redo goal (use mw2s)
 
 _utility:
 http
 
+_menu:
+dvars
+
 _other:
-menu and dvars
 documentation and tutorials
