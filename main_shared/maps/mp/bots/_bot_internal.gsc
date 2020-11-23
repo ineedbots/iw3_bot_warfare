@@ -921,7 +921,7 @@ aim()
 	{
 		wait 0.05;
 		
-		if(level.inPrematchPeriod || level.gameEnded || self.bot.isfrozen || self maps\mp\_flashgrenades::isFlashbanged())//because cod4x aim is hacky setPlayerAngles, we gotta check if inPrematchPeriod etc
+		if(level.inPrematchPeriod || level.gameEnded || self.bot.isfrozen || self maps\mp\_flashgrenades::isFlashbanged())
 			continue;
 			
 		aimspeed = self.pers["bots"]["skill"]["aim_time"];
