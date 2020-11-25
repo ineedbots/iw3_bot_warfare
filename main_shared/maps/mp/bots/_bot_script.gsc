@@ -824,6 +824,9 @@ onBotSpawned()
 	}
 }
 
+/*
+	Starts all the bot thinking
+*/
 start_bot_threads()
 {
 	self endon("disconnect");
@@ -880,6 +883,430 @@ start_bot_threads()
 		self thread bot_sd_defenders();
 		self thread bot_sd_attackers();
 	}
+}
+
+/*
+	Increments the number of bots approching the obj, decrements when needed
+	Used for preventing too many bots going to one obj, or unreachable objs
+*/
+bot_inc_bots(obj, unreach)
+{
+	level endon("game_ended");
+	self endon("bot_inc_bots");
+	
+	if (!isDefined(obj.bots))
+		obj.bots = 0;
+	
+	obj.bots++;
+	
+	ret = self waittill_any_return("death", "disconnect", "bad_path", "goal", "new_goal");
+	
+	if (isDefined(obj) && (ret != "bad_path" || !isDefined(unreach)))
+		obj.bots--;
+}
+
+/*
+	Watches when the bot is touching the obj and calls 'goal'
+*/
+bots_watch_touch_obj(obj)
+{
+	self endon ("death");
+	self endon ("disconnect");
+	self endon ("bad_path");
+	self endon ("goal");
+	self endon ("new_goal");
+
+	for (;;)
+	{
+		wait 0.5;
+
+		if (!isDefined(obj))
+		{
+			self notify("bad_path");
+			return;
+		}
+
+		if (self IsTouching(obj))
+		{
+			self notify("goal");
+			return;
+		}
+	}
+}
+
+/*
+	Is bot near any of the given waypoints
+*/
+nearAnyOfWaypoints(dist, waypoints)
+{
+	dist *= dist;
+	for (i = 0; i < waypoints.size; i++)
+	{
+		waypoint = waypoints[i];
+
+		if (DistanceSquared(waypoint.origin, self.origin) > dist)
+			continue;
+
+		return true;
+	}
+
+	return false;
+}
+
+/*
+	Returns nearest waypoint of waypoints
+*/
+getNearestWaypointOfWaypoints(waypoints)
+{
+	answer = undefined;
+	closestDist = 999999999999;
+	for (i = 0; i < waypoints.size; i++)
+	{
+		waypoint = waypoints[i];
+		thisDist = DistanceSquared(self.origin, waypoint.origin);
+
+		if (thisDist > closestDist)
+			continue;
+
+		answer = waypoint;
+		closestDist = thisDist;
+	}
+
+	return answer;
+}
+
+/*
+	Watches while the obj is being carried, calls 'goal' when complete
+*/
+bot_escort_obj(obj, carrier)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	self endon( "goal" );
+	self endon( "bad_path" );
+	self endon( "new_goal" );
+
+	for (;;)
+	{
+		wait 0.5;
+
+		if (!isDefined(obj))
+			break;
+
+		if (!isDefined(obj.carrier) || carrier == obj.carrier)
+			break;
+	}
+	
+	self notify("goal");
+}
+
+/*
+	Watches while the obj is not being carried, calls 'goal' when complete
+*/
+bot_get_obj(obj)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	self endon( "goal" );
+	self endon( "bad_path" );
+	self endon( "new_goal" );
+	
+	for (;;)
+	{
+		wait 0.5;
+
+		if (!isDefined(obj))
+			break;
+
+		if (isDefined(obj.carrier))
+			break;
+	}
+	
+	self notify("goal");
+}
+
+/*
+	bots will defend their site from a planter/defuser
+*/
+bot_defend_site(site)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	level endon("game_ended");
+	self endon( "goal" );
+	self endon( "bad_path" );
+	self endon( "new_goal" );
+	
+	for (;;)
+	{
+		wait 0.5;
+
+		if (!site isInUse())
+			break;
+	}
+
+	self notify("bad_path");
+}
+
+/*
+	Bots will go plant the bomb
+*/
+bot_go_plant(plant)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	level endon("game_ended");
+	self endon( "goal" );
+	self endon( "bad_path" );
+	self endon( "new_goal" );
+
+	for (;;)
+	{
+		wait 1;
+
+		if (level.bombPlanted)
+			break;
+
+		if (self isTouching(plant.trigger))
+			break;
+	}
+
+	if(level.bombPlanted)
+		self notify("bad_path");
+	else
+		self notify("goal");
+}
+
+/*
+	Bots will go defuse the bomb
+*/
+bot_go_defuse(plant)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	level endon("game_ended");
+	self endon( "goal" );
+	self endon( "bad_path" );
+	self endon( "new_goal" );
+
+	for (;;)
+	{
+		wait 1;
+
+		if (!level.bombPlanted)
+			break;
+
+		if (self isTouching(plant.trigger))
+			break;
+	}
+
+	if(!level.bombPlanted)
+		self notify("bad_path");
+	else
+		self notify("goal");
+}
+
+/*
+	Creates a bomb use thread and waits for an output
+*/
+bot_use_bomb_thread(bomb)
+{
+	self thread bot_use_bomb(bomb);
+	self waittill_any("bot_try_use_fail", "bot_try_use_success");
+}
+
+/*
+	Waits for the time to call bot_try_use_success or fail
+*/
+bot_bomb_use_time(wait_time)
+{
+	level endon("game_ended");
+	self endon("death");
+	self endon("disconnect");
+	self endon("bot_try_use_fail");
+	self endon("bot_try_use_success");
+	
+	self waittill("bot_try_use_weapon");
+	
+	wait 0.05;
+	elapsed = 0;
+	while(wait_time > elapsed)
+	{
+		wait 0.05;//wait first so waittill can setup
+		elapsed += 0.05;
+		
+		if(self InLastStand())
+		{
+			self notify("bot_try_use_fail");
+			return;//needed?
+		}
+	}
+	
+	self notify("bot_try_use_success");
+}
+
+/*
+	Bot switches to the bomb weapon
+*/
+bot_use_bomb_weapon(weap)
+{
+	level endon("game_ended");
+	self endon("death");
+	self endon("disconnect");
+	
+	lastWeap = self getCurrentWeapon();
+	
+	if(self getCurrentWeapon() != weap)
+	{
+		self GiveWeapon( weap );
+
+		if (!self ChangeToWeapon(weap))
+		{
+			self notify("bot_try_use_fail");
+			return;
+		}
+	}
+	else
+	{
+		wait 0.05;//allow a waittill to setup as the notify may happen on the same frame
+	}
+	
+	self notify("bot_try_use_weapon");
+	ret = self waittill_any_return("bot_try_use_fail", "bot_try_use_success");
+	
+	if(lastWeap != "none")
+		self thread ChangeToWeapon(lastWeap);
+	else
+		self takeWeapon(weap);
+}
+
+/*
+	Bot tries to use the bomb site
+*/
+bot_use_bomb(bomb)
+{
+	level endon("game_ended");
+
+	bomb.inUse = true;
+	
+	myteam = self.team;
+	
+	self BotStopMoving(true);
+	
+	bomb [[bomb.onBeginUse]](self);
+	
+	self clientClaimTrigger( bomb.trigger );
+	self.claimTrigger = bomb.trigger;
+	
+	self thread bot_bomb_use_time(bomb.useTime / 1000);
+	self thread bot_use_bomb_weapon(bomb.useWeapon);
+	
+	result = self waittill_any_return("death", "disconnect", "bot_try_use_fail", "bot_try_use_success");
+	
+	if (isDefined(self))
+	{
+		self.claimTrigger = undefined;
+		self BotStopMoving(false);
+	}
+
+	bomb [[bomb.onEndUse]](myteam, self, (result == "bot_try_use_success"));
+	bomb.trigger releaseClaimedTrigger();
+	
+	if(result == "bot_try_use_success")
+		bomb [[bomb.onUse]](self);
+
+	bomb.inUse = false;
+}
+
+/*
+	Fires the bots weapon until told to stop
+*/
+fire_current_weapon()
+{
+	self endon("death");
+	self endon("disconnect");
+	self endon("weapon_change");
+	self endon("stop_firing_weapon");
+
+	for (;;)
+	{
+		self thread BotPressAttack(0.05);
+		wait 0.1;
+	}
+}
+
+/*
+	Changes to the weap
+*/
+changeToWeapon(weap)
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	if (!self HasWeapon(weap))
+		return false;
+
+	if (self GetCurrentWeapon() == weap)
+		return true;
+
+	self BotChangeToWeapon(weap);
+
+	self waittill_any_timeout(5, "weapon_change");
+
+	return (self GetCurrentWeapon() == weap);
+}
+
+/*
+	Bots throw the grenade
+*/
+botThrowGrenade(nade, time)
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	if (!self GetAmmoCount(nade))
+		return false;
+
+	if (nade != "frag_grenade_mp")
+		self thread BotPressSmoke(time);
+	else
+		self thread BotPressFrag(time);
+
+	ret = self waittill_any_timeout(5, "grenade_fire");
+
+	return (ret == "grenade_fire");
+}
+
+/*
+	Gets the object thats the closest in the array
+*/
+bot_array_nearest_curorigin(array)
+{
+	result = undefined;
+	
+	for(i = 0; i < array.size; i++)
+		if(!isDefined(result) || DistanceSquared(self.origin,array[i].curorigin) < DistanceSquared(self.origin,result.curorigin))
+			result = array[i];
+		
+	return result;
+}
+
+/*
+	Clears goal when events death
+*/
+stop_go_target_on_death(tar)
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	self endon( "new_goal" );
+	self endon( "bad_path" );
+	self endon( "goal" );
+
+	tar waittill_either("death", "disconnect");
+
+	self ClearScriptGoal();
 }
 
 /*
