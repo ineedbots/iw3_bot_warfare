@@ -836,7 +836,7 @@ start_bot_threads()
 	while(level.inPrematchPeriod)
 		wait 0.05;
 
-	/*// inventory usage
+	// inventory usage
 	if (getDvarInt("bots_play_killstreak"))
 		self thread bot_killstreak_think();
 
@@ -868,7 +868,7 @@ start_bot_threads()
 		self thread bot_use_tube_think();
 		self thread bot_use_grenade_think();
 		self thread bot_use_equipment_think();
-	}*/
+	}
 
 	// obj
 	if (getDvarInt("bots_play_obj"))
@@ -1310,6 +1310,391 @@ stop_go_target_on_death(tar)
 }
 
 /*
+	Bots thinking of using a noobtube
+*/
+bot_use_tube_think()
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	doFastContinue = false;
+
+	for (;;)
+	{
+		if (doFastContinue)
+			doFastContinue = false;
+		else
+		{
+			wait randomintRange(3, 7);
+
+			chance = self.pers["bots"]["behavior"]["nade"] / 2;
+			if (chance > 20)
+				chance = 20;
+
+			if (randomInt(100) > chance)
+				continue;
+		}
+
+		tube = self getValidTube();
+		if (!isDefined(tube))
+			continue;
+
+		if (self HasThreat() || self HasScriptAimPos())
+			continue;
+
+		if(self BotIsFrozen())
+			continue;
+
+		if (self IsBotFragging() || self IsBotSmoking())
+			continue;
+			
+		if(self isDefusing() || self isPlanting())
+			continue;
+
+		if (self InLastStand())
+			continue;
+
+		loc = undefined;
+
+		if (!self nearAnyOfWaypoints(128, level.waypointsTube))
+		{
+			tubeWps = [];
+			distSq = 1024*1024;
+			for (i = 0; i < level.waypointsTube.size; i++)
+			{
+				if (DistanceSquared(self.origin, level.waypointsTube[i].origin) > distSq)
+					continue;
+				
+				tubeWps[tubeWps.size] = level.waypointsTube[i];
+			}
+			tubeWp = random(tubeWps);
+			
+			myEye = self GetEye();
+			if (!isDefined(tubeWp) || self HasScriptGoal() || self.bot_lock_goal)
+			{
+				traceForward = BulletTrace(myEye, myEye + AnglesToForward(self GetPlayerAngles()) * 900 * 5, false, self);
+
+				loc = traceForward["position"];
+				dist = DistanceSquared(self.origin, loc);
+				if (dist < level.bots_minGrenadeDistance || dist > level.bots_maxGrenadeDistance * 5)
+					continue;
+
+				if (!bulletTracePassed(self.origin + (0, 0, 5), self.origin + (0, 0, 2048), false, self))
+					continue;
+
+				if (!bulletTracePassed(loc + (0, 0, 5), loc + (0, 0, 2048), false, self))
+					continue;
+
+				loc += (0, 0, dist/16000);
+			}
+			else
+			{
+				self SetScriptGoal(tubeWp.origin, 16);
+
+				ret = self waittill_any_return("new_goal", "goal", "bad_path");
+
+				if (ret != "new_goal")
+					self ClearScriptGoal();
+
+				if (ret != "goal")
+					continue;
+
+				doFastContinue = true;
+				continue;
+			}
+		}
+		else
+		{
+			tubeWp = self getNearestWaypointOfWaypoints(level.waypointsTube);
+			loc = tubeWp.origin + AnglesToForward(tubeWp.angles) * 2048;
+		}
+
+		if (!isDefined(loc))
+			continue;
+
+		self SetScriptAimPos(loc);
+		self BotStopMoving(true);
+		wait 1;
+
+		if (self changeToWeapon(tube))
+		{
+			self thread fire_current_weapon();
+			self waittill_any_timeout(5, "missile_fire", "weapon_change");
+			self notify("stop_firing_weapon");
+		}
+
+		self ClearScriptAimPos();
+		self BotStopMoving(false);
+	}
+}
+
+/*
+	Bots thinking of using claymores
+*/
+bot_use_equipment_think()
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	doFastContinue = false;
+
+	for (;;)
+	{
+		if (doFastContinue)
+			doFastContinue = false;
+		else
+		{
+			wait randomintRange(2, 4);
+
+			chance = self.pers["bots"]["behavior"]["nade"] / 2;
+			if (chance > 20)
+				chance = 20;
+
+			if (randomInt(100) > chance)
+				continue;
+		}
+
+		nade = undefined;
+		if (self GetAmmoCount("claymore_mp"))
+			nade = "claymore_mp";
+		
+		if (!isDefined(nade))
+			continue;
+
+		if (self HasThreat() || self HasScriptAimPos())
+			continue;
+
+		if(self BotIsFrozen())
+			continue;
+		
+		if(self IsBotFragging() || self IsBotSmoking())
+			continue;
+			
+		if(self isDefusing() || self isPlanting())
+			continue;
+
+		if (self inLastStand())
+			continue;
+
+		loc = undefined;
+
+		if (!self nearAnyOfWaypoints(128, level.waypointsClay))
+		{
+			clayWps = [];
+			distSq = 1024*1024;
+			for (i = 0; i < level.waypointsClay.size; i++)
+			{
+				if (DistanceSquared(self.origin, level.waypointsClay[i].origin) > distSq)
+					continue;
+
+				clayWps[clayWps.size] = level.waypointsClay[i];
+			}
+			clayWp = random(clayWps);
+			
+			if (!isDefined(clayWp) || self HasScriptGoal() || self.bot_lock_goal)
+			{
+				myEye = self GetEye();
+				loc = myEye + AnglesToForward(self GetPlayerAngles()) * 256;
+
+				if (!bulletTracePassed(myEye, loc, false, self))
+					continue;
+			}
+			else
+			{
+				self SetScriptGoal(clayWp.origin, 16);
+
+				ret = self waittill_any_return("new_goal", "goal", "bad_path");
+
+				if (ret != "new_goal")
+					self ClearScriptGoal();
+
+				if (ret != "goal")
+					continue;
+				
+				doFastContinue = true;
+				continue;
+			}
+		}
+		else
+		{
+			clayWp = self getNearestWaypointOfWaypoints(level.waypointsClay);
+			loc = clayWp.origin + AnglesToForward(clayWp.angles) * 2048;
+		}
+
+		if (!isDefined(loc))
+			continue;
+
+		self SetScriptAimPos(loc);
+		self BotStopMoving(true);
+		wait 1;
+
+		if (self changeToWeapon(nade))
+		{
+			self thread fire_current_weapon();
+			self waittill_any_timeout(5, "grenade_fire", "weapon_change");
+			self notify("stop_firing_weapon");
+		}
+
+		self ClearScriptAimPos();
+		self BotStopMoving(false);
+	}
+}
+
+/*
+	Bots thinking of using grenades
+*/
+bot_use_grenade_think()
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	doFastContinue = false;
+
+	for (;;)
+	{
+		if (doFastContinue)
+			doFastContinue = false;
+		else
+		{
+			wait randomintRange(4, 7);
+
+			chance = self.pers["bots"]["behavior"]["nade"] / 2;
+			if (chance > 20)
+				chance = 20;
+
+			if (randomInt(100) > chance)
+				continue;
+		}
+
+		nade = self getValidGrenade();
+		if (!isDefined(nade))
+			continue;
+
+		if (self HasThreat() || self HasScriptAimPos())
+			continue;
+
+		if(self BotIsFrozen())
+			continue;
+		
+		if(self IsBotFragging() || self IsBotSmoking())
+			continue;
+			
+		if(self isDefusing() || self isPlanting())
+			continue;
+
+		if (self inLastStand())
+			continue;
+
+		loc = undefined;
+
+		if (!self nearAnyOfWaypoints(128, level.waypointsGren))
+		{
+			nadeWps = [];
+			distSq = 1024*1024;
+			for (i = 0; i < level.waypointsGren.size; i++)
+			{
+				if (DistanceSquared(self.origin, level.waypointsGren[i].origin) > distSq)
+					continue;
+
+				nadeWps[nadeWps.size] = level.waypointsGren[i];
+			}
+			nadeWp = random(nadeWps);
+
+			myEye = self GetEye();
+			if (!isDefined(nadeWp) || self HasScriptGoal() || self.bot_lock_goal)
+			{
+				traceForward = BulletTrace(myEye, myEye + AnglesToForward(self GetPlayerAngles()) * 900, false, self);
+
+				loc = traceForward["position"];
+				dist = DistanceSquared(self.origin, loc);
+				if (dist < level.bots_minGrenadeDistance || dist > level.bots_maxGrenadeDistance)
+					continue;
+
+				if (!bulletTracePassed(self.origin + (0, 0, 5), self.origin + (0, 0, 2048), false, self))
+					continue;
+
+				if (!bulletTracePassed(loc + (0, 0, 5), loc + (0, 0, 2048), false, self))
+					continue;
+
+				loc += (0, 0, dist/3000);
+			}
+			else
+			{
+				self SetScriptGoal(nadeWp.origin, 16);
+
+				ret = self waittill_any_return("new_goal", "goal", "bad_path");
+
+				if (ret != "new_goal")
+					self ClearScriptGoal();
+
+				if (ret != "goal")
+					continue;
+
+				doFastContinue = true;
+				continue;
+			}
+		}
+		else
+		{
+			nadeWp = self getNearestWaypointOfWaypoints(level.waypointsGren);
+			loc = nadeWp.origin + AnglesToForward(nadeWp.angles) * 2048;
+		}
+
+		if (!isDefined(loc))
+			continue;
+
+		self SetScriptAimPos(loc);
+		self BotStopMoving(true);
+		wait 1;
+
+		time = 0.5;
+		if (nade == "frag_grenade_mp")
+			time = 2;
+		self botThrowGrenade(nade, time);
+
+		self ClearScriptAimPos();
+		self BotStopMoving(false);
+	}
+}
+
+/*
+	Goes to the target's location if it had one
+*/
+follow_target()
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	
+	for(;;)
+	{
+		wait 1;
+		
+		if ( self HasScriptGoal() || self.bot_lock_goal )
+			continue;
+		
+		if ( !self HasThreat() )
+			continue;
+
+		threat = self GetThreat();
+
+		if (!isPlayer(threat))
+			continue;
+
+		if(randomInt(100) > self.pers["bots"]["behavior"]["follow"]*5)
+			continue;
+
+		self thread stop_go_target_on_death(threat);
+
+		self SetScriptGoal(threat.origin, 64);
+		if (self waittill_any_return("new_goal", "goal", "bad_path") != "new_goal")
+			self ClearScriptGoal();
+	}
+}
+
+/*
 	Bot logic for detecting nearby players.
 */
 bot_listen_to_steps()
@@ -1379,6 +1764,37 @@ bot_listen_to_steps()
 }
 
 /*
+	bots will go to their target's kill location
+*/
+bot_revenge_think()
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	
+	if(self.pers["bots"]["skill"]["base"] <= 1)
+		return;
+	
+	if(!isDefined(self.killerLocation))
+		return;
+	
+	for(;;)
+	{
+		wait( RandomIntRange( 1, 5 ) );
+		
+		if(self HasScriptGoal() || self.bot_lock_goal)
+			return;
+		
+		if ( randomint( 100 ) < 75 )
+			return;
+		
+		self SetScriptGoal( self.killerLocation, 64 );
+
+		if (self waittill_any_return( "goal", "bad_path", "new_goal" ) != "new_goal")
+			self ClearScriptGoal();
+	}
+}
+
+/*
 	Bot logic for switching weapons.
 */
 bot_weapon_think()
@@ -1437,7 +1853,7 @@ bot_weapon_think()
 			if (maps\mp\gametypes\_weapons::isGrenade( weapon ))
 				continue;
 				
-			if(curWeap == weapon || weapon == "c4_mp" || weapon == "none" || weapon == "")//c4 no work
+			if(curWeap == weapon || weapon == "c4_mp" || weapon == "none" || weapon == "claymore_mp" || weapon == "")//c4 no work
 				continue;
 				
 			weap = weapon;
