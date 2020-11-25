@@ -32,6 +32,8 @@ connected()
 	self thread classWatch();
 	self thread onBotSpawned();
 	self thread onSpawned();
+
+	// cod4x has a force respawn in the exe
 }
 
 /*
@@ -796,12 +798,13 @@ onSpawned()
 		
 		if(randomInt(100) <= self.pers["bots"]["behavior"]["class"])
 			self.bot_change_class = undefined;
-		
+
 		self.bot_lock_goal = false;
 		self.help_time = undefined;
-		
-		//so they will cap flag when game starts
-		self thread bot_dom_cap_think();
+		self.bot_was_follow_script_update = undefined;
+
+		if (getDvarInt("bots_play_obj"))
+			self thread bot_dom_cap_think();
 	}
 }
 
@@ -829,77 +832,53 @@ start_bot_threads()
 
 	while(level.inPrematchPeriod)
 		wait 0.05;
-	
-	self thread bot_killstreak_think();
-	self thread bot_uav_think();
-	self thread bot_revenge_think();
-	self thread bot_kill_equipment();
-	self thread bot_kill_chopper();
+
+	// inventory usage
+	if (getDvarInt("bots_play_killstreak"))
+		self thread bot_killstreak_think();
+
 	self thread bot_weapon_think();
-	self thread bot_listen_to_steps();
-	
-	self thread bot_think_camp();
-	self thread bot_think_follow();
-	// grenade and claymore spots
-	// use equipment
-	
-	//sab and sd
-	
-	self thread bot_dom_def_think();
-	self thread bot_dom_spawn_kill_think();
-	
-	self thread bot_hq();
-}
 
-/*
-	Bot logic for bot determining to camp.
-*/
-bot_think_camp()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	
-	for(;;)
+	// script targeting
+	if (getDvarInt("bots_play_target_other"))
 	{
-		wait 3;
-		
-		if ( self HasScriptGoal() || self.bot_lock_goal )
-			continue;
-			
-		if(randomInt(100) > self.pers["bots"]["behavior"]["camp"])
-			continue;
-
-		if (true)
-			continue;
-			
-		self SetScriptAimPos((0,0,0));
-		self SetScriptGoal(self.origin, 64);
-		if (randomInt(2) > 1)
-			self thread BotPressFrag(1);
-		else
-			self thread BotPressSmoke(1);
+		self thread bot_target_vehicle();
+		self thread bot_equipment_kill_think();
 	}
-}
 
-/*
-	Bot logic for bot determining to follow another player.
-*/
-bot_think_follow()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	
-	for(;;)
+	// awareness
+	self thread bot_revenge_think();
+	self thread bot_uav_think();
+	self thread bot_listen_to_steps();
+	self thread follow_target();
+
+	// camp and follow
+	if (getDvarInt("bots_play_camp"))
 	{
-		wait 3;
-		
-		if ( self HasScriptGoal() || self.bot_lock_goal )
-			continue;
-			
-		if(randomInt(100) > self.pers["bots"]["behavior"]["follow"])
-			continue;
-			
-		
+		self thread bot_think_follow();
+		self thread bot_think_camp();
+	}
+
+	// nades
+	if (getDvarInt("bots_play_nade"))
+	{
+		self thread bot_use_tube_think();
+		self thread bot_use_grenade_think();
+		self thread bot_use_equipment_think();
+	}
+
+	// obj
+	if (getDvarInt("bots_play_obj"))
+	{
+		self thread bot_dom_def_think();
+		self thread bot_dom_spawn_kill_think();
+
+		self thread bot_hq();
+
+		self thread bot_sab();
+
+		self thread bot_sd_defenders();
+		self thread bot_sd_attackers();
 	}
 }
 
@@ -967,12 +946,8 @@ bot_listen_to_steps()
 		
 		self SetScriptGoal( heard.origin, 64 );
 
-		if(DistanceSquared(heard.origin, self.origin) > 64*64)
-		{
-			self waittill_any( "goal", "bad_path" );
-		}
-		
-		self ClearScriptGoal();
+		if (self waittill_any_return( "goal", "bad_path", "new_goal" ) != "new_goal")
+			self ClearScriptGoal();
 	}
 }
 
@@ -987,15 +962,12 @@ bot_weapon_think()
 	
 	for(;;)
 	{
-		wait randomIntRange(2, 4);
+		self waittill_any_timeout(randomIntRange(2, 4), "bot_force_check_switch");
 
 		if(self BotIsFrozen())
 			continue;
-		
-		if(self IsBotReloading() || self IsBotSmoking() || self IsBotFragging())
-			continue;
 			
-		if(self isDefusing() || self isPlanting())
+		if(self isDefusing() || self isPlanting() || self InLastStand())
 			continue;
 		
 		hasTarget = self hasThreat();
@@ -1005,9 +977,10 @@ bot_weapon_think()
 		{
 			threat = self getThreat();
 			
-			if(threat.classname == "script_vehicle" && self getAmmoCount("rpg_mp") && curWeap != "rpg_mp")
+			if(threat.classname == "script_vehicle" && self getAmmoCount("rpg_mp"))
 			{
-				self BotChangeToWeapon("rpg_mp");
+				if (curWeap != "rpg_mp")
+					self thread ChangeToWeapon("rpg_mp");
 				continue;
 			}
 		}
@@ -1047,7 +1020,7 @@ bot_weapon_think()
 		if(weap == "")
 			continue;
 		
-		self BotChangeToWeapon(weap);//until switchToWeapon works...
+		self thread ChangeToWeapon(weap);
 	}
 }
 
@@ -1072,11 +1045,8 @@ bot_killstreak_think()
 			
 		if(self HasThreat())
 			continue;
-		
-		if(self IsBotReloading() || self IsBotSmoking() || self IsBotFragging())
-			continue;
 			
-		if(self isDefusing() || self isPlanting())
+		if(self isDefusing() || self isPlanting() || self InLastStand())
 			continue;
 
 		curWeap = self GetCurrentWeapon();
@@ -1145,19 +1115,23 @@ bot_killstreak_think()
 		isAirstrikePos = isDefined(targetPos);
 		if(self.pers["hardPointItem"] == "airstrike_mp" && !isAirstrikePos)
 			continue;
-			
-		self BotFreezeControls(true);
-		self BotChangeToWeapon(self.pers["hardPointItem"]);
-		wait 1;
-		if(isAirstrikePos && !isDefined( level.airstrikeInProgress ))
+
+		self BotStopMoving(true);
+						
+		if (self changeToWeapon(self.pers["hardPointItem"]))
 		{
-			self notify( "confirm_location", targetPos );
 			wait 1;
+
+			if (isAirstrikePos && !isDefined( level.airstrikeInProgress ))
+			{
+				self notify( "confirm_location", targetPos );
+				wait 1;
+			}
+
+			self thread changeToWeapon(curWeap);
 		}
-		self BotFreezeControls(false);
-		
-		if(self getCurrentWeapon() != self.lastDroppableWeapon)
-			self BotChangeToWeapon(self.lastDroppableWeapon);
+
+		self BotStopMoving(false);
 	}
 }
 
@@ -1172,9 +1146,6 @@ bot_uav_think()
 	for(;;)
 	{
 		wait 0.75;
-		
-		if ( self HasScriptGoal() || self.bot_lock_goal )
-			continue;
 			
 		if(self.pers["bots"]["skill"]["base"] <= 1)
 			continue;
@@ -1204,19 +1175,26 @@ bot_uav_think()
 			if(!isAlive(player))
 				continue;
 			
-			if(DistanceSquared(self.origin, player.origin) > dist)
+			distFromPlayer = DistanceSquared(self.origin, player.origin);
+			if(distFromPlayer > dist)
 				continue;
 			
 			if((!isSubStr(player getCurrentWeapon(), "_silencer_") && player.bots_firing) || (self.bot_radar && !player hasPerk("specialty_gpsjammer")))
 			{
-				self SetScriptGoal( player.origin, 128 );
-
-				if(DistanceSquared(player.origin, self.origin) > 128*128)
+				distSq = self.pers["bots"]["skill"]["help_dist"] * self.pers["bots"]["skill"]["help_dist"];
+				if (distFromPlayer < distSq && bulletTracePassed(self getEyePos(), player getTagOrigin( "j_spineupper" ), false, player))
 				{
-					self waittill_any( "goal", "bad_path" );
+					self SetAttacker(player);
 				}
-				
-				self ClearScriptGoal();
+
+				if (!self HasScriptGoal() && !self.bot_lock_goal)
+				{
+					self thread stop_go_target_on_death(player);
+					self SetScriptGoal( player.origin, 128 );
+
+					if (self waittill_any_return( "goal", "bad_path", "new_goal" ) != "new_goal")
+						self ClearScriptGoal();
+				}
 				break;
 			}
 		}
@@ -1224,42 +1202,9 @@ bot_uav_think()
 }
 
 /*
-	Bot logic for returning back to last death location. (revenge killing)
-*/
-bot_revenge_think()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	
-	if(self.pers["bots"]["skill"]["base"] <= 1)
-		return;
-	
-	if(!isDefined(self.killerLocation))
-		return;
-	
-	for(;;)
-	{
-		wait( RandomIntRange( 1, 5 ) );
-		
-		if(self HasScriptGoal() || self.bot_lock_goal)
-			return;
-		
-		if ( randomint( 100 ) < 75 )
-			return;
-		
-		self SetScriptGoal( self.killerLocation, 64 );
-		
-		if(DistanceSquared(self.origin, self.killerLocation) > 64*64)
-			self waittill_any( "goal", "bad_path" );
-		
-		self ClearScriptGoal();
-	}
-}
-
-/*
 	Bot logic for detecting the chopper as an enemy.
 */
-bot_kill_chopper()
+bot_target_vehicle()
 {
 	self endon( "death" );
 	self endon( "disconnect" );
@@ -1267,6 +1212,9 @@ bot_kill_chopper()
 	for(;;)
 	{
 		wait( RandomIntRange( 2, 4 ) );
+
+		if(self.pers["bots"]["skill"]["base"] <= 1)
+			continue;
 		
 		if(self HasScriptEnemy())
 			continue;
@@ -1297,15 +1245,16 @@ bot_kill_chopper()
 			continue;
 			
 		self SetScriptEnemy( chopper, (0, 0, -5) );
-		self bot_chopper_attack(chopper);
+		self bot_attack_vehicle(chopper);
 		self ClearScriptEnemy();
+		self notify("bot_force_check_switch");
 	}
 }
 
 /*
 	Bot logic for how long to keep targeting chopper.
 */
-bot_chopper_attack(chopper)
+bot_attack_vehicle(chopper)
 {
 	chopper endon( "death" );
 	chopper endon( "crashing" );
@@ -1315,6 +1264,7 @@ bot_chopper_attack(chopper)
 
 	for ( i = 0; i < wait_time; i++ )
 	{
+		self notify("bot_force_check_switch");
 		wait( 1 );
 
 		if ( !IsDefined( chopper ) )
@@ -1327,7 +1277,7 @@ bot_chopper_attack(chopper)
 /*
 	Bot logic for targeting equipment.
 */
-bot_kill_equipment()
+bot_equipment_kill_think()
 {
 	self endon( "death" );
 	self endon( "disconnect" );
@@ -1337,6 +1287,9 @@ bot_kill_equipment()
 		wait( RandomIntRange( 1, 3 ) );
 		
 		if(self HasScriptEnemy())
+			continue;
+
+		if(self.pers["bots"]["skill"]["base"] <= 1)
 			continue;
 		
 		grenades = GetEntArray( "grenade", "classname" );
@@ -1402,453 +1355,4 @@ bot_equipment_attack(equ)
 			return;
 		}
 	}
-}
-
-/*
-	Bot logic for when in domination, bots will hang around the only enemy flag and spawn kill.
-*/
-bot_dom_spawn_kill_think()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-
-	if ( level.gametype != "dom" )
-		return;
-
-	myTeam = self.pers[ "team" ];		
-	otherTeam = getOtherTeam( myTeam );
-
-	for ( ;; )
-	{
-		wait( randomintrange( 10, 20 ) );
-		
-		if ( randomint( 100 ) < 20 )
-			continue;
-		
-		if ( self HasScriptGoal() )
-			continue;
-		
-		if ( self.bot_lock_goal )
-		{
-			continue;
-		}
-		
-		myFlagCount = maps\mp\gametypes\dom::getTeamFlagCount( myTeam );
-
-		if ( myFlagCount == level.flags.size )
-			continue;
-
-		otherFlagCount = maps\mp\gametypes\dom::getTeamFlagCount( otherTeam );
-		
-		if (myFlagCount <= otherFlagCount || otherFlagCount != 1)
-			continue;
-		
-		flag = undefined;
-		for ( i = 0; i < level.flags.size; i++ )
-		{
-			if ( level.flags[i] maps\mp\gametypes\dom::getFlagTeam() == myTeam )
-				continue;
-		}
-		
-		if(!isDefined(flag))
-			continue;
-		
-		if(DistanceSquared(self.origin, flag.origin) < 2048*2048)
-			continue;
-
-		self SetScriptGoal( flag.origin, 1024 );
-		
-		self thread bot_dom_watch_flags(myFlagCount, myTeam);
-
-		self waittill_any( "goal", "bad_path" );
-		
-		self ClearScriptGoal();
-	}
-}
-
-/*
-	Waits until the flag count is changed.
-*/
-bot_dom_watch_flags(count, myTeam)
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	self endon( "goal" );
-	self endon( "bad_path" );
-	
-	while(maps\mp\gametypes\dom::getTeamFlagCount( myTeam ) == count)
-		wait 0.5;
-	
-	self notify("bad_path");
-}
-
-/*
-	Bot logic for going to a flag they own if its under capture.
-*/
-bot_dom_def_think()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-
-	if ( level.gametype != "dom" )
-		return;
-
-	myTeam = self.pers[ "team" ];
-
-	for ( ;; )
-	{
-		wait( randomintrange( 1, 3 ) );
-		
-		if ( randomint( 100 ) < 35 )
-			continue;
-		
-		if ( self HasScriptGoal() )
-			continue;
-		
-		if ( self.bot_lock_goal )
-		{
-			continue;
-		}
-		
-		flag = undefined;
-		for ( i = 0; i < level.flags.size; i++ )
-		{
-			if ( level.flags[i] maps\mp\gametypes\dom::getFlagTeam() != myTeam )
-				continue;
-			
-			if ( !level.flags[i].useObj.objPoints[myTeam].isFlashing )
-				continue;
-			
-			if ( !isDefined(flag) || DistanceSquared(self.origin,level.flags[i].origin) < DistanceSquared(self.origin,flag.origin) )
-				flag = level.flags[i];
-		}
-		
-		if ( !isDefined(flag) )
-			continue;
-
-		self SetScriptGoal( flag.origin, 128 );
-		
-		if(DistanceSquared(flag.origin, self.origin) > 128*128)
-		{
-			self thread bot_dom_watch_for_flashing(flag, myTeam);
-
-			self waittill_any( "goal", "bad_path" );
-		}
-		
-		self ClearScriptGoal();
-	}
-}
-
-/*
-	Waits while the flag is under attack and still owns it.
-*/
-bot_dom_watch_for_flashing(flag, myTeam)
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	self endon( "goal" );
-	self endon( "bad_path" );
-	
-	while(flag maps\mp\gametypes\dom::getFlagTeam() == myTeam && flag.useObj.objPoints[myTeam].isFlashing)
-		wait 0.5;
-	
-	self notify("bad_path");
-}
-
-/*
-	Bot logic for capture flags in domination.
-*/
-bot_dom_cap_think()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	
-	if ( level.gametype != "dom" )
-		return;
-
-	myTeam = self.pers[ "team" ];		
-	otherTeam = getOtherTeam( myTeam );
-
-	for ( ;; )
-	{
-		wait( randomintrange( 3, 12 ) );
-		
-		if ( self.bot_lock_goal )
-		{
-			continue;
-		}
-
-		if ( !isDefined(level.flags) || level.flags.size == 0 )
-			continue;
-
-		myFlagCount = maps\mp\gametypes\dom::getTeamFlagCount( myTeam );
-
-		if ( myFlagCount == level.flags.size )
-			continue;
-
-		otherFlagCount = maps\mp\gametypes\dom::getTeamFlagCount( otherTeam );
-
-		if ( myFlagCount < otherFlagCount )
-		{
-			if ( randomint( 100 ) < 15 )
-				continue;
-		}
-		else if ( myFlagCount == otherFlagCount )
-		{
-			if ( randomint( 100 ) < 35 )
-				continue;	
-		}
-		else if ( myFlagCount > otherFlagCount )
-		{
-			if ( randomint( 100 ) < 95 )
-				continue;
-		}
-
-		flag = undefined;
-		for ( i = 0; i < level.flags.size; i++ )
-		{
-			if ( level.flags[i] maps\mp\gametypes\dom::getFlagTeam() == myTeam )
-				continue;
-
-			if ( !isDefined(flag) || DistanceSquared(self.origin,level.flags[i].origin) < DistanceSquared(self.origin,flag.origin) )
-				flag = level.flags[i];
-		}
-
-		if ( !isDefined(flag) )
-			continue;
-		
-		self.bot_lock_goal = true;
-		
-		self notify("bot_check_unreachable");
-		self notify("bad_path");//force play obj
-
-		wait 0.05;//bad_path can call ClearScriptGoal
-		
-		self SetScriptGoal( flag.origin, 64 );
-		
-		if(!self isTouching(flag))
-		{
-			self thread bot_dom_go_cap_flag(flag, myteam);
-		
-			event = self waittill_any_return( "goal", "bad_path" );
-			
-			self ClearScriptGoal();
-
-			if (event == "bad_path")
-			{
-				self.bot_lock_goal = false;
-				continue;
-			}
-		}
-		
-		self SetScriptGoal( self.origin, 64 );
-
-		while ( flag maps\mp\gametypes\dom::getFlagTeam() != myTeam && self isTouching(flag) )
-		{
-			cur = flag.useObj.curProgress;
-			wait 0.5;
-			
-			if(flag.useObj.curProgress == cur)
-				break;//some enemy is near us, kill him
-		}
-
-		self ClearScriptGoal();
-		
-		self.bot_lock_goal = false;
-	}
-}
-
-/*
-	Waits while the doesn't own the flag and is not touching the trigger for capture.
-*/
-bot_dom_go_cap_flag(flag, myteam)
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	self endon( "goal" );
-	self endon( "bad_path" );
-	
-	while(flag maps\mp\gametypes\dom::getFlagTeam() != myTeam && !self isTouching(flag))
-		wait 0.5;
-	
-	if(flag maps\mp\gametypes\dom::getFlagTeam() == myTeam)
-		self notify("bad_path");
-	else
-		self notify("goal");
-}
-
-/*
-	Bot logic for playing headquarters.
-*/
-bot_hq()
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-
-	if ( level.gametype != "koth" )
-		return;
-
-	myTeam = self.pers[ "team" ];
-	otherTeam = getOtherTeam( myTeam );
-
-	for ( ;; )
-	{
-		wait( randomintrange( 3, 5 ) );
-		
-		if ( self.bot_lock_goal )
-		{
-			continue;
-		}
-		
-		if(!isDefined(level.radio))
-			continue;
-		
-		if(!isDefined(level.radio.gameobject))
-			continue;
-		
-		radio = level.radio;
-		gameobj = radio.gameobject;
-		origin = ( radio.origin[0], radio.origin[1], radio.origin[2]+5 );
-		
-		//if neut or enemy
-		if(gameobj.ownerTeam != myTeam)
-		{
-			if(gameobj.interactTeam == "none")//wait for it to become active
-			{
-				if(self HasScriptGoal())
-					continue;
-			
-				if(DistanceSquared(origin, self.origin) <= 1024*1024)
-					continue;
-				
-				self SetScriptGoal( origin, 256 );
-				
-				if(DistanceSquared(origin, self.origin) > 256*256)
-				{
-					self waittill_any( "goal", "bad_path" );
-				}
-				
-				self ClearScriptGoal();
-				continue;
-			}
-			
-			//capture it
-			
-			self.bot_lock_goal = true;
-			
-			self notify("bot_check_unreachable");
-			self notify("bad_path");
-			
-			wait 0.05;
-			if(!self isTouching(gameobj.trigger) && level.radio == radio)
-			{
-				self SetScriptGoal( origin, 64 );
-				
-				self thread bot_hq_go_cap(gameobj, radio);
-			
-				event = self waittill_any_return( "goal", "bad_path" );
-
-				self ClearScriptGoal();
-				
-				if (event == "bad_path")
-				{
-					self.bot_lock_goal = false;
-					continue;
-				}
-			}
-			
-			if(!self isTouching(gameobj.trigger) || level.radio != radio)
-			{
-				self.bot_lock_goal = false;
-				continue;
-			}
-			
-			self SetScriptGoal( self.origin, 64 );
-			
-			while(self isTouching(gameobj.trigger) && gameobj.ownerTeam != myTeam && level.radio == radio)
-			{
-				cur = gameobj.curProgress;
-				wait 0.5;
-				
-				if(cur == gameobj.curProgress)
-					break;//no prog made, enemy must be capping
-			}
-			
-			self ClearScriptGoal();
-			self.bot_lock_goal = false;
-		}
-		else//we own it
-		{
-			if(gameobj.objPoints[myteam].isFlashing)//underattack
-			{
-				self.bot_lock_goal = true;
-			
-				self notify("bot_check_unreachable");
-				self notify("bad_path");
-				
-				wait 0.05;
-				self SetScriptGoal( origin, 64 );
-				
-				self thread bot_hq_watch_flashing(gameobj, radio);
-				
-				self waittill_any( "goal", "bad_path" );
-				
-				self ClearScriptGoal();
-				self.bot_lock_goal = false;
-				continue;
-			}
-			
-			if(self HasScriptGoal())
-				continue;
-		
-			if(DistanceSquared(origin, self.origin) <= 1024*1024)
-				continue;
-			
-			self SetScriptGoal( origin, 256 );
-			
-			if(DistanceSquared(origin, self.origin) > 256*256)
-			{
-				self waittill_any( "goal", "bad_path" );
-			}
-			
-			self ClearScriptGoal();
-		}
-	}
-}
-
-/*
-	Waits until not touching the trigger and it is the current radio.
-*/
-bot_hq_go_cap(obj, radio)
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	self endon( "goal" );
-	self endon( "bad_path" );
-	
-	while(!self isTouching(obj.trigger) && level.radio == radio)
-		wait randomintrange(2,4);
-	
-	if(level.radio != radio)
-		self notify("bad_path");
-	else
-		self notify("goal");
-}
-
-/*
-	Waits while the radio is under attack.
-*/
-bot_hq_watch_flashing(obj, radio)
-{
-	self endon( "death" );
-	self endon( "disconnect" );
-	self endon( "goal" );
-	self endon( "bad_path" );
-	
-	myteam = self.team;
-	
-	while(isDefined(obj) && obj.objPoints[myteam].isFlashing && level.radio == radio)
-		wait 0.5;
-	
-	self notify("bad_path");
 }
