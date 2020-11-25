@@ -1191,7 +1191,7 @@ bot_use_bomb(bomb)
 	
 	myteam = self.team;
 	
-	self BotStopMoving(true);
+	self BotFreezeControls(true);
 	
 	bomb [[bomb.onBeginUse]](self);
 	
@@ -1206,7 +1206,7 @@ bot_use_bomb(bomb)
 	if (isDefined(self))
 	{
 		self.claimTrigger = undefined;
-		self BotStopMoving(false);
+		self BotFreezeControls(false);
 	}
 
 	bomb [[bomb.onEndUse]](myteam, self, (result == "bot_try_use_success"));
@@ -3037,7 +3037,7 @@ bot_sab()
 					if(self HasScriptGoal())
 						continue;
 					
-					if(carrier hasPerk( "specialty_coldblooded" ))
+					if(carrier hasPerk( "specialty_gpsjammer" ))
 						continue;
 					
 					origin = carrier.origin;
