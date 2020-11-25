@@ -1,6 +1,3 @@
-_script:
-redo goal (use mw2s)
-
 _utility:
 http
 
