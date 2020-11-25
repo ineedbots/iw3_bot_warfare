@@ -726,7 +726,7 @@ chopperWatch()
 
 		chopper = level.chopper;
 
-		if (!isEntity(chopper))
+		if (false && !isEntity(chopper))
 		{
 			chopper = level.chopper["allies"];
 			if (!isDefined(chopper))

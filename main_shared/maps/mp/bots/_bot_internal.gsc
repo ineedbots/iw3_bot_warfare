@@ -129,6 +129,7 @@ resetBotVars()
 	self.bot.astar = [];
 	self.bot.stop_move = false;
 	self.bot.greedy_path = false;
+	self.bot.climbing = false;
 	
 	self.bot.isfrozen = false;
 	self.bot.sprintendtime = -1;
@@ -341,6 +342,8 @@ stance()
 	for(;;)
 	{
 		self waittill_either("finished_static_waypoints", "new_static_waypoint");
+
+		self.bot.climbing = false;
 		
 		if(self.bot.isfrozen)
 			continue;
@@ -349,8 +352,14 @@ stance()
 		if(self.bot.next_wp != -1)
 			toStance = level.waypoints[self.bot.next_wp].type;
 
+		if (!isDefined(toStance))
+			toStance = "crouch";
+
 		if(toStance == "climb")
+		{
+			self.bot.climbing = true;
 			toStance = "stand";
+		}
 			
 		if(toStance != "stand" && toStance != "crouch" && toStance != "prone")
 			toStance = "crouch";
@@ -1101,7 +1110,8 @@ aim()
 		else
 		{
 			lookat = undefined;
-			if(self.bot.second_next_wp != -1 && !self.bot.issprinting)
+
+			if(self.bot.second_next_wp != -1 && !self.bot.issprinting && !self.bot.climbing)
 				lookat = level.waypoints[self.bot.second_next_wp].origin;
 			else if(isDefined(self.bot.towards_goal))
 				lookat = self.bot.towards_goal;
@@ -1522,6 +1532,8 @@ movetowards(goal)
 				
 				randomDir = self getRandomLargestStafe(stucks);
 			
+				self knife(); // knife glass
+				wait 0.25;
 				self botMoveTo(randomDir);
 				wait stucks;
 			}
