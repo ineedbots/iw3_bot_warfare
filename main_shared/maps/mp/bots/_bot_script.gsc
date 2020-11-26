@@ -538,7 +538,17 @@ set_class(rankxp)
 		if(perk2 != "specialty_twoprimaries")
 			secondary = get_random_weapon(secondaryGroups, rank);
 		else
-			secondary = get_random_weapon(primaryGroups, rank);
+		{
+			secondary = "";
+
+			while(secondary == "")
+			{
+				secondary = get_random_weapon(primaryGroups, rank);
+
+				if (primary == secondary)
+					secondary = "";
+			}
+		}
 		att2 = get_random_attachment(secondary, rank);
 		perk1 = get_random_perk("perk1", rank, att1, att2);
 		
