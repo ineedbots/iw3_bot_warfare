@@ -402,6 +402,9 @@ getValidGrenade()
 			
 		possibles[possibles.size] = grenadeTypes[i];
 	}
+
+	if (!possibles.size)
+		return undefined;
 	
 	return random(possibles);
 }
