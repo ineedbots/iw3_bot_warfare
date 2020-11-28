@@ -452,9 +452,6 @@ watch_grenade(grenade)
 		
 		if(self.bot.isfraggingafter || self.bot.issmokingafter)
 			continue;
-
-		if (self.disabledWeapon)
-			continue;
 		
 		self thread frag();
 	}
