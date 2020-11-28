@@ -622,6 +622,9 @@ target()
 		rememberTime = self.pers["bots"]["skill"]["remember_time"];
 		initReactTime = self.pers["bots"]["skill"]["init_react_time"];
 		hasTarget = isDefined(self.bot.target);
+
+		// reduce fov if ads'ing
+		myFov *= 1 - 0.5 * self PlayerADS();
 		
 		if(hasTarget && !isDefined(self.bot.target.entity))
 		{
