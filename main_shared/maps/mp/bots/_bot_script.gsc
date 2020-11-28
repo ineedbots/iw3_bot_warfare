@@ -2067,7 +2067,7 @@ bot_weapon_think()
 			}
 		}
 		
-		if(curWeap != "none" && self getAmmoCount(curWeap))
+		if(curWeap != "none" && self getAmmoCount(curWeap) && curWeap != "c4_mp")
 		{
 			if(randomInt(100) > self.pers["bots"]["behavior"]["switch"])
 				continue;
