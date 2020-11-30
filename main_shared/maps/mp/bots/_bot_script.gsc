@@ -2144,7 +2144,7 @@ bot_killstreak_think()
 			case "helicopter_mp":
 				chopper = level.chopper;
 
-				if (isDefined(chopper) && !isEntity(chopper))
+				if (isDefined(chopper) && level.teamBased && getDvarInt("doubleHeli"))
 					chopper = level.chopper[self.team];
 
 				if (isDefined(chopper))
@@ -2306,7 +2306,7 @@ bot_target_vehicle()
 
 		chopper = level.chopper;
 
-		if(isDefined(chopper) && !isEntity(chopper))
+		if(isDefined(chopper) && level.teamBased && getDvarInt("doubleHeli"))
 		{
 			chopper = level.chopper[ level.otherTeam[self.team] ];
 		}

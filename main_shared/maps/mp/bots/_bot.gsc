@@ -726,7 +726,7 @@ chopperWatch()
 
 		chopper = level.chopper;
 
-		if (!isEntity(chopper))
+		if (level.teamBased && getDvarInt("doubleHeli"))
 		{
 			chopper = level.chopper["allies"];
 			if (!isDefined(chopper))
