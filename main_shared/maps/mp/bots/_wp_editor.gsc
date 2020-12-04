@@ -8,48 +8,48 @@ init()
 		setDvar("bots_main_debug", 0);
 
 	if(!getDVarint("bots_main_debug"))
-    return;
+		return;
 
-  if(!getDVarint("developer"))
-  {
-    setdvar("developer_script", 1);
-    setdvar("developer", 1);
-    
-    setdvar("sv_mapRotation", "map "+getDvar("mapname"));
-    exitLevel(false);
-  }
+	if(!getDVarint("developer"))
+	{
+		setdvar("developer_script", 1);
+		setdvar("developer", 1);
+
+		setdvar("sv_mapRotation", "map "+getDvar("mapname"));
+		exitLevel(false);
+	}
 
 	setDvar("bots_main", 0);
 	setdvar("bots_main_menu", 0);
-  setdvar("bots_manage_fill_mode", 0);
-  setdvar("bots_manage_fill", 0);
-  setdvar("bots_manage_add", 0);
-  setdvar("bots_manage_fill_kick", 1);
+	setdvar("bots_manage_fill_mode", 0);
+	setdvar("bots_manage_fill", 0);
+	setdvar("bots_manage_add", 0);
+	setdvar("bots_manage_fill_kick", 1);
 	setDvar("bots_manage_fill_spec", 1);
-  
-  if (getDvar("bots_main_debug_distance") == "")
-    setDvar("bots_main_debug_distance", 512.0);
 
-  if (getDvar("bots_main_debug_cone") == "")
-    setDvar("bots_main_debug_cone", 0.65);
+	if (getDvar("bots_main_debug_distance") == "")
+		setDvar("bots_main_debug_distance", 512.0);
 
-  if (getDvar("bots_main_debug_minDist") == "")
-    setDvar("bots_main_debug_minDist", 32.0);
+	if (getDvar("bots_main_debug_cone") == "")
+		setDvar("bots_main_debug_cone", 0.65);
 
-  if (getDvar("bots_main_debug_drawThrough") == "")
-    setDvar("bots_main_debug_drawThrough", false);
+	if (getDvar("bots_main_debug_minDist") == "")
+		setDvar("bots_main_debug_minDist", 32.0);
 
-  if(getDvar("bots_main_debug_commandWait") == "")
+	if (getDvar("bots_main_debug_drawThrough") == "")
+		setDvar("bots_main_debug_drawThrough", false);
+
+	if(getDvar("bots_main_debug_commandWait") == "")
 		setDvar("bots_main_debug_commandWait", 0.5);
 
 	setDvar("player_sustainAmmo", 1);
 
-  level.waypoints = [];
+	level.waypoints = [];
 	level.waypointCount = 0;
-  
-  level waittill( "connected", player);
-  
-  player thread onPlayerSpawned();
+
+	level waittill( "connected", player);
+
+	player thread onPlayerSpawned();
 }
 
 onPlayerSpawned()
@@ -76,7 +76,7 @@ beginDebug()
 	self takeAllWeapons();
 	self.specialty = [];
 	self giveWeapon("m16_gl_mp");
-  self SetActionSlot( 3, "altMode" );
+	self SetActionSlot( 3, "altMode" );
 	self giveWeapon("frag_grenade_mp");
 	self freezecontrols(false);
 	
@@ -112,14 +112,14 @@ debug()
 		
 		closest = -1;
 		myEye = self getTagOrigin( "j_head" );
-    myAngles = self GetPlayerAngles();
+		myAngles = self GetPlayerAngles();
 		
 		for(i = 0; i < level.waypointCount; i++)
 		{
 			if(closest == -1 || closer(self.origin, level.waypoints[i].origin, level.waypoints[closest].origin))
 				closest = i;
 
-      wpOrg = level.waypoints[i].origin + (0, 0, 25);
+			wpOrg = level.waypoints[i].origin + (0, 0, 25);
 			
 			if(distance(level.waypoints[i].origin, self.origin) < getDvarFloat("bots_main_debug_distance") && (bulletTracePassed(myEye, wpOrg, false, self) || getDVarint("bots_main_debug_drawThrough")))
 			{
@@ -129,7 +129,7 @@ debug()
 				if(getConeDot(wpOrg, myEye, myAngles) > getDvarFloat("bots_main_debug_cone"))
 					print3d(wpOrg, i, (1,0,0), 2);
 
-        if (isDefined(level.waypoints[i].angles) && level.waypoints[i].type != "stand")
+				if (isDefined(level.waypoints[i].angles) && level.waypoints[i].type != "stand")
 					line(wpOrg, wpOrg + AnglesToForward(level.waypoints[i].angles) * 64, (1,1,1));
 			}
 		}
@@ -277,32 +277,32 @@ watchSaveWaypointsCommand()
 			}
 			logprint("*/return waypoints;\n}\n\n\n\n");
 
-      PrintLn(level.waypointCount);
-      for(i = 0; i < level.waypointCount; i++)
-      {
-        str = "";
-        wp = level.waypoints[i];
+			PrintLn(level.waypointCount);
+			for(i = 0; i < level.waypointCount; i++)
+			{
+				str = "";
+				wp = level.waypoints[i];
 
-        str += wp.origin[0] + " " + wp.origin[1] + " " + wp.origin[2] + ",";
+				str += wp.origin[0] + " " + wp.origin[1] + " " + wp.origin[2] + ",";
 
-        for(h = 0; h < wp.childCount; h++)
-        {
-          str += wp.children[h];
+				for(h = 0; h < wp.childCount; h++)
+				{
+					str += wp.children[h];
 
-          if (h < wp.childCount - 1)
-            str += " ";
-        }
-        str += "," + wp.type + ",";
+					if (h < wp.childCount - 1)
+						str += " ";
+				}
+				str += "," + wp.type + ",";
 
-        if (isDefined(wp.angles))
-          str += wp.angles[0] + " " + wp.angles[1] + " " + wp.angles[2] + ",";
-        else
-          str += ",";
+				if (isDefined(wp.angles))
+					str += wp.angles[0] + " " + wp.angles[1] + " " + wp.angles[2] + ",";
+				else
+					str += ",";
 
-        str += ",";
+				str += ",";
 
-        PrintLn(str);
-      }
+				PrintLn(str);
+			}
 
 			self iprintln("Saved!!!");
 		}
@@ -312,13 +312,13 @@ watchSaveWaypointsCommand()
 			{
 				self iPrintlnBold("Auto link disabled");
 				level.autoLink = false;
-        level.wpToLink = -1;
+				level.wpToLink = -1;
 			}
 			else
 			{
 				self iPrintlnBold("Auto link enabled");
 				level.autoLink = true;
-        level.wpToLink = self.nearest;
+				level.wpToLink = self.nearest;
 			}
 		}
 		
@@ -567,20 +567,20 @@ textScroll(string)
 	self endon("disconnect");
 	//thanks ActionScript
 	
-  back = createBar((0,0,0), 1000, 30);
-  back setPoint("CENTER", undefined, 0, 220);
+	back = createBar((0,0,0), 1000, 30);
+	back setPoint("CENTER", undefined, 0, 220);
 	self thread destroyOnDeath(back);
-	
-  text = createFontString("default", 1.5);
-  text setText(string);
+
+	text = createFontString("default", 1.5);
+	text setText(string);
 	self thread destroyOnDeath(text);
-	
-  for (;;)
-  {
-    text setPoint("CENTER", undefined, 1200, 220);
-    text setPoint("CENTER", undefined, -1200, 220, 20);
-    wait 20;
-  }
+
+	for (;;)
+	{
+		text setPoint("CENTER", undefined, 1200, 220);
+		text setPoint("CENTER", undefined, -1200, 220, 20);
+		wait 20;
+	}
 }
 
 waittill_either(not, not1)
