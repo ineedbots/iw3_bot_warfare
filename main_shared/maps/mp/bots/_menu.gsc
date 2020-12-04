@@ -5,37 +5,34 @@
 
 init()
 {
-  if (getDvar("bots_main_fun") == "")
-    setDvar("bots_main_fun", false);
+	if (getDvar("bots_main_menu") == "")
+		setDvar("bots_main_menu", true);
 
-  if (getDvar("bots_main_menu") == "")
-    setDvar("bots_main_menu", true);
-  
-  thread watchPlayers();
+	if (!getDvarInt("bots_main_menu"))
+		return;
+
+	thread watchPlayers();
 }
 
 watchPlayers()
 {
-  for (;;)
-  {
-    wait 1;
+	for (;;)
+	{
+		wait 1;
 
-    for (i = level.players.size - 1; i >= 0; i--)
-    {
-      player = level.players[i];
+		for (i = level.players.size - 1; i >= 0; i--)
+		{
+			player = level.players[i];
 
-      if (!getDvarInt("bots_main_menu"))
-        continue;
+			if (!player is_host())
+				continue;
 
-      if (!player is_host())
-        continue;
+			if (isDefined(player.menuInit) && player.menuInit)
+				continue;
 
-      if (isDefined(player.menuInit) && player.menuInit)
-        continue;
-
-      player thread init_menu();
-    }
-  }
+			player thread init_menu();
+		}
+	}
 }
 
 init_menu()
@@ -60,8 +57,8 @@ init_menu()
 
 kill_menu()
 {
-  self notify("bots_kill_menu");
-  self.menuInit = undefined;
+	self notify("bots_kill_menu");
+	self.menuInit = undefined;
 }
 
 watchDisconnect()
@@ -88,6 +85,9 @@ watchDisconnect()
 			if(isDefined(self.Menu["X"]["Scroller"]))
 				self.Menu["X"]["Scroller"] destroy();
 		}
+
+		if (isDefined(self.menuVersionHud))
+			self.menuVersionHud destroy();
 	}
 }
 
@@ -98,8 +98,7 @@ doGreetings()
 	wait 1;
 	self iPrintln("Welcome to Bot Warfare "+self.name+"!");
 	wait 5;
-	if(getDvarInt("bots_main_menu"))
-		self iPrintln("Press [{+frag}] + [{+smoke}] to open menu!");
+	self iPrintln("Press [{+frag}] + [{+smoke}] to open menu!");
 }
 
 watchPlayerOpenMenu()
@@ -114,11 +113,8 @@ watchPlayerOpenMenu()
 		
 		if(!self.menuOpen)
 		{
-			if(getdvarint("bots_main_menu"))
-			{
-				self playLocalSound( "mouse_click" );
-				self thread OpenSub(self.SubMenu);
-			}
+			self playLocalSound( "mouse_click" );
+			self thread OpenSub(self.SubMenu);
 		}
 		else
 		{
@@ -128,7 +124,7 @@ watchPlayerOpenMenu()
 			else
 			{
 				self ExitMenu();
-				if((level.inPrematchPeriod || level.gameEnded) && !getDvarInt("bots_main_fun"))
+				if(level.inPrematchPeriod || level.gameEnded)
 					self freezeControls(true);
 				else
 					self freezecontrols(false);
@@ -150,7 +146,7 @@ MenuSelect()
 		while(!self MeleeButtonPressed())
 			wait 0.05;
 		
-		if(self.MenuOpen && getdvarint("bots_main_menu"))
+		if(self.MenuOpen)
 		{
 			self playLocalSound( "mouse_click" );
 			if(self.SubMenu == "Main")
@@ -268,6 +264,9 @@ OpenSub(menu, menu2)
 			if(isDefined(self.Menu["X"]["Scroller"]))
 				self.Menu["X"]["Scroller"] destroy();
 		}
+
+		if (isDefined(self.menuVersionHud))
+			self.menuVersionHud destroy();
 		
 		for(i=0 ; i < self.Option["Name"][self.SubMenu].size ; i++)
 		{
@@ -295,6 +294,9 @@ OpenSub(menu, menu2)
 		self.Menu["X"]["Scroller"] = self createRectangle("CENTER","CENTER", self.MenuText[self.Curs["Main"]["X"]].x,-225,105,22, (1,0,0), -1, 1,"white");
 		
 		self CursMove("X");
+
+		self.menuVersionHud = initHudElem("Bot Warfare " + level.bw_VERSION, 0, 0);
+		
 		self.MenuOpen = true;
 	}
 	else
@@ -379,9 +381,9 @@ ShowOptionOn(variable)
 	self endon("exit");
 	self endon("bots_kill_menu");
 	
-	for(;;)
+	for(time=0;;time+=0.05)
 	{
-		if(!getDvarInt("bots_main_fun") && !self isOnGround() && !level.inPrematchPeriod && !level.gameEnded)
+		if(!self isOnGround() && isAlive(self) && !level.inPrematchPeriod && !level.gameEnded)
 			self freezecontrols(false);
 		else
 			self freezecontrols(true);
@@ -395,7 +397,11 @@ ShowOptionOn(variable)
 			if(isDefined(self.Curs[self.SubMenu][variable]) && isDefined(self.MenuText) && isDefined(self.MenuText[self.Curs[self.SubMenu][variable]]))
 			{
 				self.MenuText[self.Curs[self.SubMenu][variable]].fontscale = 2.0;
-				self.MenuText[self.Curs[self.SubMenu][variable]].color = (randomInt(256)/255, randomInt(256)/255, randomInt(256)/255);
+				//self.MenuText[self.Curs[self.SubMenu][variable]].color = (randomInt(256)/255, randomInt(256)/255, randomInt(256)/255);
+				color = (6/255,69/255,173+randomIntRange(-5,5)/255);
+				if (int(time * 4) % 2)
+					color = (11/255,0/255,128+randomIntRange(-10,10)/255);
+				self.MenuText[self.Curs[self.SubMenu][variable]].color = color;
 			}
 			
 			if(isDefined(self.MenuText))
@@ -412,7 +418,11 @@ ShowOptionOn(variable)
 			if(isDefined(self.Curs[self.SubMenu][variable]) && isDefined(self.MenuTextY) && isDefined(self.MenuTextY[self.Curs[self.SubMenu][variable]]))
 			{
 				self.MenuTextY[self.Curs[self.SubMenu][variable]].fontscale = 2.0;
-				self.MenuTextY[self.Curs[self.SubMenu][variable]].color = (randomInt(256)/255, randomInt(256)/255, randomInt(256)/255);
+				//self.MenuTextY[self.Curs[self.SubMenu][variable]].color = (randomInt(256)/255, randomInt(256)/255, randomInt(256)/255);
+				color = (6/255,69/255,173+randomIntRange(-5,5)/255);
+				if (int(time * 4) % 2)
+					color = (11/255,0/255,128+randomIntRange(-10,10)/255);
+				self.MenuTextY[self.Curs[self.SubMenu][variable]].color = color;
 			}
 			
 			if(isDefined(self.MenuTextY))
@@ -472,12 +482,37 @@ ExitMenu()
 		if(isDefined(self.Menu["X"]["Scroller"]))
 			self.Menu["X"]["Scroller"] destroy();
 	}
+
+	if (isDefined(self.menuVersionHud))
+		self.menuVersionHud destroy();
 	
 	self.MenuOpen = false;
 	self notify("exit");
 	
 	self setClientDvar( "r_blur", "0" );
 	self setClientDvar( "sc_blur", "2" );
+}
+
+initHudElem(txt, xl, yl)
+{
+	hud = NewClientHudElem( self );
+	hud setText(txt);
+	hud.alignX = "center";
+	hud.alignY = "bottom";
+	hud.horzAlign = "center";
+	hud.vertAlign = "bottom";
+	hud.x = xl;
+	hud.y = yl;
+	hud.foreground = true;
+	hud.fontScale = 1;
+	hud.font = "objective";
+	hud.alpha = 1;
+	hud.glow = 0;
+	hud.glowColor = ( 0, 0, 0 );
+	hud.glowAlpha = 1;
+	hud.color = ( 1.0, 1.0, 1.0 );
+	
+	return hud;
 }
 
 createRectangle(align,relative,x,y,width,height,color,sort,alpha,shader)
@@ -503,13 +538,4 @@ createRectangle(align,relative,x,y,width,height,color,sort,alpha,shader)
 
 AddOptions()
 {
-	self AddMenu("Main", 0, "test", ::OpenSub, "test", "");
-	self AddBack("test", "Main");
-	
-	self AddMenu("test", 0, "test", ::test, "test", "test");
-}
-
-test(a, b)
-{
-  self iprintln(a + b);
 }
