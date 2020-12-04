@@ -1,8 +1,5 @@
 _utility:
 http
 
-_menu:
-dvars
-
 _other:
 documentation and tutorials
