@@ -681,7 +681,7 @@ target()
 			{
 				player = level.players[i];
 				
-				if(!isDefined(player.bot_model_fix))
+				if(!self IsPlayerModelOK())
 					continue;
 				if(player == self)
 					continue;

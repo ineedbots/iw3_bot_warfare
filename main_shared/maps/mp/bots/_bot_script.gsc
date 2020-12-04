@@ -138,7 +138,7 @@ bot_cry_for_help( attacker )
 		if(!isDefined(player.team))
 			continue;
 
-		if(!isDefined(player.bot_model_fix))
+		if(!self IsPlayerModelOK())
 			continue;
 
 		if ( !IsAlive( player ) )
@@ -1454,7 +1454,7 @@ bot_think_follow()
 		{
 			player = level.players[i];
 
-			if(!isDefined(player.bot_model_fix))
+			if(!self IsPlayerModelOK())
 				continue;
 
 			if (player == self)
@@ -1968,7 +1968,7 @@ bot_listen_to_steps()
 		{
 			player = level.players[i];
 			
-			if(!isDefined(player.bot_model_fix))
+			if(!self IsPlayerModelOK())
 				continue;
 			
 			if(player == self)
@@ -2170,7 +2170,7 @@ bot_killstreak_think()
 				{
 					player = level.players[i];
 
-					if(!isDefined(player.bot_model_fix))
+					if(!self IsPlayerModelOK())
 						continue;
 				
 					if(player == self)
@@ -2251,7 +2251,7 @@ bot_uav_think()
 		{
 			player = level.players[i];
 
-			if(!isDefined(player.bot_model_fix))
+			if(!self IsPlayerModelOK())
 				continue;
 			
 			if(player == self)

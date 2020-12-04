@@ -162,6 +162,14 @@ IsBotKnifing()
 }
 
 /*
+	If the model of the player is good
+*/
+IsPlayerModelOK()
+{
+	return (isDefined(self.bot_model_fix));
+}
+
+/*
 	Freezes the bot's controls.
 */
 BotFreezeControls(what)
