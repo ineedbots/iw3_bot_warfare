@@ -681,7 +681,7 @@ target()
 			{
 				player = level.players[i];
 				
-				if(!self IsPlayerModelOK())
+				if(!player IsPlayerModelOK())
 					continue;
 				if(player == self)
 					continue;
