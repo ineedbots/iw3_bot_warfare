@@ -487,6 +487,9 @@ reload_thread()
 		return;
 		
 	cur = self getCurrentWEapon();
+
+	if (cur == "" || cur == "none")
+		return;
 	
 	if(IsWeaponClipOnly(cur) || !self GetWeaponAmmoStock(cur))
 		return;
