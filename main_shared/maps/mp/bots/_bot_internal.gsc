@@ -978,7 +978,7 @@ aim()
 				
 				if(self.bot.isfraggingafter || self.bot.issmokingafter)
 					nadeAimOffset = dist/3000;
-				else if(weaponClass(curweap) == "grenade")
+				else if(curweap != "none" && weaponClass(curweap) == "grenade")
 					nadeAimOffset = dist/16000;
 				
 				if(no_trace_time && (!isDefined(self.bot.after_target) || self.bot.after_target != target))
@@ -1079,7 +1079,7 @@ aim()
 
 			if(self.bot.isfraggingafter || self.bot.issmokingafter)
 				nadeAimOffset = dist/3000;
-			else if(weaponClass(curweap) == "grenade")
+			else if(curweap != "none" && weaponClass(curweap) == "grenade")
 				nadeAimOffset = dist/16000;
 
 			aimpos = last_pos + (0, 0, self getEyeHeight() + nadeAimOffset);
@@ -1174,6 +1174,9 @@ canFire(curweap)
 */
 canAds(dist, curweap)
 {
+	if(curweap == "none")
+		return false;
+
 	far = level.bots_noADSDistance;
 	if(self hasPerk("specialty_bulletaccuracy"))
 		far *= 1.4;
@@ -1193,6 +1196,9 @@ canAds(dist, curweap)
 */
 isInRange(dist, curweap)
 {
+	if(curweap == "none")
+		return false;
+
 	weapclass = weaponClass(curweap);
 	
 	if(weapclass == "spread" && dist > level.bots_maxShotgunDistance)
