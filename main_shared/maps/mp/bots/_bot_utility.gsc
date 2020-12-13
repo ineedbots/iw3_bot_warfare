@@ -55,11 +55,7 @@ doHostCheck()
 */
 is_bot()
 {
-#if isSyscallDefined isBot
-	return self isBot();
-#else
-	return ((isDefined(self.pers["isBot"]) && self.pers["isBot"]) || (isDefined(self.pers["isBotWarfare"]) && self.pers["isBotWarfare"]) || self getguid()+"" == "0");
-#endif
+	return self.isbot;
 }
 
 /*
