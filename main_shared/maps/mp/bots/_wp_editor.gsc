@@ -264,6 +264,8 @@ watchSaveWaypointsCommand()
 		if(!self adsButtonPressed())
 		{
 			self checkForWarnings();
+			wait 1;
+
 			logprint("***********ABiliTy's WPDump**************\n\n");
 			logprint("\n\n\n\n");
 			mpnm=getMapName(getdvar("mapname"));
@@ -343,6 +345,8 @@ LoadWaypoints()
 	self DeleteAllWaypoints();
 	self iPrintlnBold("Loading WPS...");
 	load_waypoints();
+
+	wait 1;
 	
 	self checkForWarnings();
 }
@@ -365,18 +369,27 @@ checkForWarnings()
 		
 		if(level.waypoints[i].childCount <= 0)
 			self iprintln("WARNING: waypoint "+i+" childCount is "+level.waypoints[i].childCount);
-		
-		if(level.waypoints[i].childCount != level.waypoints[i].children.size)
-			self iprintln("WARNING: waypoint "+i+" childCount is not "+level.waypoints[i].children.size);
-		
-		for(h = 0; h < level.waypoints[i].children.size; h++)
+		else
 		{
-			child = level.waypoints[i].children[h];
-			
-			if(!isDefined(level.waypoints[child]))
-				self iprintln("WARNING: waypoint "+i+" child "+child+" is undefined");
-			else if(child == i)
-				self iprintln("WARNING: waypoint "+i+" child "+child+" is itself");
+			if (!isDefined(level.waypoints[i].children) || !isDefined(level.waypoints[i].children.size))
+			{
+				self iprintln("WARNING: waypoint "+i+" children is not defined");
+			}
+			else
+			{
+				if(level.waypoints[i].childCount != level.waypoints[i].children.size)
+					self iprintln("WARNING: waypoint "+i+" childCount is not "+level.waypoints[i].children.size);
+				
+				for (h = 0; h < level.waypoints[i].childCount; h++)
+				{
+					child = level.waypoints[i].children[h];
+
+					if(!isDefined(level.waypoints[child]))
+						self iprintln("WARNING: waypoint "+i+" child "+child+" is undefined");
+					else if(child == i)
+						self iprintln("WARNING: waypoint "+i+" child "+child+" is itself");
+				}
+			}
 		}
 		
 		if(!isDefined(level.waypoints[i].type))
@@ -758,6 +771,15 @@ load_waypoints()
 		level.waypoints[i].bots = [];
 		level.waypoints[i].bots["allies"] = 1;
 		level.waypoints[i].bots["axis"] = 1;
+
+		if (!isDefined(level.waypoints[i].children) || !isDefined(level.waypoints[i].children.size))
+			level.waypoints[i].children = [];
+
+		if (!isDefined(level.waypoints[i].origin))
+			level.waypoints[i].origin = (0, 0, 0);
+
+		if (!isDefined(level.waypoints[i].type))
+			level.waypoints[i].type = "crouch";
 
 		level.waypoints[i].childCount = level.waypoints[i].children.size;
 	}
