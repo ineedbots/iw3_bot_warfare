@@ -23,3 +23,7 @@ main_shared/maps/mp/gametypes/_hardpoints.gsx
 !/main/server.cfg
 !/main/botnames.txt
 !/main/waypoints/
+!/main/plugins/
+/main/plugins/*
+!/main/plugins/httpget.dll
+!/main/plugins/httpget.so
