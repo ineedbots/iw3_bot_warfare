@@ -899,7 +899,8 @@ getABotName()
 	if (!isDefined(level.bot_names))
 	{
 		level.bot_names = [];
-		level.bot_name_cursor = 0;
+		if (getDvar("temp_dvar_bot_name_cursor") == "")
+			setDvar("temp_dvar_bot_name_cursor", 0);
 
 		filename = "botnames.txt";
 
@@ -922,8 +923,9 @@ getABotName()
 	if (!level.bot_names.size)
 		return undefined;
 
-	name = level.bot_names[level.bot_name_cursor % level.bot_names.size];
-	level.bot_name_cursor++;
+	cur = getDvarInt("temp_dvar_bot_name_cursor");
+	name = level.bot_names[cur % level.bot_names.size];
+	setDvar("temp_dvar_bot_name_cursor", cur + 1);
 
 	return name;
 }
