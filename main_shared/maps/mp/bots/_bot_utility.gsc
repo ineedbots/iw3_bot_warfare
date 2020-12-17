@@ -952,6 +952,9 @@ readWpsFromFile(mapname)
 		for (i = 1; i <= waypointCount; i++)
 		{
 			line = FS_ReadLine(csv);
+			if (!isDefined(line) || line == "")
+				continue;
+
 			tokens = tokenizeLine(line, ",");
 
 			waypoint = parseTokensIntoWaypoint(tokens);
