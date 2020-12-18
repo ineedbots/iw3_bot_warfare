@@ -15,7 +15,7 @@ getRemoteWaypoints(mapname)
   url = "https://raw.githubusercontent.com/ineedbots/cod4x_waypoints/master/" + mapname + "_wp.csv";
 	filename = "waypoints/" + mapname + "_wp.csv";
 
-  println("Attempting to get remote waypoints from " + url);
+  printToConsole("Attempting to get remote waypoints from " + url);
   res = getLinesFromUrl(url, filename);
 
   if (!res.lines.size)
@@ -24,7 +24,7 @@ getRemoteWaypoints(mapname)
   waypointCount = int(res.lines[0]);
 
 	waypoints = [];
-  println("Loading remote waypoints...");
+  printToConsole("Loading remote waypoints...");
 
 	for (i = 1; i <= waypointCount; i++)
   {
@@ -38,7 +38,7 @@ getRemoteWaypoints(mapname)
   if (waypoints.size)
   {
     level.waypoints = waypoints;
-    println("Loaded " + waypoints.size + " waypoints from remote.");
+    printToConsole("Loaded " + waypoints.size + " waypoints from remote.");
   }
 }
 
@@ -51,18 +51,18 @@ doVersionCheck()
 
 	if (!isDefined(remoteVersion))
 	{
-		println("Error getting remote version of Bot Warfare.");
+		printToConsole("Error getting remote version of Bot Warfare.");
 		return false;
 	}
 
 	if (level.bw_VERSION != remoteVersion)
 	{
-		println("There is a new version of Bot Warfare!");
-		println("You are on version " + level.bw_VERSION + " but " + remoteVersion + " is available!");
+		printToConsole("There is a new version of Bot Warfare!");
+		printToConsole("You are on version " + level.bw_VERSION + " but " + remoteVersion + " is available!");
 		return false;
 	}
 
-	println("You are on the latest version of Bot Warfare!");
+	printToConsole("You are on the latest version of Bot Warfare!");
 	return true;
 }
 

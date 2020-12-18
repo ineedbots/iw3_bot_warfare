@@ -931,6 +931,18 @@ getABotName()
 }
 
 /*
+	Prints to the console
+*/
+printToConsole(str)
+{
+#if isSyscallDefined PrintConsole
+	PrintConsole( str + "\n" );
+#else
+	println(str);
+#endif
+}
+
+/*
 	Read from file a csv, and returns an array of waypoints
 */
 readWpsFromFile(mapname)
@@ -941,7 +953,7 @@ readWpsFromFile(mapname)
 	if (!FS_TestFile(filename))
 		return waypoints;
 
-	println("Attempting to read waypoints from " + filename);
+	printToConsole("Attempting to read waypoints from " + filename);
 
 	csv = FS_FOpen(filename, "read");
 
@@ -986,7 +998,7 @@ load_waypoints()
 	if (wps.size)
 	{
 		level.waypoints = wps;
-		println("Loaded " + wps.size + " waypoints from file.");
+		printToConsole("Loaded " + wps.size + " waypoints from file.");
 	}
 	else
 	{
@@ -1061,7 +1073,7 @@ load_waypoints()
 		}
 
 		if (level.waypoints.size)
-			println("Loaded " + level.waypoints.size + " waypoints from script.");
+			printToConsole("Loaded " + level.waypoints.size + " waypoints from script.");
 	}
 
 	if (!level.waypoints.size)
