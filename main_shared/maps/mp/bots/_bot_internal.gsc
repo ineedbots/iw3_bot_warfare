@@ -14,34 +14,35 @@ added()
 	self.pers["bots"] = [];
 	
 	self.pers["bots"]["skill"] = [];
-	self.pers["bots"]["skill"]["base"] = 7;
-	self.pers["bots"]["skill"]["aim_time"] = 0.05;
-	self.pers["bots"]["skill"]["init_react_time"] = 0;
-	self.pers["bots"]["skill"]["reaction_time"] = 0;
-	self.pers["bots"]["skill"]["no_trace_ads_time"] = 2500;
-	self.pers["bots"]["skill"]["no_trace_look_time"] = 10000;
-	self.pers["bots"]["skill"]["remember_time"] = 25000;
-	self.pers["bots"]["skill"]["fov"] = -1;
-	self.pers["bots"]["skill"]["dist"] = 100000;
-	self.pers["bots"]["skill"]["spawn_time"] = 0;
-	self.pers["bots"]["skill"]["help_dist"] = 10000;
-	self.pers["bots"]["skill"]["semi_time"] = 0.05;
-	self.pers["bots"]["skill"]["shoot_after_time"] = 1;
-	self.pers["bots"]["skill"]["aim_offset_time"] = 1;
-	self.pers["bots"]["skill"]["aim_offset_amount"] = 1;
-	self.pers["bots"]["skill"]["bone_update_interval"] = 0.05;
-	self.pers["bots"]["skill"]["bones"] = "j_head";
+	self.pers["bots"]["skill"]["base"] = 7; // a base knownledge of the bot
+	self.pers["bots"]["skill"]["aim_time"] = 0.05; // how long it takes for a bot to aim to a location
+	self.pers["bots"]["skill"]["init_react_time"] = 0; // the reaction time of the bot for inital targets
+	self.pers["bots"]["skill"]["reaction_time"] = 0; // reaction time for the bots of reoccuring targets
+	self.pers["bots"]["skill"]["no_trace_ads_time"] = 2500; // how long a bot ads's when they cant see the target
+	self.pers["bots"]["skill"]["no_trace_look_time"] = 10000; // how long a bot will look at a target's last position
+	self.pers["bots"]["skill"]["remember_time"] = 25000; // how long a bot will remember a target before forgetting about it when they cant see the target
+	self.pers["bots"]["skill"]["fov"] = -1; // the fov of the bot, -1 being 360, 1 being 0
+	self.pers["bots"]["skill"]["dist_max"] = 100000 * 2; // the longest distance a bot will target
+	self.pers["bots"]["skill"]["dist_start"] = 100000; // the start distance before bot's target abilitys diminish 
+	self.pers["bots"]["skill"]["spawn_time"] = 0; // how long a bot waits after spawning before targeting, etc
+	self.pers["bots"]["skill"]["help_dist"] = 10000; // how far a bot has awareness
+	self.pers["bots"]["skill"]["semi_time"] = 0.05; // how fast a bot shoots semiauto
+	self.pers["bots"]["skill"]["shoot_after_time"] = 1; // how long a bot shoots after target dies/cant be seen
+	self.pers["bots"]["skill"]["aim_offset_time"] = 1; // how long a bot correct's their aim after targeting
+	self.pers["bots"]["skill"]["aim_offset_amount"] = 1; // how far a bot's incorrect aim is
+	self.pers["bots"]["skill"]["bone_update_interval"] = 0.05; // how often a bot changes their bone target
+	self.pers["bots"]["skill"]["bones"] = "j_head"; // a list of comma seperated bones the bot will aim at
 	
 	self.pers["bots"]["behavior"] = [];
-	self.pers["bots"]["behavior"]["strafe"] = 50;
-	self.pers["bots"]["behavior"]["nade"] = 50;
-	self.pers["bots"]["behavior"]["sprint"] = 50;
-	self.pers["bots"]["behavior"]["camp"] = 50;
-	self.pers["bots"]["behavior"]["follow"] = 50;
-	self.pers["bots"]["behavior"]["crouch"] = 10;
-	self.pers["bots"]["behavior"]["switch"] = 1;
-	self.pers["bots"]["behavior"]["class"] = 1;
-	self.pers["bots"]["behavior"]["jump"] = 100;
+	self.pers["bots"]["behavior"]["strafe"] = 50; // percentage of how often the bot strafes a target
+	self.pers["bots"]["behavior"]["nade"] = 50; // percentage of how often the bot will grenade
+	self.pers["bots"]["behavior"]["sprint"] = 50; // percentage of how often the bot will sprint
+	self.pers["bots"]["behavior"]["camp"] = 50; // percentage of how often the bot will camp
+	self.pers["bots"]["behavior"]["follow"] = 50; // percentage of how often the bot will follow
+	self.pers["bots"]["behavior"]["crouch"] = 10; // percentage of how often the bot will crouch
+	self.pers["bots"]["behavior"]["switch"] = 1; // percentage of how often the bot will switch weapons
+	self.pers["bots"]["behavior"]["class"] = 1; // percentage of how often the bot will change classes
+	self.pers["bots"]["behavior"]["jump"] = 100; // percentage of how often the bot will jumpshot and dropshot
 }
 
 /*
@@ -578,10 +579,25 @@ updateAimOffset(obj)
 /*
 	Updates the target object to be traced Has LOS
 */
-targetObjUpdateTraced(obj, daDist, ent, theTime)
+targetObjUpdateTraced(obj, daDist, ent, theTime, isScriptObj)
 {
+	distClose = self.pers["bots"]["skill"]["dist_start"];
+	distClose *= distClose;
+
+	distMax = self.pers["bots"]["skill"]["dist_max"];
+	distMax *= distMax;
+
+	timeMulti = 1;
+	if (!isScriptObj)
+	{
+		if (daDist > distMax)
+			timeMulti = 0;
+		else if (daDist > distClose)
+			timeMulti = 1 - ((daDist - distClose) / (distMax - distClose));
+	}
+
 	obj.no_trace_time = 0;
-	obj.trace_time += 50;
+	obj.trace_time += int(50 * timeMulti);
 	obj.dist = daDist;
 	obj.last_seen_pos = ent.origin;
 	obj.trace_time_time = theTime;
@@ -617,8 +633,6 @@ target()
 		myEye = self GetEyePos();
 		theTime = getTime();
 		myAngles = self GetPlayerAngles();
-		distsq = self.pers["bots"]["skill"]["dist"];
-		distsq *= distsq;
 		myFov = self.pers["bots"]["skill"]["fov"];
 		bestTargets = [];
 		bestTime = 9999999999;
@@ -664,7 +678,7 @@ target()
 						self.bot.targets[key] = obj;
 					}
 					
-					self targetObjUpdateTraced(obj, daDist, ent, theTime);
+					self targetObjUpdateTraced(obj, daDist, ent, theTime, true);
 				}
 				else
 				{
@@ -693,7 +707,7 @@ target()
 				obj = self.bot.targets[key];
 				daDist = distanceSquared(self.origin, player.origin);
 				isObjDef = isDefined(obj);
-				if((level.teamBased && self.team == player.team) || player.sessionstate != "playing" || !isAlive(player) || daDist > distsq)
+				if((level.teamBased && self.team == player.team) || player.sessionstate != "playing" || !isAlive(player))
 				{
 					if(isObjDef)
 						self.bot.targets[key] = undefined;
@@ -731,7 +745,7 @@ target()
 						self.bot.targets[key] = obj;
 					}
 					
-					self targetObjUpdateTraced(obj, daDist, player, theTime);
+					self targetObjUpdateTraced(obj, daDist, player, theTime, false);
 				}
 				else
 				{
@@ -1537,7 +1551,7 @@ movetowards(goal)
 	{
 		self botMoveTo(goal);
 		
-		if(time > 2.5)
+		if(time > 3)
 		{
 			time = 0;
 			if(distanceSquared(self.origin, lastOri) < 128)
@@ -1556,8 +1570,6 @@ movetowards(goal)
 		}
 		else if(timeslow > 1.5)
 		{
-			self stand();
-			wait 1;
 			self thread jump();
 		}
 		else if(timeslow > 0.75)
