@@ -12,6 +12,8 @@ added()
 	
 	rankxp = self bot_get_rank();
 	self setStat( int(tableLookup( "mp/playerStatsTable.csv", 1, "rankxp", 0 )), rankxp );
+
+	self setStat( int(tableLookup( "mp/playerStatsTable.csv", 1, "plevel", 0 )), self bot_get_prestige() );
 	
 	self set_diff();
 	
@@ -756,6 +758,42 @@ get_random_weapon(groups, rank)
 			
 		return ref;
 	}
+}
+
+/*
+	Gets the prestige
+*/
+bot_get_prestige()
+{
+	p_dvar = getDvarInt("bots_loadout_prestige");
+	p = 0;
+
+	if (p_dvar == -1)
+	{
+		for (i = 0; i < level.players.size; i++)
+		{
+			player = level.players[i];
+
+			if (!isDefined(player.team))
+				continue;
+
+			if (player is_bot())
+				continue;
+
+			p = player getStat( int(tableLookup( "mp/playerStatsTable.csv", 1, "plevel", 0 )) );
+			break;
+		}
+	}
+	else if (p_dvar == -2)
+	{
+		p = randomInt(12);
+	}
+	else
+	{
+		p = p_dvar;
+	}
+
+	return p;
 }
 
 /*
