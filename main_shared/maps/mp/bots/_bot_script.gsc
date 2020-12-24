@@ -2013,9 +2013,6 @@ bot_listen_to_steps()
 	for(;;)
 	{
 		wait 1;
-		
-		if(self HasScriptGoal() || self.bot_lock_goal)
-			continue;
 			
 		if(self.pers["bots"]["skill"]["base"] < 3)
 			continue;
@@ -2063,6 +2060,9 @@ bot_listen_to_steps()
 			self setAttacker(heard);
 			continue;
 		}
+
+		if(self HasScriptGoal() || self.bot_lock_goal)
+			continue;
 		
 		self SetScriptGoal( heard.origin, 64 );
 

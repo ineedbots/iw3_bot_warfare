@@ -111,7 +111,6 @@ init()
 	level.bots_maxShotgunDistance = 500;
 	level.bots_maxShotgunDistance *= level.bots_maxShotgunDistance;
 	level.bots_listenDist = 100;
-	level.bots_listenDist *= level.bots_listenDist;
 	
 	level.smokeRadius = 255;
 
