@@ -2,12 +2,13 @@
 	_wp_editor
 	Author: INeedGames
 	Date: 09/26/2020
-	The ingame waypoint editor. Designed to be ran on the client (not the server)
+	The ingame waypoint editor.
 */
 
 #include common_scripts\utility;
 #include maps\mp\_utility;
 #include maps\mp\gametypes\_hud_util;
+#include maps\mp\bots\_bot_utility;
 
 init()
 {
@@ -48,6 +49,18 @@ init()
 
 	if(getDvar("bots_main_debug_commandWait") == "")
 		setDvar("bots_main_debug_commandWait", 0.5);
+
+	if(getDvar("bots_main_debug_framerate") == "")
+		setDvar("bots_main_debug_framerate", 58);
+
+	if(getDvar("bots_main_debug_lineDuration") == "")
+		setDvar("bots_main_debug_lineDuration", 3);
+
+	if(getDvar("bots_main_debug_printDuration") == "")
+		setDvar("bots_main_debug_printDuration", 3);
+
+	if(getDvar("bots_main_debug_debugRate") == "")
+		setDvar("bots_main_debug_debugRate", 0.5);
 
 	setDvar("player_sustainAmmo", 1);
 
@@ -109,10 +122,12 @@ debug()
 {
 	self endon("disconnect");
 	self endon("death");
+
+	self setClientDvar("com_maxfps", getDvarInt("bots_main_debug_framerate"));
 	
 	for(;;)
 	{
-		wait 0.05;
+		wait getDvarFloat("bots_main_debug_debugRate");
 		
 		if(isDefined(self.command))
 			continue;
@@ -131,13 +146,13 @@ debug()
 			if(distance(level.waypoints[i].origin, self.origin) < getDvarFloat("bots_main_debug_distance") && (bulletTracePassed(myEye, wpOrg, false, self) || getDVarint("bots_main_debug_drawThrough")))
 			{
 				for(h = 0; h < level.waypoints[i].childCount; h++)
-					line(wpOrg, level.waypoints[level.waypoints[i].children[h]].origin + (0, 0, 25), (1,0,1));
+					line(wpOrg, level.waypoints[level.waypoints[i].children[h]].origin + (0, 0, 25), (1,0,1), 1, 1, getDvarInt("bots_main_debug_lineDuration"));
 				
 				if(getConeDot(wpOrg, myEye, myAngles) > getDvarFloat("bots_main_debug_cone"))
-					print3d(wpOrg, i, (1,0,0), 2);
+					print3d(wpOrg, i, (1,0,0), 2, 1, 6);
 
 				if (isDefined(level.waypoints[i].angles) && level.waypoints[i].type != "stand")
-					line(wpOrg, wpOrg + AnglesToForward(level.waypoints[i].angles) * 64, (1,1,1));
+					line(wpOrg, wpOrg + AnglesToForward(level.waypoints[i].angles) * 64, (1,1,1), 1, 1, getDvarInt("bots_main_debug_lineDuration"));
 			}
 		}
 		
@@ -153,9 +168,9 @@ debug()
 				else
 					stringChildren = stringChildren + level.waypoints[closest].children[i];
 			}
-			print3d(level.waypoints[closest].origin + (0, 0, 35), stringChildren, (0,1,0), 2);
+			print3d(level.waypoints[closest].origin + (0, 0, 35), stringChildren, (0,1,0), 2, 1, getDvarInt("bots_main_debug_printDuration"));
 			
-			print3d(level.waypoints[closest].origin + (0, 0, 15), level.waypoints[closest].type, (0,1,0), 2);
+			print3d(level.waypoints[closest].origin + (0, 0, 15), level.waypoints[closest].type, (0,1,0), 2, 1, getDvarInt("bots_main_debug_printDuration"));
 		}
 	}
 }
@@ -285,9 +300,21 @@ watchSaveWaypointsCommand()
 					logprint("*/waypoints["+i+"].angles = "+level.waypoints[i].angles+";\n/*");
 			}
 			logprint("*/return waypoints;\n}\n\n\n\n");
+			
+			filename = "waypoints/" + getdvar("mapname") + "_wp.csv";
+			fd = FS_FOpen(filename, "write");
 
 			PrintLn("********* Start Bot Warfare WPDump *********");
 			PrintLn(level.waypointCount);
+
+			if (fd > 0)
+			{
+				if (!FS_WriteLine(fd, level.waypointCount+""))
+				{
+					FS_FClose(fd);
+					fd = 0;
+				}
+			}
 			for(i = 0; i < level.waypointCount; i++)
 			{
 				str = "";
@@ -312,10 +339,22 @@ watchSaveWaypointsCommand()
 				str += ",";
 
 				PrintLn(str);
+
+				if (fd > 0)
+				{
+					if (!FS_WriteLine(fd, str))
+					{
+						FS_FClose(fd);
+						fd = 0;
+					}
+				}
 			}
 			PrintLn("\n\n\n\n\n\n");
 
-			self iprintln("Saved!!!");
+			self iprintln("Saved!!! to " + filename);
+
+			if (fd > 0)
+				FS_FClose(fd);
 		}
 		else
 		{
@@ -602,185 +641,5 @@ textScroll(string)
 		text setPoint("CENTER", undefined, 1200, 220);
 		text setPoint("CENTER", undefined, -1200, 220, 20);
 		wait 20;
-	}
-}
-
-waittill_either(not, not1)
-{
-	self endon(not);
-	self waittill(not1);
-}
-
-array_remove( ents, remover )
-{
-	newents = [];
-	for(i = 0; i < ents.size; i++)
-	{
-		index = ents[i];
-		
-		if ( index != remover )
-			newents[ newents.size ] = index;
-	}
-
-	return newents;
-}
-
-getConeDot(to, from, dir)
-{
-    dirToTarget = VectorNormalize(to-from);
-    forward = AnglesToForward(dir);
-    return vectordot(dirToTarget, forward);
-}
-
-getMapName(map)
-{
-	switch(map)
-	{
-		case "mp_convoy":
-			return "Ambush";
-		case "mp_backlot":
-			return "Backlot";
-		case "mp_bloc":
-			return "Bloc";
-		case "mp_bog":
-			return "Bog";
-		case "mp_countdown":
-			return "Countdown";
-		case "mp_crash":
-			return "Crash";
-		case "mp_crash_snow":
-			return "Winter Crash";
-		case "mp_crossfire":
-			return "Crossfire";
-		case "mp_citystreets":
-			return "District";
-		case "mp_farm":
-			return "Downpour";
-		case "mp_overgrown":
-			return "Overgrown";
-		case "mp_pipeline":
-			return "Pipeline";
-		case "mp_shipment":
-			return "Shipment";
-		case "mp_showdown":
-			return "Showdown";
-		case "mp_strike":
-			return "Strike";
-		case "mp_vacant":
-			return "Vacant";
-		case "mp_cargoship":
-			return "Wetwork";
-		case "mp_broadcast":
-			return "Broadcast";
-		case "mp_creek":
-			return "Creek";
-		case "mp_carentan":
-			return "Chinatown";
-		case "mp_killhouse":
-			return "Killhouse";
-	}
-	
-	return map;
-}
-
-load_waypoints()
-{
-	mapname = getDvar("mapname");
-	
-	level.waypointCount = 0;
-	level.waypoints = [];
-	
-	switch(mapname)
-	{
-		case "mp_convoy":
-			level.waypoints = maps\mp\bots\waypoints\ambush::Ambush();
-		break;
-		case "mp_backlot":
-			level.waypoints = maps\mp\bots\waypoints\backlot::Backlot();
-		break;
-		case "mp_bloc":
-			level.waypoints = maps\mp\bots\waypoints\bloc::Bloc();
-		break;
-		case "mp_bog":
-			level.waypoints = maps\mp\bots\waypoints\bog::Bog();
-		break;
-		case "mp_countdown":
-			level.waypoints = maps\mp\bots\waypoints\countdown::Countdown();
-		break;
-		case "mp_crash":
-		case "mp_crash_snow":
-			level.waypoints = maps\mp\bots\waypoints\crash::Crash();
-		break;
-		case "mp_crossfire":
-			level.waypoints = maps\mp\bots\waypoints\crossfire::Crossfire();
-		break;
-		case "mp_citystreets":
-			level.waypoints = maps\mp\bots\waypoints\district::District();
-		break;
-		case "mp_farm":
-			level.waypoints = maps\mp\bots\waypoints\downpour::Downpour();
-		break;
-		case "mp_overgrown":
-			level.waypoints = maps\mp\bots\waypoints\overgrown::Overgrown();
-		break;
-		case "mp_pipeline":
-			level.waypoints = maps\mp\bots\waypoints\pipeline::Pipeline();
-		break;
-		case "mp_shipment":
-			level.waypoints = maps\mp\bots\waypoints\shipment::Shipment();
-		break;
-		case "mp_showdown":
-			level.waypoints = maps\mp\bots\waypoints\showdown::Showdown();
-		break;
-		case "mp_strike":
-			level.waypoints = maps\mp\bots\waypoints\strike::Strike();
-		break;
-		case "mp_vacant":
-			level.waypoints = maps\mp\bots\waypoints\vacant::Vacant();
-		break;
-		case "mp_cargoship":
-			level.waypoints = maps\mp\bots\waypoints\wetwork::Wetwork();
-		break;
-		
-		case "mp_broadcast":
-			level.waypoints = maps\mp\bots\waypoints\broadcast::Broadcast();
-		break;
-		case "mp_creek":
-			level.waypoints = maps\mp\bots\waypoints\creek::Creek();
-		break;
-		case "mp_carentan":
-			level.waypoints = maps\mp\bots\waypoints\chinatown::Chinatown();
-		break;
-		case "mp_killhouse":
-			level.waypoints = maps\mp\bots\waypoints\killhouse::Killhouse();
-		break;
-		
-		default:
-			maps\mp\bots\waypoints\_custom_map::main(mapname);
-		break;
-	}
-
-	if (level.waypoints.size)
-		println("Loaded " + level.waypoints.size + " waypoints from script.");
-
-	level.waypointCount = level.waypoints.size;
-	
-	for(i = 0; i < level.waypointCount; i++)
-	{
-		level.waypoints[i].index = i;
-		level.waypoints[i].bots = [];
-		level.waypoints[i].bots["allies"] = 1;
-		level.waypoints[i].bots["axis"] = 1;
-
-		if (!isDefined(level.waypoints[i].children) || !isDefined(level.waypoints[i].children.size))
-			level.waypoints[i].children = [];
-
-		if (!isDefined(level.waypoints[i].origin))
-			level.waypoints[i].origin = (0, 0, 0);
-
-		if (!isDefined(level.waypoints[i].type))
-			level.waypoints[i].type = "crouch";
-
-		level.waypoints[i].childCount = level.waypoints[i].children.size;
 	}
 }

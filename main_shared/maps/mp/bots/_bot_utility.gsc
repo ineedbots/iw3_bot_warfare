@@ -844,6 +844,46 @@ RoundUp( floatVal )
 }
 
 /*
+	Matches a num to a char
+*/
+keyCodeToString(a)
+{
+	b="";
+	switch(a)
+	{
+		case 0: b= "a"; break;
+		case 1: b= "b"; break;
+		case 2: b= "c"; break;
+		case 3: b= "d"; break;
+		case 4: b= "e"; break;
+		case 5: b= "f"; break;
+		case 6: b= "g"; break;
+		case 7: b= "h"; break;
+		case 8: b= "i"; break;
+		case 9: b= "j"; break;
+		case 10: b= "k"; break;
+		case 11: b= "l"; break;
+		case 12: b= "m"; break;
+		case 13: b= "n"; break;
+		case 14: b= "o"; break;
+		case 15: b= "p"; break;
+		case 16: b= "q"; break;
+		case 17: b= "r"; break;
+		case 18: b= "s"; break;
+		case 19: b= "t"; break;
+		case 20: b= "u"; break;
+		case 21: b= "v"; break;
+		case 22: b= "w"; break;
+		case 23: b= "x"; break;
+		case 24: b= "y"; break;
+		case 25: b= "z"; break;
+		case 26: b= "."; break;
+		case 27: b= " "; break;
+	}
+	return b;
+}
+
+/*
 	Creates indexers for the create a class objects.
 */
 cac_init_patch()
@@ -1312,6 +1352,14 @@ getMapName(map)
 	}
 	
 	return map;
+}
+
+/*
+	Does the extra check when adding bots
+*/
+doExtraCheck()
+{
+	maps\mp\bots\_bot_internal::checkTheBots();
 }
 
 /*

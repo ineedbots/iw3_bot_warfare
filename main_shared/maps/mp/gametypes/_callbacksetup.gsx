@@ -18,6 +18,7 @@ CodeCallback_StartGameType()
 		
 		level thread maps\mp\bots\_bot::init();
 		level thread maps\mp\bots\_menu::init();
+		level thread maps\mp\bots\_wp_editor::init();
 	}
 }
 
