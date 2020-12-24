@@ -7,6 +7,13 @@ It aims to add playable AI to the multiplayer games of CoD4.
 
 You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfare/downloads/cod4x-bot-warfare-latest) and the CoD4x.me post [here](https://cod4x.me/index.php?/forums/topic/3116-release-bot-warfare/).
 
+## <span style="color:red">Important to public dedicated servers</span>
+The ```bots_main_firstIsHost``` DVAR is enabled by default!
+
+This is so inexperienced users of the mod can access with menu without any configuration.
+
+Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in your server config!
+
 ## Contents
 - [Features](#Features)
 - [Installation](#Installation)
@@ -65,11 +72,11 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 ## Documentation
 
 ### Menu Usage
-You can open the menu by pressing the primary grenade and secondary grenade buttons together.
+- You can open the menu by pressing the primary grenade and secondary grenade buttons together.
 
-You can navigate the options by the pressing the ADS and fire keys, and you can select options by pressing your melee key.
+- You can navigate the options by the pressing the ADS and fire keys, and you can select options by pressing your melee key.
 
-Pressing the menu button again closes menus.
+- Pressing the menu button again closes menus.
 
 ### DVARs
 - bots_manage_add - an integer amount of bots to add to the game, resets to 0 once the bots have been added.
