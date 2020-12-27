@@ -1786,6 +1786,10 @@ bot_use_equipment_think()
 		if (self inLastStand())
 			continue;
 
+		curWeap = self GetCurrentWeapon();
+		if (curWeap == "none" || !isWeaponDroppable(curWeap))
+			curWeap = self.lastDroppableWeapon;
+
 		loc = undefined;
 
 		if (!self nearAnyOfWaypoints(128, level.waypointsClay))
@@ -1845,6 +1849,7 @@ bot_use_equipment_think()
 			self notify("stop_firing_weapon");
 		}
 
+		self thread changeToWeapon(curWeap);
 		self ClearScriptAimPos();
 		self BotStopMoving(false);
 	}
@@ -2201,7 +2206,7 @@ bot_killstreak_think()
 			continue;
 
 		curWeap = self GetCurrentWeapon();
-		if (curWeap == "none")
+		if (curWeap == "none" || !isWeaponDroppable(curWeap))
 			curWeap = self.lastDroppableWeapon;
 			
 		targetPos = undefined;
