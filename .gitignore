@@ -17,6 +17,8 @@
 main_shared/maps/mp/gametypes/_globallogic.gsx
 main_shared/maps/mp/gametypes/_hardpoints.gsx
 !/README.md
+*.zip
+!/out
 
 !/main/
 /main/*

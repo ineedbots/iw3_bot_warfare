@@ -1,0 +1,1 @@
+start "" "%~dp0iw3mp.exe" +connect 127.0.0.1:28965
