@@ -2466,6 +2466,9 @@ bot_equipment_kill_think()
 		{
 			item = grenades[i];
 
+			if (!isDefined(item))
+				continue;
+
 			if ( !IsDefined( item.name ) )
 			{
 				continue;
