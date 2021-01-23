@@ -1031,7 +1031,14 @@ aim()
 				{
 					if(isplay)
 					{
+						if (!target IsPlayerModelOK())
+							continue;
+
 						aimpos = target getTagOrigin( bone );
+
+						if (!isDefined(aimpos))
+							continue;
+
 						aimpos += offset;
 						aimpos += aimoffset;
 						aimpos += (0, 0, nadeAimOffset);
