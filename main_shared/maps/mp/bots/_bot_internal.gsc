@@ -1620,6 +1620,9 @@ movetowards(goal)
 	self notify("completed_move_to");
 }
 
+/*
+	Bots do the mantle
+*/
 doMantle()
 {
 	self endon("disconnect");
