@@ -260,7 +260,7 @@ difficulty()
 
 	for(;;)
 	{
-		wait 1;
+		wait 5;
 		
 		rankVar = GetDvarInt("bots_skill");
 		
@@ -287,6 +287,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 4;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 2;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_ankle_le,j_ankle_ri";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 0;
 				self.pers["bots"]["behavior"]["nade"] = 10;
@@ -316,6 +318,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 3;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 1.5;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_ankle_le,j_ankle_ri,j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 10;
 				self.pers["bots"]["behavior"]["nade"] = 15;
@@ -345,6 +349,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 2.5;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 1;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_spineupper,j_ankle_le,j_ankle_ri,j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 20;
 				self.pers["bots"]["behavior"]["nade"] = 20;
@@ -374,6 +380,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 2;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 0.75;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_spineupper,j_ankle_le,j_ankle_ri,j_head,j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 30;
 				self.pers["bots"]["behavior"]["nade"] = 25;
@@ -403,6 +411,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 1.5;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 0.5;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 40;
 				self.pers["bots"]["behavior"]["nade"] = 35;
@@ -432,6 +442,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 1;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 0.25;
 				self.pers["bots"]["skill"]["bones"] = "j_spineupper,j_head,j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 50;
 				self.pers["bots"]["behavior"]["nade"] = 45;
@@ -461,6 +473,8 @@ difficulty()
 				self.pers["bots"]["skill"]["aim_offset_amount"] = 0;
 				self.pers["bots"]["skill"]["bone_update_interval"] = 0.05;
 				self.pers["bots"]["skill"]["bones"] = "j_head";
+				self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5;
+				self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5;
 
 				self.pers["bots"]["behavior"]["strafe"] = 65;
 				self.pers["bots"]["behavior"]["nade"] = 65;
@@ -944,6 +958,7 @@ start_bot_threads()
 		self thread bot_use_tube_think();
 		self thread bot_use_grenade_think();
 		self thread bot_use_equipment_think();
+		self thread bot_watch_think_mw2();
 	}
 
 	// obj
@@ -2186,6 +2201,52 @@ bot_weapon_think()
 }
 
 /*
+	Bots play mw2
+*/
+bot_watch_think_mw2()
+{
+	self endon("disconnect");
+	self endon("death");
+	level endon("game_ended");
+
+	for (;;)
+	{
+		wait randomIntRange(1, 4);
+
+		if(self BotIsFrozen())
+			continue;
+			
+		if(self isDefusing() || self isPlanting())
+			continue;
+
+		if (self InLastStand())
+			continue;
+
+		if (self HasThreat())
+			continue;
+
+		tube = self getValidTube();
+		if (!isDefined(tube))
+		{
+			if (self GetAmmoCount("rpg_mp"))
+				tube = "rpg_mp";
+			else
+				continue;
+		}
+
+		if (self GetCurrentWeapon() == tube)
+			continue;
+
+		chance = self.pers["bots"]["behavior"]["nade"];
+
+		if (randomInt(100) > chance)
+			continue;
+
+		self ChangeToWeapon(tube);
+	}
+}
+
+/*
 	Bot logic for killstreaks.
 */
 bot_killstreak_think()
@@ -2290,8 +2351,12 @@ bot_killstreak_think()
 
 			if (isAirstrikePos && !isDefined( level.airstrikeInProgress ))
 			{
+				self BotFreezeControls(true);
+
 				self notify( "confirm_location", targetPos );
 				wait 1;
+
+				self BotFreezeControls(false);
 			}
 
 			self thread changeToWeapon(curWeap);

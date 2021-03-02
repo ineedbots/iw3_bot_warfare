@@ -32,6 +32,8 @@ added()
 	self.pers["bots"]["skill"]["aim_offset_amount"] = 1; // how far a bot's incorrect aim is
 	self.pers["bots"]["skill"]["bone_update_interval"] = 0.05; // how often a bot changes their bone target
 	self.pers["bots"]["skill"]["bones"] = "j_head"; // a list of comma seperated bones the bot will aim at
+	self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5; // a factor of how much ads to reduce when adsing
+	self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5; // a factor of how much more aimspeed delay to add
 	
 	self.pers["bots"]["behavior"] = [];
 	self.pers["bots"]["behavior"]["strafe"] = 50; // percentage of how often the bot strafes a target
@@ -664,9 +666,14 @@ target()
 		rememberTime = self.pers["bots"]["skill"]["remember_time"];
 		initReactTime = self.pers["bots"]["skill"]["init_react_time"];
 		hasTarget = isDefined(self.bot.target);
+		adsAmount = self PlayerADS();
+		adsFovFact = self.pers["bots"]["skill"]["ads_fov_multi"];
 
 		// reduce fov if ads'ing
-		myFov *= 1 - 0.5 * self PlayerADS();
+		if (adsAmount > 0)
+		{
+			myFov *= 1 - adsFovFact * adsAmount;
+		}
 		
 		if(hasTarget && !isDefined(self.bot.target.entity))
 		{
@@ -983,6 +990,14 @@ aim()
 		eyePos = self getEyePos();
 		curweap = self getCurrentWeapon();
 		angles = self GetPlayerAngles();
+		adsAmount = self PlayerADS();
+		adsAimSpeedFact = self.pers["bots"]["skill"]["ads_aimspeed_multi"];
+
+		// reduce aimspeed if ads'ing
+		if (adsAmount > 0)
+		{
+			aimspeed *= 1 + adsAimSpeedFact * adsAmount;
+		}
 		
 		if(isDefined(self.bot.target) && isDefined(self.bot.target.entity))
 		{
@@ -1099,13 +1114,13 @@ aim()
 					
 					//c4 logic here, but doesnt work anyway
 					
-					canADS = self canAds(dist, curweap);
+					canADS = (self canAds(dist, curweap) && conedot > 0.65);
 					if (canADS)
 						self thread pressADS();
 					
 					if (trace_time > reaction_time)
 					{
-						if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
+						if((!canADS || adsAmount >= 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
 							self botFire();
 
 						if (isplay)
@@ -1136,11 +1151,11 @@ aim()
 			if(!self canFire(curweap) || !self isInRange(dist, curweap))
 				continue;
 			
-			canADS = self canAds(dist, curweap);
+			canADS = (self canAds(dist, curweap) && conedot > 0.65);
 			if (canADS)
 				self thread pressADS();
 
-			if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
+			if((!canADS || adsAmount >= 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
 				self botFire();
 			
 			continue;
