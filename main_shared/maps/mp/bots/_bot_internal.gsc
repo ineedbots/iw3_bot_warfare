@@ -229,19 +229,48 @@ doBotMovement()
 	self endon("disconnect");
 	self endon("death");
 
-	for (;;)
+	FORWARDAMOUNT = 25;
+
+	for (i = 0;;i+=0.05)
 	{
 		wait 0.05;
 
 		angles = self GetPlayerAngles();
-		eye = self getEyePos();
 
+		// climb through windows
 		if (self isMantling())
 			self crouch();
 		
-		bt = bulletTrace(eye, eye + anglesToForward(angles) * 25, false, self);
-		if (bt["surfacetype"] == "glass")
-			self thread knife();
+		
+		startPos = self.origin + (0, 0, 50);
+		startPosForward = startPos + anglesToForward((0, angles[1], 0)) * FORWARDAMOUNT;
+		bt = bulletTrace(startPos, startPosForward, false, self);
+		if (bt["fraction"] >= 1)
+		{
+			// check if need to jump
+			bt = bulletTrace(startPosForward, startPosForward - (0, 0, 40), false, self);
+
+			if (bt["fraction"] < 1 && bt["normal"][2] > 0.75 && i > 1.5 && !self isOnLadder())
+			{
+				i = 0;
+				self thread jump();
+			}
+		}
+		// check if need to knife glass
+		else if (bt["surfacetype"] == "glass")
+		{
+			if (i > 1.5)
+			{
+				i = 0;
+				self thread knife();
+			}
+		}
+		else
+		{
+			// check if need to crouch
+			if (bulletTracePassed(startPos - (0, 0, 25), startPosForward - (0, 0, 25), false, self))
+				self crouch();
+		}
 	}
 }
 
@@ -1635,6 +1664,9 @@ movetowards(goal)
 			time = 0;
 			if(distanceSquared(self.origin, lastOri) < 128)
 			{
+				self thread knife();
+				wait 0.5;
+				
 				stucks++;
 				
 				randomDir = self getRandomLargestStafe(stucks);
