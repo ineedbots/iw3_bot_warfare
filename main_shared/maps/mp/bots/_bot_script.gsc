@@ -562,6 +562,11 @@ set_class(rankxp)
 	
 	rank = self maps\mp\gametypes\_rank::getRankForXp( rankxp ) + 1;
 
+	if (RandomFloatRange(0, 1) < ((rank / level.maxRank) + 0.1))
+	{
+		self.pers["bots"]["behavior"]["quickscope"] = true;
+	}
+
 	for(i=0; i < 5; i++)
 	{
 		primary = get_random_weapon(primaryGroups, rank);
