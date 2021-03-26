@@ -2167,7 +2167,7 @@ doReloadCancel()
 
 		curWeap = self GetCurrentWeapon();
 
-		if (!maps\mp\gametypes\_weapons::isSideArm( weapon ) && !maps\mp\gametypes\_weapons::isPrimaryWeapon( weapon ))
+		if (!maps\mp\gametypes\_weapons::isSideArm( curWeap ) && !maps\mp\gametypes\_weapons::isPrimaryWeapon( curWeap ))
 			continue;
 
 		if (ret == "reload")
