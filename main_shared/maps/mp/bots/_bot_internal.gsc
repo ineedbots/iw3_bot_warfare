@@ -47,6 +47,7 @@ added()
 	self.pers["bots"]["behavior"]["jump"] = 100; // percentage of how often the bot will jumpshot and dropshot
 
 	self.pers["bots"]["behavior"]["quickscope"] = false; // is a quickscoper
+	self.pers["bots"]["behavior"]["initswitch"] = 10; // percentage of how often the bot will switch weapons on spawn
 }
 
 /*
