@@ -368,7 +368,7 @@ watchSaveWaypointsCommand()
 			{
 				self iPrintlnBold("Auto link enabled");
 				level.autoLink = true;
-				level.wpToLink = self.nearest;
+				level.wpToLink = self.closest;
 			}
 		}
 		
