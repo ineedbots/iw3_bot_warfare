@@ -799,9 +799,9 @@ SmokeTrace(start, end, rad)
 */
 getConeDot(to, from, dir)
 {
-    dirToTarget = VectorNormalize(to-from);
-    forward = AnglesToForward(dir);
-    return vectordot(dirToTarget, forward);
+	dirToTarget = VectorNormalize(to-from);
+	forward = AnglesToForward(dir);
+	return vectordot(dirToTarget, forward);
 }
 
 /*
@@ -974,25 +974,25 @@ cac_init_patch()
 */
 tokenizeLine(line, tok)
 {
-  tokens = [];
+	tokens = [];
 
-  token = "";
-  for (i = 0; i < line.size; i++)
-  {
-    c = line[i];
+	token = "";
+	for (i = 0; i < line.size; i++)
+	{
+		c = line[i];
 
-    if (c == tok)
-    {
-      tokens[tokens.size] = token;
-      token = "";
-      continue;
-    }
+		if (c == tok)
+		{
+			tokens[tokens.size] = token;
+			token = "";
+			continue;
+		}
 
-    token += c;
-  }
-  tokens[tokens.size] = token;
+		token += c;
+	}
+	tokens[tokens.size] = token;
 
-  return tokens;
+	return tokens;
 }
 
 /*
@@ -1525,7 +1525,7 @@ KDTree()
 */
 KDTreeInsert(data)//as long as what you insert has a .origin attru, it will work.
 {
-	self.root = self _KDTreeInsert(self.root, data, 0, -9999999999, -9999999999, -9999999999, 9999999999, 9999999999, 9999999999);
+	self.root = self _KDTreeInsert(self.root, data, 0, -2147483647, -2147483647, -2147483647, 2147483647, 2147483647, 2147483647);
 }
 
 /*
@@ -1804,7 +1804,7 @@ ReverseHeapAStar(item, item2)
 GetNearestWaypointWithSight(pos)
 {
 	candidate = undefined;
-	dist = 9999999999;
+	dist = 2147483647;
 	
 	for(i = 0; i < level.waypointCount; i++)
 	{

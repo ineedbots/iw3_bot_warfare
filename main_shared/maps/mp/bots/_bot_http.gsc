@@ -12,34 +12,34 @@
 */
 getRemoteWaypoints(mapname)
 {
-  url = "https://raw.githubusercontent.com/ineedbots/cod4x_waypoints/master/" + mapname + "_wp.csv";
+	url = "https://raw.githubusercontent.com/ineedbots/cod4x_waypoints/master/" + mapname + "_wp.csv";
 	filename = "waypoints/" + mapname + "_wp.csv";
 
-  printToConsole("Attempting to get remote waypoints from " + url);
-  res = getLinesFromUrl(url, filename);
+	printToConsole("Attempting to get remote waypoints from " + url);
+	res = getLinesFromUrl(url, filename);
 
-  if (!res.lines.size)
-    return;
+	if (!res.lines.size)
+		return;
 
-  waypointCount = int(res.lines[0]);
+	waypointCount = int(res.lines[0]);
 
 	waypoints = [];
-  printToConsole("Loading remote waypoints...");
+	printToConsole("Loading remote waypoints...");
 
 	for (i = 1; i <= waypointCount; i++)
-  {
-    tokens = tokenizeLine(res.lines[i], ",");
-    
-    waypoint = parseTokensIntoWaypoint(tokens);
+	{
+		tokens = tokenizeLine(res.lines[i], ",");
+	
+		waypoint = parseTokensIntoWaypoint(tokens);
 
-    waypoints[i-1] = waypoint;
-  }
+		waypoints[i-1] = waypoint;
+	}
 
-  if (waypoints.size)
-  {
-    level.waypoints = waypoints;
-    printToConsole("Loaded " + waypoints.size + " waypoints from remote.");
-  }
+	if (waypoints.size)
+	{
+		level.waypoints = waypoints;
+		printToConsole("Loaded " + waypoints.size + " waypoints from remote.");
+	}
 }
 
 /*
@@ -88,13 +88,13 @@ getRemoteVersion()
 */
 getLinesFromUrl(url, filename)
 {
-  result = spawnStruct();
-  result.lines = [];
+	result = spawnStruct();
+	result.lines = [];
 
 #if isSyscallDefined HTTPS_GetString
-		data = HTTPS_GetString( url );
+	data = HTTPS_GetString( url );
 #else
-		data = undefined;
+	data = undefined;
 #endif
 
 	if (!isDefined(data))
@@ -126,7 +126,7 @@ getLinesFromUrl(url, filename)
 
 		line += c;
 	}
-  result.lines[result.lines.size] = line;
+	result.lines[result.lines.size] = line;
 
 	if (fd > 0)
 		FS_FClose(fd);

@@ -759,7 +759,7 @@ target()
 		myAngles = self GetPlayerAngles();
 		myFov = self.pers["bots"]["skill"]["fov"];
 		bestTargets = [];
-		bestTime = 9999999999;
+		bestTime = 2147483647;
 		rememberTime = self.pers["bots"]["skill"]["remember_time"];
 		initReactTime = self.pers["bots"]["skill"]["init_react_time"];
 		hasTarget = isDefined(self.bot.target);
@@ -911,7 +911,7 @@ target()
 		if(hasTarget && isDefined(bestTargets[self.bot.target.entity getEntityNumber()+""]))
 			continue;
 		
-		closest = 9999999999;
+		closest = 2147483647;
 		toBeTarget = undefined;
 		
 		bestKeys = getArrayKeys(bestTargets);
