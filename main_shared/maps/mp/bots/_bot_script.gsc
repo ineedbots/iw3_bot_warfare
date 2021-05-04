@@ -673,7 +673,6 @@ get_random_perk(perkslot, rank, att1, att2)
 			{
 				case "specialty_parabolic":
 				case "specialty_holdbreath":
-				case "specialty_weapon_c4":
 				case "specialty_explosivedamage":
 				case "specialty_twoprimaries":
 					continue;
@@ -1794,6 +1793,8 @@ bot_use_equipment_think()
 		nade = undefined;
 		if (self GetAmmoCount("claymore_mp"))
 			nade = "claymore_mp";
+		if (self GetAmmoCount("c4_mp"))
+			nade = "c4_mp";
 		
 		if (!isDefined(nade))
 			continue;
@@ -1871,7 +1872,8 @@ bot_use_equipment_think()
 
 		if (self changeToWeapon(nade))
 		{
-			self thread fire_current_weapon();
+			if (nade != "c4_mp")
+				self thread fire_current_weapon();
 			self waittill_any_timeout(5, "grenade_fire", "weapon_change");
 			self notify("stop_firing_weapon");
 		}
@@ -2256,7 +2258,7 @@ bot_weapon_think()
 		}
 		else
 		{
-			if(curWeap != "none" && self getAmmoCount(curWeap) && curWeap != "c4_mp")
+			if(curWeap != "none" && self getAmmoCount(curWeap))
 			{
 				if(randomInt(100) > self.pers["bots"]["behavior"]["switch"])
 					continue;
@@ -2282,7 +2284,7 @@ bot_weapon_think()
 			if (maps\mp\gametypes\_weapons::isGrenade( weapon ))
 				continue;
 				
-			if(curWeap == weapon || weapon == "c4_mp" || weapon == "none" || weapon == "claymore_mp" || weapon == "")//c4 no work
+			if(curWeap == weapon || weapon == "c4_mp" || weapon == "none" || weapon == "claymore_mp" || weapon == "")
 				continue;
 				
 			weap = weapon;

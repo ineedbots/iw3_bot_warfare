@@ -224,8 +224,67 @@ spawned()
 	self thread watchHoldBreath();
 	self thread onNewEnemy();
 	self thread doBotMovement();
+	self thread watchGrenadeFire();
 	
 	self notify("bot_spawned");
+}
+
+/*
+	Watches when the bot fires a grenade
+*/
+watchGrenadeFire()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill( "grenade_fire", nade, weapname );
+
+		if ( weapname == "c4_mp" )
+			self thread watchC4Thrown(nade);
+	}
+}
+
+/*
+	Watches the c4
+*/
+watchC4Thrown(c4)
+{
+	self endon("disconnect");
+	c4 endon("death");
+
+	wait 0.5;
+
+	for (;;)
+	{
+		wait 1 + randomInt(50) * 0.05;
+
+		shouldBreak = false;
+		for (i = 0; i < level.players.size; i++)
+		{
+			player = level.players[i];
+			
+			if(player == self)
+				continue;
+
+			if((level.teamBased && self.team == player.team) || player.sessionstate != "playing" || !isAlive(player))
+				continue;
+
+			if (distanceSquared(c4.origin, player.origin) > 200*200)
+				continue;
+
+			if (!bulletTracePassed(c4.origin, player.origin + (0, 0, 25), false, c4))
+				continue;
+
+			shouldBreak = true;
+		}
+
+		if (shouldBreak)
+			break;
+	}
+
+	self notify( "alt_detonate" );
 }
 
 /*
@@ -375,26 +434,25 @@ onWeaponChange()
 {
 	self endon("disconnect");
 	self endon("death");
-	
-	weap = self GetCurrentWeapon();
-	self.bot.is_cur_full_auto = WeaponIsFullAuto(weap);
-	self.bot.cur_weap_dist_multi = SetWeaponDistMulti(weap);
-	self.bot.is_cur_sniper = IsWeapSniper(weap);
-	if (weap != "none")
-		self changeToWeap(weap);
 
+	first = true;
 	for(;;)
 	{
-		self waittill( "weapon_change", newWeapon );
+		newWeapon = undefined;
+		if (first)
+		{
+			first = false;
+			newWeapon = self getCurrentWeapon();
+		}
+		else
+			self waittill( "weapon_change", newWeapon );
 		
 		self.bot.is_cur_full_auto = WeaponIsFullAuto(newWeapon);
-		self.bot.cur_weap_dist_multi = SetWeaponDistMulti(weap);
-		self.bot.is_cur_sniper = IsWeapSniper(weap);
+		self.bot.cur_weap_dist_multi = SetWeaponDistMulti(newWeapon);
+		self.bot.is_cur_sniper = IsWeapSniper(newWeapon);
 
 		if (newWeapon == "none")
-		{
 			continue;
-		}
 		
 		self changeToWeap(newWeapon);
 	}
@@ -1214,8 +1272,6 @@ aim()
 					
 					if(!self canFire(curweap) || !self isInRange(dist, curweap))
 						continue;
-					
-					//c4 logic here, but doesnt work anyway
 					
 					canADS = (self canAds(dist, curweap) && conedot > 0.75);
 					if (canADS)
