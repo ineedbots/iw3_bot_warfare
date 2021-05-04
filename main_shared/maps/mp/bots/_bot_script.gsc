@@ -1338,6 +1338,23 @@ fire_current_weapon()
 }
 
 /*
+	Fires the bots c4
+*/
+fire_c4()
+{
+	self endon("death");
+	self endon("disconnect");
+	self endon("weapon_change");
+	self endon("stop_firing_weapon");
+
+	for (;;)
+	{
+		self thread BotPressAds(0.05);
+		wait 0.1;
+	}
+}
+
+/*
 	Changes to the weap
 */
 changeToWeapon(weap)
@@ -1874,6 +1891,8 @@ bot_use_equipment_think()
 		{
 			if (nade != "c4_mp")
 				self thread fire_current_weapon();
+			else
+				self thread fire_c4();
 			self waittill_any_timeout(5, "grenade_fire", "weapon_change");
 			self notify("stop_firing_weapon");
 		}
