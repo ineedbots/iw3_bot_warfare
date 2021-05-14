@@ -284,7 +284,11 @@ watchC4Thrown(c4)
 			break;
 	}
 
-	self notify( "alt_detonate" );
+	weap = self getCurrentWeapon();
+	if ( weap != "c4_mp" )
+		self notify( "alt_detonate" );
+	else
+		self thread pressFire();
 }
 
 /*
