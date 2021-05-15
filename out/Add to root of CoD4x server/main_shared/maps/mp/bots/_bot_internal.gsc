@@ -32,6 +32,8 @@ added()
 	self.pers["bots"]["skill"]["aim_offset_amount"] = 1; // how far a bot's incorrect aim is
 	self.pers["bots"]["skill"]["bone_update_interval"] = 0.05; // how often a bot changes their bone target
 	self.pers["bots"]["skill"]["bones"] = "j_head"; // a list of comma seperated bones the bot will aim at
+	self.pers["bots"]["skill"]["ads_fov_multi"] = 0.5; // a factor of how much ads to reduce when adsing
+	self.pers["bots"]["skill"]["ads_aimspeed_multi"] = 0.5; // a factor of how much more aimspeed delay to add
 	
 	self.pers["bots"]["behavior"] = [];
 	self.pers["bots"]["behavior"]["strafe"] = 50; // percentage of how often the bot strafes a target
@@ -43,6 +45,9 @@ added()
 	self.pers["bots"]["behavior"]["switch"] = 1; // percentage of how often the bot will switch weapons
 	self.pers["bots"]["behavior"]["class"] = 1; // percentage of how often the bot will change classes
 	self.pers["bots"]["behavior"]["jump"] = 100; // percentage of how often the bot will jumpshot and dropshot
+
+	self.pers["bots"]["behavior"]["quickscope"] = false; // is a quickscoper
+	self.pers["bots"]["behavior"]["initswitch"] = 10; // percentage of how often the bot will switch weapons on spawn
 }
 
 /*
@@ -131,6 +136,8 @@ resetBotVars()
 	self.bot.stop_move = false;
 	self.bot.greedy_path = false;
 	self.bot.climbing = false;
+	self.bot.last_next_wp = -1;
+	self.bot.last_second_next_wp = -1;
 	
 	self.bot.isfrozen = false;
 	self.bot.sprintendtime = -1;
@@ -145,8 +152,11 @@ resetBotVars()
 	
 	self.bot.semi_time = false;
 	self.bot.jump_time = undefined;
+	self.bot.last_fire_time = -1;
 	
 	self.bot.is_cur_full_auto = false;
+	self.bot.cur_weap_dist_multi = 1;
+	self.bot.is_cur_sniper = false;
 	
 	self.bot.rand = randomInt(100);
 	
@@ -213,8 +223,160 @@ spawned()
 	self thread aim();
 	self thread watchHoldBreath();
 	self thread onNewEnemy();
+	self thread doBotMovement();
+	self thread watchGrenadeFire();
 	
 	self notify("bot_spawned");
+}
+
+/*
+	Watches when the bot fires a grenade
+*/
+watchGrenadeFire()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill( "grenade_fire", nade, weapname );
+
+		if ( weapname == "c4_mp" )
+			self thread watchC4Thrown(nade);
+	}
+}
+
+/*
+	Watches the c4
+*/
+watchC4Thrown(c4)
+{
+	self endon("disconnect");
+	c4 endon("death");
+
+	wait 0.5;
+
+	for (;;)
+	{
+		wait 1 + randomInt(50) * 0.05;
+
+		shouldBreak = false;
+		for (i = 0; i < level.players.size; i++)
+		{
+			player = level.players[i];
+			
+			if(player == self)
+				continue;
+
+			if((level.teamBased && self.team == player.team) || player.sessionstate != "playing" || !isAlive(player))
+				continue;
+
+			if (distanceSquared(c4.origin, player.origin) > 200*200)
+				continue;
+
+			if (!bulletTracePassed(c4.origin, player.origin + (0, 0, 25), false, c4))
+				continue;
+
+			shouldBreak = true;
+		}
+
+		if (shouldBreak)
+			break;
+	}
+
+	weap = self getCurrentWeapon();
+	if ( weap != "c4_mp" )
+		self notify( "alt_detonate" );
+	else
+		self thread pressFire();
+}
+
+/*
+	Bot moves towards the point
+*/
+doBotMovement()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	FORWARDAMOUNT = 25;
+
+	for (i = 0;;i+=0.05)
+	{
+		wait 0.05;
+
+		angles = self GetPlayerAngles();
+
+		// climb through windows
+		if (self isMantling())
+			self crouch();
+		
+		
+		startPos = self.origin + (0, 0, 50);
+		startPosForward = startPos + anglesToForward((0, angles[1], 0)) * FORWARDAMOUNT;
+		bt = bulletTrace(startPos, startPosForward, false, self);
+		if (bt["fraction"] >= 1)
+		{
+			// check if need to jump
+			bt = bulletTrace(startPosForward, startPosForward - (0, 0, 40), false, self);
+
+			if (bt["fraction"] < 1 && bt["normal"][2] > 0.9 && i > 1.5 && !self isOnLadder())
+			{
+				i = 0;
+				self thread jump();
+			}
+		}
+		// check if need to knife glass
+		else if (bt["surfacetype"] == "glass")
+		{
+			if (i > 1.5)
+			{
+				i = 0;
+				self thread knife();
+			}
+		}
+		else
+		{
+			// check if need to crouch
+			if (bulletTracePassed(startPos - (0, 0, 25), startPosForward - (0, 0, 25), false, self))
+				self crouch();
+		}
+	}
+}
+
+/*
+	Sets the factor of distance for a weapon
+*/
+SetWeaponDistMulti(weap)
+{
+	if (weap == "none")
+		return 1;
+
+	switch(weaponClass(weap))
+	{
+		case "rifle":
+			return 0.9;
+		case "smg":
+			return 0.7;
+		case "pistol":
+			return 0.5;
+		default:
+			return 1;
+	}
+}
+
+/*
+	Is the weap a sniper
+*/
+IsWeapSniper(weap)
+{
+	if (weap == "none")
+		return false;
+	
+	if (maps\mp\gametypes\_missions::getWeaponClass(weap) != "weapon_sniper")
+		return false;
+	
+	return true;
 }
 
 /*
@@ -232,7 +394,7 @@ watchHoldBreath()
 		if(self.bot.isfrozen)
 			continue;
 		
-		self holdbreath((self playerADS() && weaponClass(self getCurrentWEapon()) == "rifle"));
+		self holdbreath(self playerADS() > 0);
 	}
 }
 
@@ -276,22 +438,25 @@ onWeaponChange()
 {
 	self endon("disconnect");
 	self endon("death");
-	
-	weap = self GetCurrentWeapon();
-	self.bot.is_cur_full_auto = WeaponIsFullAuto(weap);
-	if (weap != "none")
-		self changeToWeap(weap);
 
+	first = true;
 	for(;;)
 	{
-		self waittill( "weapon_change", newWeapon );
+		newWeapon = undefined;
+		if (first)
+		{
+			first = false;
+			newWeapon = self getCurrentWeapon();
+		}
+		else
+			self waittill( "weapon_change", newWeapon );
 		
 		self.bot.is_cur_full_auto = WeaponIsFullAuto(newWeapon);
+		self.bot.cur_weap_dist_multi = SetWeaponDistMulti(newWeapon);
+		self.bot.is_cur_sniper = IsWeapSniper(newWeapon);
 
 		if (newWeapon == "none")
-		{
 			continue;
-		}
 		
 		self changeToWeap(newWeapon);
 	}
@@ -327,7 +492,18 @@ reload_watch()
 	{
 		self waittill("reload_start");
 		self.bot.isreloading = true;
-		self waittill_notify_or_timeout("reload", 7.5);
+
+		while(true)
+		{
+			ret = self waittill_any_timeout(7.5, "reload");
+
+			if (ret == "timeout")
+				break;
+
+			weap = self GetCurrentWeapon();
+			if (self GetWeaponAmmoClip(weap) >= WeaponClipSize(weap))
+				break;
+		}
 		self.bot.isreloading = false;
 	}
 }
@@ -376,17 +552,25 @@ stance()
 			self prone();
 			
 		curweap = self getCurrentWeapon();
-			
+		time = getTime();
+		chance = self.pers["bots"]["behavior"]["sprint"];
+
+		if (time - self.lastSpawnTime < 5000)
+			chance *= 2;
+
+		if(isDefined(self.bot.script_goal) && DistanceSquared(self.origin, self.bot.script_goal) > 256*256)
+			chance *= 2;
+
 		if(toStance != "stand" || self.bot.isreloading || self.bot.issprinting || self.bot.isfraggingafter || self.bot.issmokingafter)
 			continue;
 			
-		if(randomInt(100) > self.pers["bots"]["behavior"]["sprint"])
+		if(randomInt(100) > chance)
 			continue;
 			
 		if(isDefined(self.bot.target) && self canFire(curweap) && self isInRange(self.bot.target.dist, curweap))
 			continue;
 			
-		if(self.bot.sprintendtime != -1 && getTime() - self.bot.sprintendtime < 2000)
+		if(self.bot.sprintendtime != -1 && time - self.bot.sprintendtime < 2000)
 			continue;
 			
 		if(!isDefined(self.bot.towards_goal) || DistanceSquared(self.origin, self.bot.towards_goal) < level.bots_minSprintDistance || getConeDot(self.bot.towards_goal, self.origin, self GetPlayerAngles()) < 0.75)
@@ -582,9 +766,11 @@ updateAimOffset(obj)
 targetObjUpdateTraced(obj, daDist, ent, theTime, isScriptObj)
 {
 	distClose = self.pers["bots"]["skill"]["dist_start"];
+	distClose *= self.bot.cur_weap_dist_multi;
 	distClose *= distClose;
 
 	distMax = self.pers["bots"]["skill"]["dist_max"];
+	distMax *= self.bot.cur_weap_dist_multi;
 	distMax *= distMax;
 
 	timeMulti = 1;
@@ -635,13 +821,18 @@ target()
 		myAngles = self GetPlayerAngles();
 		myFov = self.pers["bots"]["skill"]["fov"];
 		bestTargets = [];
-		bestTime = 9999999999;
+		bestTime = 2147483647;
 		rememberTime = self.pers["bots"]["skill"]["remember_time"];
 		initReactTime = self.pers["bots"]["skill"]["init_react_time"];
 		hasTarget = isDefined(self.bot.target);
+		adsAmount = self PlayerADS();
+		adsFovFact = self.pers["bots"]["skill"]["ads_fov_multi"];
 
 		// reduce fov if ads'ing
-		myFov *= 1 - 0.5 * self PlayerADS();
+		if (adsAmount > 0)
+		{
+			myFov *= 1 - adsFovFact * adsAmount;
+		}
 		
 		if(hasTarget && !isDefined(self.bot.target.entity))
 		{
@@ -782,7 +973,7 @@ target()
 		if(hasTarget && isDefined(bestTargets[self.bot.target.entity getEntityNumber()+""]))
 			continue;
 		
-		closest = 9999999999;
+		closest = 2147483647;
 		toBeTarget = undefined;
 		
 		bestKeys = getArrayKeys(bestTargets);
@@ -873,6 +1064,9 @@ watchToLook()
 			
 		if(!self isInRange(self.bot.target.dist, curweap))
 			continue;
+
+		if (self.bot.is_cur_sniper)
+			continue;
 			
 		if(randomInt(100) > self.pers["bots"]["behavior"]["jump"])
 			continue;
@@ -958,6 +1152,14 @@ aim()
 		eyePos = self getEyePos();
 		curweap = self getCurrentWeapon();
 		angles = self GetPlayerAngles();
+		adsAmount = self PlayerADS();
+		adsAimSpeedFact = self.pers["bots"]["skill"]["ads_aimspeed_multi"];
+
+		// reduce aimspeed if ads'ing
+		if (adsAmount > 0)
+		{
+			aimspeed *= 1 + adsAimSpeedFact * adsAmount;
+		}
 		
 		if(isDefined(self.bot.target) && isDefined(self.bot.target.entity))
 		{
@@ -1020,7 +1222,10 @@ aim()
 					else
 					{
 						if (self canAds(dist, curweap))
-							self thread pressADS();
+						{
+							if (!self.bot.is_cur_sniper || !self.pers["bots"]["behavior"]["quickscope"])
+								self thread pressAds();
+						}
 					}
 					
 					self botLookAt(last_pos + (0, 0, self getEyeHeight() + nadeAimOffset), aimspeed);
@@ -1031,7 +1236,14 @@ aim()
 				{
 					if(isplay)
 					{
+						if (!target IsPlayerModelOK())
+							continue;
+
 						aimpos = target getTagOrigin( bone );
+
+						if (!isDefined(aimpos))
+							continue;
+
 						aimpos += offset;
 						aimpos += aimoffset;
 						aimpos += (0, 0, nadeAimOffset);
@@ -1065,15 +1277,25 @@ aim()
 					if(!self canFire(curweap) || !self isInRange(dist, curweap))
 						continue;
 					
-					//c4 logic here, but doesnt work anyway
-					
-					canADS = self canAds(dist, curweap);
+					canADS = (self canAds(dist, curweap) && conedot > 0.75);
 					if (canADS)
-						self thread pressADS();
+					{
+						stopAdsOverride = false;
+						if (self.bot.is_cur_sniper)
+						{
+							if (self.pers["bots"]["behavior"]["quickscope"] && self.bot.last_fire_time != -1 && getTime() - self.bot.last_fire_time < 1000)
+								stopAdsOverride = true;
+							else
+								self notify("kill_goal");
+						}
+
+						if (!stopAdsOverride)
+							self thread pressAds();
+					}
 					
 					if (trace_time > reaction_time)
 					{
-						if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
+						if((!canADS || adsAmount >= 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.99 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
 							self botFire();
 
 						if (isplay)
@@ -1104,11 +1326,23 @@ aim()
 			if(!self canFire(curweap) || !self isInRange(dist, curweap))
 				continue;
 			
-			canADS = self canAds(dist, curweap);
+			canADS = (self canAds(dist, curweap) && conedot > 0.75);
 			if (canADS)
-				self thread pressADS();
+			{
+				stopAdsOverride = false;
+				if (self.bot.is_cur_sniper)
+				{
+					if (self.pers["bots"]["behavior"]["quickscope"] && self.bot.last_fire_time != -1 && getTime() - self.bot.last_fire_time < 1000)
+						stopAdsOverride = true;
+					else
+						self notify("kill_goal");
+				}
 
-			if((!canADS || self playerads() == 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
+				if (!stopAdsOverride)
+					self thread pressAds();
+			}
+
+			if((!canADS || adsAmount >= 1.0 || self InLastStand() || self GetStance() == "prone") && (conedot > 0.95 || dist < level.bots_maxKnifeDistance) && getDvarInt("bots_play_fire"))
 				self botFire();
 			
 			continue;
@@ -1144,6 +1378,8 @@ aim()
 */
 botFire()
 {
+	self.bot.last_fire_time = getTime();
+
 	if(self.bot.is_cur_full_auto)
 	{
 		self thread pressFire();
@@ -1258,6 +1494,8 @@ walk()
 			
 		if(self maps\mp\_flashgrenades::isFlashbanged())
 		{
+			self.bot.last_next_wp = -1;
+			self.bot.last_second_next_wp = -1;
 			self botMoveTo(self.origin + self GetVelocity()*500);
 			continue;
 		}
@@ -1274,7 +1512,7 @@ walk()
 			
 			if(self.bot.target.isplay && self.bot.target.trace_time && self canFire(curweap) && self isInRange(self.bot.target.dist, curweap))
 			{
-				if (self InLastStand() || self GetStance() == "prone")
+				if (self InLastStand() || self GetStance() == "prone" || (self.bot.is_cur_sniper && self PlayerADS() > 0))
 					continue;
 
 				if(self.bot.target.rand <= self.pers["bots"]["behavior"]["strafe"])
@@ -1370,6 +1608,8 @@ strafe(target)
 	if(traceRight["fraction"] > traceLeft["fraction"])
 		strafe = traceRight["position"];
 	
+	self.bot.last_next_wp = -1;
+	self.bot.last_second_next_wp = -1;
 	self botMoveTo(strafe);
 	wait 2;
 	self notify("kill_goal");
@@ -1481,39 +1721,34 @@ doWalk(goal, dist, isScriptGoal)
 	self thread watchOnGoal(goal, distsq);
 	
 	current = self initAStar(goal);
-	// if a waypoint is closer than the goal
-	//if (current >= 0 && DistanceSquared(self.origin, level.waypoints[self.bot.astar[current]].origin) < DistanceSquared(self.origin, goal))
-	//{
-		while(current >= 0)
+	// skip waypoints we already completed to prevent rubber banding
+	if (current > 0 && self.bot.astar[current] == self.bot.last_next_wp && self.bot.astar[current-1] == self.bot.last_second_next_wp)
+		current = self removeAStar();
+
+	if (current >= 0)
+	{
+		// check if a waypoint is closer than the goal
+		wpOrg = level.waypoints[self.bot.astar[current]].origin;
+		ppt = PlayerPhysicsTrace(self.origin + (0,0,32), wpOrg, false, self);
+		if (DistanceSquared(self.origin, wpOrg) < DistanceSquared(self.origin, goal) || DistanceSquared(wpOrg, ppt) > 1.0)
 		{
-			// skip down the line of waypoints and go to the waypoint we have a direct path too
-			/*for (;;)
+			while(current >= 0)
 			{
-				if (current <= 0)
-					break;
-
-				ppt = PlayerPhysicsTrace(self.origin + (0,0,32), level.waypoints[self.bot.astar[current-1]].origin, false, self);
-				if (DistanceSquared(level.waypoints[self.bot.astar[current-1]].origin, ppt) > 1.0)
-					break;
-
-				if (level.waypoints[self.bot.astar[current-1]].type == "climb" || level.waypoints[self.bot.astar[current]].type == "climb")
-					break;
-
+				self.bot.next_wp = self.bot.astar[current];
+				self.bot.second_next_wp = -1;
+				if(current > 0)
+					self.bot.second_next_wp = self.bot.astar[current-1];
+				
+				self notify("new_static_waypoint");
+				
+				self movetowards(level.waypoints[self.bot.next_wp].origin);
+				self.bot.last_next_wp = self.bot.next_wp;
+				self.bot.last_second_next_wp = self.bot.second_next_wp;
+			
 				current = self removeAStar();
-			}*/
-
-			self.bot.next_wp = self.bot.astar[current];
-			self.bot.second_next_wp = -1;
-			if(current != 0)
-				self.bot.second_next_wp = self.bot.astar[current-1];
-			
-			self notify("new_static_waypoint");
-			
-			self movetowards(level.waypoints[self.bot.next_wp].origin);
-		
-			current = self removeAStar();
+			}
 		}
-	//}
+	}
 	
 	self.bot.next_wp = -1;
 	self.bot.second_next_wp = -1;
@@ -1521,6 +1756,8 @@ doWalk(goal, dist, isScriptGoal)
 	
 	if(DistanceSquared(self.origin, goal) > distsq)
 	{
+		self.bot.last_next_wp = -1;
+		self.bot.last_second_next_wp = -1;
 		self movetowards(goal); // any better way??
 	}
 	
@@ -1549,17 +1786,18 @@ movetowards(goal)
 	{
 		self botMoveTo(goal);
 		
-		if(time > 3)
+		if(time > 3.5)
 		{
 			time = 0;
 			if(distanceSquared(self.origin, lastOri) < 128)
 			{
+				self thread knife();
+				wait 0.5;
+				
 				stucks++;
 				
 				randomDir = self getRandomLargestStafe(stucks);
 			
-				self knife(); // knife glass
-				wait 0.25;
 				self botMoveTo(randomDir);
 				wait stucks;
 			}
@@ -1568,7 +1806,7 @@ movetowards(goal)
 		}
 		else if(timeslow > 1.5)
 		{
-			self thread jump();
+			self thread doMantle();
 		}
 		else if(timeslow > 0.75)
 		{
@@ -1588,6 +1826,22 @@ movetowards(goal)
 	
 	self.bot.towards_goal = undefined;
 	self notify("completed_move_to");
+}
+
+/*
+	Bots do the mantle
+*/
+doMantle()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("kill_goal");
+
+	self jump();
+
+	wait 0.35;
+
+	self jump();
 }
 
 /*

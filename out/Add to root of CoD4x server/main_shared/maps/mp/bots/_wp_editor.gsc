@@ -368,7 +368,7 @@ watchSaveWaypointsCommand()
 			{
 				self iPrintlnBold("Auto link enabled");
 				level.autoLink = true;
-				level.wpToLink = self.nearest;
+				level.wpToLink = self.closest;
 			}
 		}
 		
@@ -446,6 +446,12 @@ DeleteAllWaypoints()
 {
 	level.waypoints = [];
 	level.waypointCount = 0;
+	level.waypointsKDTree = WaypointsToKDTree();
+	
+	level.waypointsCamp = [];
+	level.waypointsTube = [];
+	level.waypointsGren = [];
+	level.waypointsClay = [];
 	
 	self iprintln("DelAllWps");
 }
@@ -617,9 +623,7 @@ destroyOnDeath(hud)
 {
 	hud endon("death");
 	self waittill_either("death","disconnect");
-	hud notify("death");
 	hud destroy();
-	hud = undefined;
 }
 
 textScroll(string)
