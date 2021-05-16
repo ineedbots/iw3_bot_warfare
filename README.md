@@ -22,7 +22,7 @@ Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in yo
 - [Credits](#Credits)
 
 ## Features
-- A Waypoint Editor for creating and modifying bot's waypoints of traversing the map. Have a look at [Using the Waypoint editor]().
+- A Waypoint Editor for creating and modifying bot's waypoints of traversing the map. Have a look at [Using the Waypoint editor](/main_shared/bw-assets/wpedit.md).
 
 - A clean and nice menu, you can edit every bot DVAR within in-game.
 
