@@ -14,10 +14,10 @@ The Bot Warfare mod comes with the Waypoint Editor out of the box, so its just a
 
 Start your server with the Bot Warfare mod.
 
-In the server console, type in ```set bots_main_debug 1```.
+In the server console, type in ```set bots_main_debug 1```.<br>
 ![Setting the dvar](/main_shared/bw-assets/console.png)
 
-Now start a match with the map you want to edit with the `devmap <mapname>` command.
+Now start a match with the map you want to edit with the `devmap <mapname>` command.<br>
 ![Starting a map](/main_shared/bw-assets/console-map.png)
 
 It should be noted that waypoints load in this following order;
@@ -30,7 +30,7 @@ If all fail to load waypoints, there will be no waypoints and the bots will not 
 Connect to the server with the CoD4x client, you'll be introduced to the Waypoint Editor.
 
 ## The Editor
-![The editor](/main_shared/bw-assets/editor.png)
+![The editor](/main_shared/bw-assets/editor.png)<br>
 This is the Waypoint Editor. You can view, edit and create the waypoint graph.
 - Each red number you see in the world is a waypoint.
 - The green string you see is the type of that waypoint.
@@ -67,10 +67,10 @@ Each button has a secondary modifier button, and can be pressed shortly after pr
 
 Okay, now that you know how to control the Editor, lets now go ahead and create some waypoints.
 
-Here I added a waypoint.
+Here I added a waypoint.<br>
 ![Adding a waypoint](/main_shared/bw-assets/editor-addwp.png)
 
-And I added a second waypoint.
+And I added a second waypoint.<br>
 ![Adding another waypoint](/main_shared/bw-assets/editor-addwp2.png)
 
 There are several types of waypoints, holding a modifier button before pressing the add waypoint button will create a special type of waypoint.
@@ -82,7 +82,7 @@ There are several types of waypoints, holding a modifier button before pressing 
   - camp ('crouch' waypoint with only one linked waypoint) - bots will look at the angles you were looking at when you made the waypoint and camp
   - climb - bots will look at the angles you were looking at when you made the waypoint and climb (use this for ladders and mantles)
 
-Here I linked the two waypoints together.
+Here I linked the two waypoints together.<br>
 ![Linking waypoints](/main_shared/bw-assets/editor-link.png)
 
 Linking waypoints are very important, it tells the bots that they can reach waypoint 1 from waypoint 0, and vice versa.
@@ -93,7 +93,7 @@ Once you feel like you are done, press the Save buttons. This will generate a [C
 
 That is it! The waypoints should load next time you start your game!
 
-Your waypoints CSV file will be located at ```<fs_game>/waypoints/<mapname>_wp.csv```. (main folder if fs_game is blank)
+Your waypoints CSV file will be located at ```<fs_game>/waypoints/<mapname>_wp.csv```. (main folder if fs_game is blank)<br>
 ![Location](/main_shared/bw-assets/saved.png)
 
 You can share your waypoints publicly (and can be loaded by other users of Bot Warfare remotely) by making a Pull Request to the [CoD4x_Waypoints repo](https://github.com/ineedbots/cod4x_waypoints).
