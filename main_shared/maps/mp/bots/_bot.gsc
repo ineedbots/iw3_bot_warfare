@@ -699,6 +699,10 @@ onGrenadeFire()
 	for(;;)
 	{
 		self waittill ( "grenade_fire", grenade, weaponName );
+
+		if (!isDefined(grenade))
+			continue;
+
 		grenade.name = weaponName;
 		if(weaponName == "smoke_grenade_mp")
 			grenade thread AddToSmokeList();
