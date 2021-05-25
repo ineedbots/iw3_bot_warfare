@@ -241,6 +241,9 @@ watchGrenadeFire()
 	{
 		self waittill( "grenade_fire", nade, weapname );
 
+		if (!isDefined(nade))
+			continue;
+
 		if ( weapname == "c4_mp" )
 			self thread watchC4Thrown(nade);
 	}
@@ -2003,6 +2006,27 @@ smoke(time)
 	
 	wait 1.25;
 	self.bot.issmokingafter = false;
+}
+
+/*
+	Bot will press use for a time.
+*/
+use(time)
+{
+	self endon("death");
+	self endon("disconnect");
+	self notify("bot_use");
+	self endon("bot_use");
+
+	if(!isDefined(time))
+		time = 0.05;
+	
+	self botAction("+use");
+	
+	if(time)
+		wait time;
+	
+	self botAction("-use");
 }
 
 /*

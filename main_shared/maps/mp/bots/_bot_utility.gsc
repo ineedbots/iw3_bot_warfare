@@ -85,6 +85,14 @@ BotPressADS(time)
 }
 
 /*
+	Bot presses the use button for time.
+*/
+BotPressUse(time)
+{
+	self maps\mp\bots\_bot_internal::use(time);
+}
+
+/*
 	Bot presses the frag button for time.
 */
 BotPressFrag(time)
