@@ -37,6 +37,9 @@ connected()
 	self thread onSpawned();
 
 	// cod4x has a force respawn in the exe
+	
+	wait 0.1;
+	self.challengeData = [];
 }
 
 /*
