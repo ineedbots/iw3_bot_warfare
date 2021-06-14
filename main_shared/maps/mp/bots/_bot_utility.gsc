@@ -490,6 +490,22 @@ waittill_either(not, not1)
 }
 
 /*
+	iw5
+*/
+allowClassChoice()
+{
+	return true;
+}
+
+/*
+	iw5
+*/
+allowTeamChoice()
+{
+	return true;
+}
+
+/*
 	Taken from iw4 script
 */
 waittill_any_timeout( timeOut, string1, string2, string3, string4, string5 )
