@@ -20,6 +20,11 @@ main_shared/maps/mp/gametypes/_hardpoints.gsx
 *.zip
 !/out
 
+!/.astylerc
+!/z_deploy.bat
+!/deploy.bat
+!/deploy.js
+
 !/main/
 /main/*
 !/main/server.cfg
