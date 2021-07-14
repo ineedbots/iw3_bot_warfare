@@ -962,13 +962,17 @@ target_loop()
 			targetAnkleLeft = player getTagOrigin( "j_ankle_le" );
 			targetAnkleRight = player getTagOrigin( "j_ankle_ri" );
 
-			canTargetPlayer = ( ( BulletTracePassed( myEye, targetHead, false, undefined ) ||
-			            BulletTracePassed( myEye, targetAnkleLeft, false, undefined ) ||
-			            BulletTracePassed( myEye, targetAnkleRight, false, undefined ) )
+			traceHead = bulletTrace( myEye, targetHead, false );
+			traceAnkleLeft = bulletTrace( myEye, targetAnkleLeft, false );
+			traceAnkleRight = bulletTrace( myEye, targetAnkleRight, false );
 
-			        && ( sightTracePassed( myEye, targetHead, false, undefined ) ||
-			            sightTracePassed( myEye, targetAnkleLeft, false, undefined ) ||
-			            sightTracePassed( myEye, targetAnkleRight, false, undefined ) )
+			canTargetPlayer = ( ( sightTracePassed( myEye, targetHead, false ) ||
+			            sightTracePassed( myEye, targetAnkleLeft, false ) ||
+			            sightTracePassed( myEye, targetAnkleRight, false ) )
+
+			        && ( ( traceHead["fraction"] >= 1.0 || traceHead["surfacetype"] == "glass" ) ||
+			            ( traceAnkleLeft["fraction"] >= 1.0 || traceAnkleLeft["surfacetype"] == "glass" ) ||
+			            ( traceAnkleRight["fraction"] >= 1.0 || traceAnkleRight["surfacetype"] == "glass" ) )
 
 			        && ( SmokeTrace( myEye, player.origin, level.smokeRadius ) ||
 			            daDist < level.bots_maxKnifeDistance * 4 )
