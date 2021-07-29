@@ -1909,7 +1909,12 @@ movetowards( goal )
 	timeslow = 0;
 	time = 0;
 
-	while ( distanceSquared( self.origin, goal ) > level.bots_goalDistance )
+	if ( self.bot.issprinting )
+		tempGoalDist = level.bots_goalDistance * 2;
+	else
+		tempGoalDist = level.bots_goalDistance;
+
+	while ( distanceSquared( self.origin, goal ) > tempGoalDist )
 	{
 		self botMoveTo( goal );
 
@@ -1950,6 +1955,11 @@ movetowards( goal )
 			timeslow += 50;
 		else
 			timeslow = 0;
+
+		if ( self.bot.issprinting )
+			tempGoalDist = level.bots_goalDistance * 2;
+		else
+			tempGoalDist = level.bots_goalDistance;
 
 		if ( stucks == 2 )
 			self notify( "bad_path_internal" );
