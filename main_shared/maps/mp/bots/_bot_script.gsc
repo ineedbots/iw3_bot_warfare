@@ -646,6 +646,7 @@ get_random_attachment( weapon, rank )
 		return "none";
 
 	reasonable = GetDvarInt( "bots_loadout_reasonable" );
+	op = GetDvarInt( "bots_loadout_allow_op" );
 
 	id = level.tbl_weaponIDs[level.weaponReferenceToIndex[weapon]];
 	atts = strtok( id["attachment"], " " );
@@ -666,6 +667,12 @@ get_random_attachment( weapon, rank )
 
 					break;
 			}
+		}
+
+		if ( !op )
+		{
+			if ( att == "gl" )
+				continue;
 		}
 
 		return att;
@@ -768,6 +775,7 @@ get_random_grenade( perk1 )
 get_random_weapon( groups, rank )
 {
 	reasonable = GetDvarInt( "bots_loadout_reasonable" );
+	op = GetDvarInt( "bots_loadout_allow_op" );
 
 	keys = getArrayKeys( level.tbl_weaponIDs );
 
@@ -807,6 +815,12 @@ get_random_weapon( groups, rank )
 				case "m1014":
 					continue;
 			}
+		}
+
+		if ( !op )
+		{
+			if ( ref == "rpg" )
+				continue;
 		}
 
 		if ( !isItemUnlocked( ref, rank ) )
