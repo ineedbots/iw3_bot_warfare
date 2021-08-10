@@ -726,6 +726,7 @@ get_random_perk( perkslot, rank, att1, att2 )
 				case "specialty_armorvest":
 				case "specialty_pistoldeath":
 				case "specialty_grenadepulldeath":
+				case "specialty_weapon_rpg":
 					continue;
 			}
 		}
