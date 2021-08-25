@@ -248,12 +248,12 @@ classWatch()
 
 		wait 0.5;
 
-		if ( !isValidClass( self.class ) || !isDefined( self.bot_change_class ) )
+		if ( !maps\mp\gametypes\_globallogic::isValidClass( self.class ) || !isDefined( self.bot_change_class ) )
 			self notify( "menuresponse", game["menu_changeclass"], self chooseRandomClass() );
 
 		self.bot_change_class = true;
 
-		while ( isdefined( self.pers["team"] ) && isValidClass( self.class ) && isDefined( self.bot_change_class ) )
+		while ( isdefined( self.pers["team"] ) && maps\mp\gametypes\_globallogic::isValidClass( self.class ) && isDefined( self.bot_change_class ) )
 			wait .05;
 	}
 }
