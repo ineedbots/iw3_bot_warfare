@@ -29,6 +29,7 @@ connected()
 
 	self.killerLocation = undefined;
 	self.lastKiller = undefined;
+	self.bot_change_class = true;
 
 	self thread difficulty();
 	self thread teamWatch();
@@ -247,11 +248,12 @@ classWatch()
 
 		wait 0.5;
 
+		if ( !isValidClass( self.class ) || !isDefined( self.bot_change_class ) )
+			self notify( "menuresponse", game["menu_changeclass"], self chooseRandomClass() );
 
-		self notify( "menuresponse", game["menu_changeclass"], self chooseRandomClass() );
 		self.bot_change_class = true;
 
-		while ( isdefined( self.pers["team"] ) && isdefined( self.pers["class"] ) && isDefined( self.bot_change_class ) )
+		while ( isdefined( self.pers["team"] ) && isValidClass( self.class ) && isDefined( self.bot_change_class ) )
 			wait .05;
 	}
 }
@@ -268,8 +270,10 @@ teamWatch()
 		while ( !isdefined( self.pers["team"] ) || !allowTeamChoice() )
 			wait .05;
 
-		wait 0.05;
-		self notify( "menuresponse", game["menu_team"], getDvar( "bots_team" ) );
+		wait 0.1;
+
+		if ( self.team != "axis" || self.team != "allies" )
+			self notify( "menuresponse", game["menu_team"], getDvar( "bots_team" ) );
 
 		while ( isdefined( self.pers["team"] ) )
 			wait .05;
