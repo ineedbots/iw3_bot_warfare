@@ -1302,7 +1302,9 @@ aim_loop()
 					}
 				}
 
-				self botLookAt( last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset ), aimspeed );
+				if ( getDvarInt( "bots_play_aim" ) )
+					self botLookAt( last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset ), aimspeed );
+
 				return;
 			}
 
@@ -1324,10 +1326,13 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
-						self botLookAtPlayer( target, bone );
-					else
-						self botLookAt( aimpos, aimspeed );
+					if ( getDvarInt( "bots_play_aim" ) )
+					{
+						if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
+							self botLookAtPlayer( target, bone );
+						else
+							self botLookAt( aimpos, aimspeed );
+					}
 				}
 				else
 				{
@@ -1338,7 +1343,8 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					self botLookAt( aimpos, aimspeed );
+					if ( getDvarInt( "bots_play_aim" ) )
+						self botLookAt( aimpos, aimspeed );
 				}
 
 				if ( isplay && !self.bot.isknifingafter && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time && getDvarInt( "bots_play_knife" ) )
@@ -1397,7 +1403,8 @@ aim_loop()
 		aimpos = last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset );
 		conedot = getConeDot( aimpos, eyePos, angles );
 
-		self botLookAt( aimpos, aimspeed );
+		if ( getDvarInt( "bots_play_aim" ) )
+			self botLookAt( aimpos, aimspeed );
 
 		if ( !self canFire( curweap ) || !self isInRange( dist, curweap ) )
 			return;
@@ -1430,11 +1437,13 @@ aim_loop()
 	{
 		forwardPos = anglesToForward( level.waypoints[self.bot.next_wp].angles ) * 1024;
 
-		self botLookAt( eyePos + forwardPos, aimspeed );
+		if ( getDvarInt( "bots_play_aim" ) )
+			self botLookAt( eyePos + forwardPos, aimspeed );
 	}
 	else if ( isDefined( self.bot.script_aimpos ) )
 	{
-		self botLookAt( self.bot.script_aimpos, aimspeed );
+		if ( getDvarInt( "bots_play_aim" ) )
+			self botLookAt( self.bot.script_aimpos, aimspeed );
 	}
 	else
 	{
@@ -1445,7 +1454,7 @@ aim_loop()
 		else if ( isDefined( self.bot.towards_goal ) )
 			lookat = self.bot.towards_goal;
 
-		if ( isDefined( lookat ) )
+		if ( isDefined( lookat ) && getDvarInt( "bots_play_aim" ) )
 			self botLookAt( lookat + ( 0, 0, self getEyeHeight() ), aimspeed );
 	}
 }
