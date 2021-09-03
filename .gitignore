@@ -12,6 +12,7 @@
 
 # Folder to not ignore
 !/main_shared/
+!/.vscode
 *.gsx
 !/main_shared/maps/mp/gametypes/_callbacksetup.gsx
 main_shared/maps/mp/gametypes/_globallogic.gsx
