@@ -24,7 +24,6 @@ echo Server "%name%" will load "%cfg%" and listen on port "%port%" UDP with IP "
 echo To shut down the server close this window first!
 echo (%date%)  -  (%time%) %name% server start.
 
-cd /D %LOCALAPPDATA%\Plutonium
 :server
 start /wait /abovenormal "%name%" "%~dp0cod4x18_dedrun.exe" +set dedicated "2" +set sv_authtoken "%key%" +set net_ip "%ip%" +set net_port "%port%" +set rcon_password "%rcon_password%" +set fs_game "%mod%" +set sv_maxclients "%maxclients%" +exec "%cfg%" +map_rotate
 echo (%date%)  -  (%time%) WARNING: %name% server closed or dropped... server restarts.
