@@ -15,6 +15,8 @@ set ip=0.0.0.0
 set mod=
 ::Only change this when you don't want to keep the bat files in the game folder. MOST WON'T NEED TO EDIT THIS!
 set gamepath=%cd%
+::Max clients in your server
+set maxclients=64
 
 title CoD4x MP - %name% - Server restarter
 echo Visit plutonium.pw / Join the Discord (a6JM2Tv) for NEWS and Updates!
@@ -24,6 +26,6 @@ echo (%date%)  -  (%time%) %name% server start.
 
 cd /D %LOCALAPPDATA%\Plutonium
 :server
-start /wait /abovenormal "%name%" "%~dp0cod4x18_dedrun.exe" +set dedicated "2" +set sv_authtoken "%key%" +set net_ip "%ip%" +set net_port "%port%" +set rcon_password "%rcon_password%" +set fs_game "%mod%" +exec "%cfg%" +map_rotate
+start /wait /abovenormal "%name%" "%~dp0cod4x18_dedrun.exe" +set dedicated "2" +set sv_authtoken "%key%" +set net_ip "%ip%" +set net_port "%port%" +set rcon_password "%rcon_password%" +set fs_game "%mod%" +set sv_maxclients "%maxclients%" +exec "%cfg%" +map_rotate
 echo (%date%)  -  (%time%) WARNING: %name% server closed or dropped... server restarts.
 goto Server
