@@ -1,8 +1,10 @@
-# Ignore everything in repository root 
+# Ignore everything in repository root
 /*
 
 # Files to not ignore
 !/.gitignore
+!/.editorconfig
+!/.gitattributes
 
 !/z_server.bat
 
