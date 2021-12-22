@@ -4,8 +4,9 @@
         "gsc",
 				"gsx"
     ],
-    "editor.defaultFormatter": "chiehyu.vscode-astyle",
-    "editor.formatOnSave": true,
+    "[gsc]": {
+			"editor.defaultFormatter": "chiehyu.vscode-astyle",
+		},
 		"editor.quickSuggestions": {
 			"other": true,
 			"comments": true,
