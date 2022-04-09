@@ -1927,11 +1927,11 @@ movetowards( goal )
 	{
 		self botMoveTo( goal );
 
-		if ( time > 3500 )
+		if ( time > 3000 )
 		{
 			time = 0;
 
-			if ( distanceSquared( self.origin, lastOri ) < 128 )
+			if ( distanceSquared( self.origin, lastOri ) < 32 * 32 )
 			{
 				self thread knife();
 				wait 0.5;
@@ -1954,9 +1954,9 @@ movetowards( goal )
 		{
 			self thread doMantle();
 		}
-		else if ( time > 2500 )
+		else if ( time == 2000 )
 		{
-			if ( distanceSquared( self.origin, lastOri ) < 128 )
+			if ( distanceSquared( self.origin, lastOri ) < 32 * 32 )
 				self crouch();
 		}
 
@@ -1973,7 +1973,7 @@ movetowards( goal )
 		else
 			tempGoalDist = level.bots_goalDistance;
 
-		if ( stucks == 2 )
+		if ( stucks >= 2 )
 			self notify( "bad_path_internal" );
 	}
 
