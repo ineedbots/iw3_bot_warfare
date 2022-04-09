@@ -2849,6 +2849,136 @@ bot_equipment_attack( equ )
 }
 
 /*
+	Bots do random stance
+*/
+BotRandomStance()
+{
+	if ( randomInt( 100 ) < 80 )
+		self BotSetStance( "prone" );
+	else if ( randomInt( 100 ) < 60 )
+		self BotSetStance( "crouch" );
+	else
+		self BotSetStance( "stand" );
+}
+
+/*
+	Bots will use a random equipment
+*/
+BotUseRandomEquipment()
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+
+	equ = undefined;
+
+	if ( self GetAmmoCount( "claymore_mp" ) )
+		equ = "claymore_mp";
+
+	if ( self GetAmmoCount( "c4_mp" ) )
+		equ = "c4_mp";
+
+	if ( !isDefined( equ ) )
+		return;
+
+	curWeap = self GetCurrentWeapon();
+
+	if ( self changeToWeapon( equ ) )
+	{
+		if ( equ != "c4_mp" )
+			self thread fire_current_weapon();
+		else
+			self thread fire_c4();
+
+		self waittill_any_timeout( 5, "grenade_fire", "weapon_change" );
+		self notify( "stop_firing_weapon" );
+	}
+
+	self thread changeToWeapon( curWeap );
+}
+
+/*
+	Bots will look at a random thing
+*/
+BotLookAtRandomThing( obj_target )
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+
+	if ( self HasScriptAimPos() )
+		return;
+
+	rand = RandomInt( 100 );
+
+	nearestEnemy = undefined;
+
+	for ( i = 0; i < level.players.size; i++ )
+	{
+		player = level.players[i];
+
+		if ( !isDefined( player ) || !isDefined( player.team ) )
+			continue;
+
+		if ( !isAlive( player ) )
+			continue;
+
+		if ( level.teamBased && self.team == player.team )
+			continue;
+
+		if ( !isDefined( nearestEnemy ) || DistanceSquared( self.origin, player.origin ) < DistanceSquared( self.origin, nearestEnemy.origin ) )
+		{
+			nearestEnemy = player;
+		}
+	}
+
+	origin = ( 0, 0, self GetEyeHeight() );
+
+	if ( isDefined( nearestEnemy ) && DistanceSquared( self.origin, nearestEnemy.origin ) < 1024 * 1024 && rand < 40 )
+		origin += ( nearestEnemy.origin[0], nearestEnemy.origin[1], self.origin[2] );
+	else if ( isDefined( obj_target ) && rand < 50 )
+		origin += ( obj_target.origin[0], obj_target.origin[1], self.origin[2] );
+	else if ( rand < 85 )
+		origin += self.origin + AnglesToForward( ( 0, self.angles[1] - 180, 0 ) ) * 1024;
+	else
+		origin += self.origin + AnglesToForward( ( 0, RandomInt( 360 ), 0 ) ) * 1024;
+
+	self SetScriptAimPos( origin );
+	wait 2;
+	self ClearScriptAimPos();
+}
+
+/*
+	Bots will do stuff while waiting for objective
+*/
+bot_do_random_action_for_objective( obj_target )
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	self notify( "bot_do_random_action_for_objective" );
+	self endon( "bot_do_random_action_for_objective" );
+
+	if ( !isDefined( self.bot_random_obj_action ) )
+	{
+		self.bot_random_obj_action = true;
+
+		if ( randomInt( 100 ) < 80 )
+			self thread BotUseRandomEquipment();
+
+		if ( randomInt( 100 ) < 75 )
+			self thread BotLookAtRandomThing( obj_target );
+	}
+	else
+	{
+		if ( self GetStance() != "prone" && randomInt( 100 ) < 15 )
+			self BotSetStance( "prone" );
+		else if ( randomInt( 100 ) < 5 )
+			self thread BotLookAtRandomThing( obj_target );
+	}
+
+	wait 2;
+	self.bot_random_obj_action = undefined;
+}
+
+/*
 	Bots hang around the enemy's flag to spawn kill em
 */
 bot_dom_spawn_kill_think_loop()
@@ -3104,6 +3234,8 @@ bot_dom_cap_think_loop()
 
 		if ( flag.useObj.curProgress == cur )
 			break;//some enemy is near us, kill him
+
+		self thread bot_do_random_action_for_objective( flag );
 	}
 
 	self ClearScriptGoal();
@@ -3232,6 +3364,8 @@ bot_hq_loop()
 
 			if ( cur == gameobj.curProgress )
 				break;//no prog made, enemy must be capping
+
+			self thread bot_do_random_action_for_objective( gameobj.trigger );
 		}
 
 		self ClearScriptGoal();
@@ -3449,6 +3583,7 @@ bot_sab_loop()
 			return;
 		}
 
+		self BotRandomStance();
 		self SetScriptGoal( self.origin, 64 );
 
 		self bot_use_bomb_thread( site );
@@ -3566,6 +3701,7 @@ bot_sab_loop()
 			return;
 		}
 
+		self BotRandomStance();
 		self SetScriptGoal( self.origin, 64 );
 
 		self bot_use_bomb_thread( site );
@@ -3767,6 +3903,7 @@ bot_sd_defenders_loop( data )
 		return;
 	}
 
+	self BotRandomStance();
 	self SetScriptGoal( self.origin, 64 );
 
 	self bot_use_bomb_thread( defuse );
@@ -3978,6 +4115,7 @@ bot_sd_attackers_loop( data )
 		return;
 	}
 
+	self BotRandomStance();
 	self SetScriptGoal( self.origin, 64 );
 
 	self bot_use_bomb_thread( plant );
