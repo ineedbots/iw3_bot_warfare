@@ -1959,6 +1959,17 @@ movetowards( goal )
 			if ( distanceSquared( self.origin, lastOri ) < 32 * 32 )
 				self crouch();
 		}
+		else if ( time == 1750 )
+		{
+			if ( distanceSquared( self.origin, lastOri ) < 32 * 32 )
+			{
+				// check if directly above or below
+				if ( abs( goal[2] - self.origin[2] ) > 64 && getConeDot( goal + ( 1, 1, 0 ), self.origin + ( -1, -1, 0 ), VectorToAngles( ( goal[0], goal[1], self.origin[2] ) - self.origin ) ) < 0.64 && DistanceSquared2D( self.origin, goal ) < 32 * 32 )
+				{
+					stucks = 2;
+				}
+			}
+		}
 
 		wait 0.05;
 		time += 50;
