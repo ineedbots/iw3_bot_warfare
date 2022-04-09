@@ -1943,6 +1943,9 @@ movetowards( goal )
 				self botMoveTo( randomDir );
 				wait stucks;
 				self stand();
+
+				self.bot.last_next_wp = -1;
+				self.bot.last_second_next_wp = -1;
 			}
 
 			lastOri = self.origin;
