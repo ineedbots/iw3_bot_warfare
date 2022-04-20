@@ -1843,6 +1843,7 @@ doWalkScriptNotify()
 */
 doWalk( goal, dist, isScriptGoal )
 {
+	level endon ( "game_ended" );
 	self endon( "kill_goal" );
 	self endon( "goal_internal" ); //so that the watchOnGoal notify can happen same frame, not a frame later
 
@@ -1939,6 +1940,8 @@ movetowards( goal )
 				stucks++;
 
 				randomDir = self getRandomLargestStafe( stucks );
+
+				self BotNotifyBotEvent( "stuck" );
 
 				self botMoveTo( randomDir );
 				wait stucks;

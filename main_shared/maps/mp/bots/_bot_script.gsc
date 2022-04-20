@@ -1454,6 +1454,10 @@ bot_think_camp_loop()
 
 	self SetScriptGoal( campSpot.origin, 16 );
 
+	time = randomIntRange( 10, 20 );
+
+	self BotNotifyBotEvent( "camp", "go", campSpot, time );
+
 	ret = self waittill_any_return( "new_goal", "goal", "bad_path" );
 
 	if ( ret != "new_goal" )
@@ -1462,8 +1466,12 @@ bot_think_camp_loop()
 	if ( ret != "goal" )
 		return;
 
-	self thread killCampAfterTime( randomIntRange( 10, 20 ) );
+	self BotNotifyBotEvent( "camp", "start", campSpot, time );
+
+	self thread killCampAfterTime( time );
 	self CampAtSpot( campSpot.origin, campSpot.origin + AnglesToForward( campSpot.angles ) * 2048 );
+
+	self BotNotifyBotEvent( "camp", "stop", campSpot, time );
 }
 
 /*
@@ -1582,8 +1590,14 @@ bot_think_follow_loop()
 	if ( !isDefined( toFollow ) )
 		return;
 
-	self thread killFollowAfterTime( randomIntRange( 10, 20 ) );
+	time = randomIntRange( 10, 20 );
+
+	self BotNotifyBotEvent( "follow", "start", toFollow, time );
+
+	self thread killFollowAfterTime( time );
 	self followPlayer( toFollow );
+
+	self BotNotifyBotEvent( "follow", "stop", toFollow, time );
 }
 
 /*

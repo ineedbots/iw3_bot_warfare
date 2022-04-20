@@ -229,6 +229,14 @@ BotStopMoving( what )
 }
 
 /*
+	Notify the bot chat message
+*/
+BotNotifyBotEvent( msg, a, b, c, d, e, f, g )
+{
+	self notify( "bot_event", msg, a, b, c, d, e, f, g );
+}
+
+/*
 	Returns if the bot has a script goal.
 	(like t5 gsc bot)
 */
@@ -956,16 +964,25 @@ Round( x )
 }
 
 /*
-	Rounds up the given value.
+	clamps angle between -180 and 180
 */
-RoundUp( floatVal )
+AngleClamp180( angle )
 {
-	i = int( floatVal );
+	angleFrac = angle / 360.0;
+	angle = ( angleFrac - floor( angleFrac ) ) * 360.0;
 
-	if ( i != floatVal )
-		return i + 1;
-	else
-		return i;
+	if ( angle > 180.0 )
+		return angle - 360.0;
+
+	return angle;
+}
+
+/*
+	Clamps between value
+*/
+Clamp( a, minv, maxv )
+{
+	return max( min( a, maxv ), minv );
 }
 
 /*

@@ -102,6 +102,8 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 | bots_skill_axis_med              | When `bots_skill` is set to `8`, the amount of medium difficulty bots to set on the axis team. The remaining bots on the team will be set to easy difficulty. | 0 |
 | bots_skill_allies_hard           | When `bots_skill` is set to `8`, the amount of hard difficulty bots to set on the allies team. | 0          |
 | bots_skill_allies_med            | When `bots_skill` is set to `8`, the amount of medium difficulty bots to set on the allies team. The remaining bots on the team will be set to easy difficulty. | 0 |
+| bots_skill_min                   | The minimum difficulty level for the bots.                                                     | 1          |
+| bots_skill_max                   | The maximum difficulty level for the bots.                                                     | 7          |
 | bots_loadout_reasonable          | If the bots should filter bad performing create-a-class selections.                            | false      |
 | bots_loadout_allow_op            | If the bots should be able to use overpowered and annoying create-a-class selections.          | true       |
 | bots_loadout_rank                | What rank to set the bots.<ul><li>`-1` - Average of all players in the match.</li><li>`0` - All random.</li><li>`1` or higher - Sets the bots' rank to this.</li></ul> | -1 |
@@ -140,7 +142,7 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 
 ## Credits
 - CoD4x Team - https://github.com/callofduty4x/CoD4x_Server
-- INeedGames(me) - http://www.moddb.com/mods/bot-warfare
+- INeedGames - http://www.moddb.com/mods/bot-warfare
 - PeZBot team - http://www.moddb.com/mods/pezbot
 - Ability
 - Salvation
