@@ -225,8 +225,30 @@ spawned()
 	self thread onNewEnemy();
 	self thread doBotMovement();
 	self thread watchGrenadeFire();
+	self thread watchPickupGun();
 
 	self notify( "bot_spawned" );
+}
+
+/*
+	watchPickupGun
+*/
+watchPickupGun()
+{
+	self endon( "disconnect" );
+	self endon( "death" );
+
+	for ( ;; )
+	{
+		wait 1;
+
+		weap = self GetCurrentWeapon();
+
+		if ( weap != "none" && self GetAmmoCount( weap ) )
+			continue;
+
+		self thread use( 0.5 );
+	}
 }
 
 /*
@@ -695,6 +717,7 @@ watch_grenade( grenade )
 		if ( self.bot.isfraggingafter || self.bot.issmokingafter )
 			continue;
 
+		self BotNotifyBotEvent( "throwback", "stop", grenade );
 		self thread frag();
 	}
 }
@@ -1267,8 +1290,13 @@ aim_loop()
 
 			if ( self.bot.isfraggingafter || self.bot.issmokingafter )
 				nadeAimOffset = dist / 3000;
-			else if ( curweap != "none" && weaponClass( curweap ) == "grenade" )
-				nadeAimOffset = dist / 16000;
+			else if ( curweap != "none" &&  weaponClass( curweap ) == "grenade" )
+			{
+				if ( maps\mp\gametypes\_missions::getWeaponClass( curweap ) == "weapon_projectile" )
+					nadeAimOffset = dist / 16000;
+				else
+					nadeAimOffset = dist / 3000;
+			}
 
 			if ( no_trace_time && ( !isDefined( self.bot.after_target ) || self.bot.after_target != target ) )
 			{
@@ -1397,8 +1425,13 @@ aim_loop()
 
 		if ( self.bot.isfraggingafter || self.bot.issmokingafter )
 			nadeAimOffset = dist / 3000;
-		else if ( curweap != "none" && weaponClass( curweap ) == "grenade" )
-			nadeAimOffset = dist / 16000;
+		else if ( curweap != "none" &&  weaponClass( curweap ) == "grenade" )
+		{
+			if ( maps\mp\gametypes\_missions::getWeaponClass( curweap ) == "weapon_projectile" )
+				nadeAimOffset = dist / 16000;
+			else
+				nadeAimOffset = dist / 3000;
+		}
 
 		aimpos = last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset );
 		conedot = getConeDot( aimpos, eyePos, angles );
@@ -1531,6 +1564,9 @@ canAds( dist, curweap )
 {
 	if ( curweap == "none" )
 		return false;
+
+	if ( curweap == "c4_mp" )
+		return RandomInt( 2 );
 
 	if ( !getDvarInt( "bots_play_ads" ) )
 		return false;
@@ -2176,12 +2212,12 @@ use( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+use" );
+	// self botAction( "+use" );
 
 	if ( time )
 		wait time;
 
-	self botAction( "-use" );
+	// self botAction( "-use" );
 }
 
 /*
