@@ -1200,6 +1200,45 @@ cac_init_patch()
 }
 
 /*
+	Parse frontlines type waypoints
+*/
+FrontLinesWaypoints()
+{
+	waypoints = [];
+
+	for ( i = 0;; i++ )
+	{
+		dvar_answer = getDvar( "flwp_" + i );
+
+		if ( dvar_answer == "" || dvar_answer == "eof" )
+			break;
+
+		toks = strtok( dvar_answer, "," );
+
+		waypoint = spawnStruct();
+		wp_num = int( toks[0] );
+		x = float( toks[1] );
+		y = float( toks[2] );
+		z = float( toks[3] );
+		waypoint.origin = ( x, y, z );
+
+		waypoint.type = toks[4];
+		waypoint.children = [];
+
+		num_children = int( toks[5] );
+
+		for ( h = 0; h < num_children; h++ )
+		{
+			waypoint.children[waypoint.children.size] = int( toks[6 + h] );
+		}
+
+		waypoints[wp_num] = waypoint;
+	}
+
+	return waypoints;
+}
+
+/*
 	Tokenizes a string (strtok has limits...) (only one char tok)
 */
 tokenizeLine( line, tok )
@@ -1472,6 +1511,14 @@ load_waypoints()
 	if ( !level.waypoints.size )
 	{
 		maps\mp\bots\_bot_http::getRemoteWaypoints( mapname );
+	}
+
+	if ( !level.waypoints.size )
+	{
+		level.waypoints = FrontLinesWaypoints();
+
+		if ( level.waypoints.size )
+			printToConsole( "Loaded " + level.waypoints.size + " waypoints from frontlines." );
 	}
 
 	level.waypointCount = level.waypoints.size;
