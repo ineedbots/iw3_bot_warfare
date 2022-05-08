@@ -5,7 +5,7 @@ Bot Warfare is a GSC mod for the [CoD4x project](https://github.com/callofduty4x
 
 It aims to add playable AI to the multiplayer games of CoD4.
 
-You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfare/downloads/cod4x-bot-warfare-latest) and the CoD4x.me post [here](https://cod4x.me/index.php?/forums/topic/3116-release-bot-warfare/).
+You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfare/downloads/cod4x-bot-warfare-latest) and the CoD4x forum post [here](https://cod4x.ovh/index.php?/forums/topic/3116-release-bot-warfare/).
 
 ## <span style="color:red">Important to public dedicated servers</span>
 The ```bots_main_firstIsHost``` DVAR is enabled by default!
@@ -57,15 +57,15 @@ Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in yo
   - ... And pretty much everything you expect a Combat Training bot to have
 
 ## Installation
-Using CoD4x's extended functionality requires to use their Dedicated server, as explained [here](https://cod4x.me/index.php?/forums/topic/2047-add-cod4x-server-gsc-functions-to-the-client/).
+Using CoD4x's extended functionality requires to use their Dedicated server, as explained [here](https://cod4x.ovh/index.php?/forums/topic/2047-add-cod4x-server-gsc-functions-to-the-client/).
 
 You can easily setup a local LAN dedicated server for you to join and play on. Have a look at [Setting up a CoD4x server]().
 
-0. Make sure that [CoD4x server + client](https://cod4x.me/) is installed, updated and working properly.
+0. Make sure that [CoD4x server + client](https://cod4x.ovh/) is installed, updated and working properly.
     - Download the [latest release](https://github.com/ineedbots/cod4x_bot_warfare/releases) of Bot Warfare.
 1. Locate your CoD4x server install folder.
 2. Move the files/folders found in 'Add to root of CoD4x server' from the Bot Warfare release archive you downloaded to the root of your CoD4x server folder.
-    - The folder/file structure should follow as '.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc'.
+    - The folder/file structure should follow as `.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc`.
 3. The mod is now installed, now start your server, change the DVARs and start a map.
 4. Now start your CoD4x client and connect to your server ('connect 127.0.0.1' in the console most likely) and play!
 
@@ -88,6 +88,7 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 | bots_main_menu                   | Enable the in-game menu for hosts.                                                          | true          |
 | bots_main_debug                  | Enable the in-game waypoint editor.                                                         | false         |
 | bots_main_kickBotsAtEnd          | Kick the bots at the end of a match.                                                        | false         |
+| bots_main_chat                   | The rate bots will chat at, set to 0 to disable.                                            | 1.0           |
 | bots_manage_add                  | Amount of bots to add to the game, once bots are added, resets back to `0`.                 | 0             |
 | bots_manage_fill                 | Amount of players/bots (look at `bots_manage_fill_mode`) to maintain in the match.          | 0             |
 | bots_manage_fill_mode            | `bots_manage_fill` players/bots counting method.<ul><li>`0` - counts both players and bots.</li><li>`1` - only counts bots.</li></ul> | 0 |
@@ -121,6 +122,17 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 
 
 ## Changelog
+- v2.1.0
+  - Bot chatter system, bots_main_chat
+  - Greatly reduce script variable usage
+  - Improved bots mantling and stuck
+  - Fix some runtime errors
+  - Bots sprint more
+  - Improved bots sight on enemies
+  - Bots do random actions while waiting at an objective
+  - Improved bots from getting stuck
+  - Better bot difficulty management, bots_skill_min and bots_skill_max
+
 - v2.0.1
   - Reduced bots crouching
   - Increased bots sprinting

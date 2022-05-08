@@ -1,4 +1,4 @@
-# CoD4x Bot Warfare
+# CoD4x Bot Warfare v2.1.0
 Bot Warfare is a GSC mod for the CoD4x project.
 
 It aims to add playable AI to the multiplayer games of CoD4.
@@ -12,7 +12,7 @@ Make sure to disable this DVAR by adding 'set bots_main_firstIsHost 0' in your s
 
 ## Installation
 0. Make sure that CoD4x server + client is installed, updated and working properly.
-	- Go to https://cod4x.me/ and download the Windows Server zip file. Move the contents of 'cod4x-windows-server' into your CoD4 game folder.
+	- Go to https://cod4x.ovh/ and download the Windows Server zip file. Move the contents of 'cod4x-windows-server' into your CoD4 game folder.
 1. Locate your CoD4x server install folder.
 2. Move the files/folders found in 'Add to root of CoD4x server' from the Bot Warfare release archive you downloaded to the root of your CoD4x server folder.
     - The folder/file structure should follow as '.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc'.
@@ -30,6 +30,17 @@ Make sure to disable this DVAR by adding 'set bots_main_firstIsHost 0' in your s
 - Pressing the menu button again closes menus.
 
 ## Changelog
+- v2.1.0
+  - Bot chatter system, bots_main_chat
+  - Greatly reduce script variable usage
+  - Improved bots mantling and stuck
+  - Fix some runtime errors
+  - Bots sprint more
+  - Improved bots sight on enemies
+  - Bots do random actions while waiting at an objective
+  - Improved bots from getting stuck
+  - Better bot difficulty management, bots_skill_min and bots_skill_max
+
 - v2.0.1
   - Reduced bots crouching
   - Increased bots sprinting
