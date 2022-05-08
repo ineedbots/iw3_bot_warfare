@@ -59,7 +59,7 @@ Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in yo
 ## Installation
 Using CoD4x's extended functionality requires to use their Dedicated server, as explained [here](https://cod4x.ovh/index.php?/forums/topic/2047-add-cod4x-server-gsc-functions-to-the-client/).
 
-You can easily setup a local LAN dedicated server for you to join and play on. Have a look at [Setting up a CoD4x server]().
+You can easily setup a local LAN dedicated server for you to join and play on. Have a look at [Setting up a CoD4x server](https://github.com/callofduty4x/CoD4x_Server/wiki/Server-setup).
 
 0. Make sure that [CoD4x server + client](https://cod4x.ovh/) is installed, updated and working properly.
     - Download the [latest release](https://github.com/ineedbots/cod4x_bot_warfare/releases) of Bot Warfare.
