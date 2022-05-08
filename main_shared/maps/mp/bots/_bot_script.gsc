@@ -66,6 +66,7 @@ onKillcam()
 doKillcamStuff()
 {
 	self endon( "disconnect" );
+	self endon( "spawned_player" );
 
 	self BotNotifyBotEvent( "killcam", "start" );
 

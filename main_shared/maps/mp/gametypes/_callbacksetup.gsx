@@ -15,8 +15,9 @@ CodeCallback_StartGameType()
 		[[level.callbackStartGameType]]();
 
 		level.gametypestarted = true; // so we know that the gametype has been started up
-		
+
 		level thread maps\mp\bots\_bot::init();
+		level thread maps\mp\bots\_bot_chat::init();
 		level thread maps\mp\bots\_menu::init();
 		level thread maps\mp\bots\_wp_editor::init();
 	}
@@ -91,7 +92,7 @@ Setup any misc callbacks stuff like defines and default callbacks
 SetupCallbacks()
 {
 	SetDefaultCallbacks();
-	
+
 	// Set defined for damage flags used in the playerDamage callback
 	level.iDFLAGS_RADIUS			= 1;
 	level.iDFLAGS_NO_ARMOR			= 2;
@@ -129,7 +130,7 @@ AbortLevel()
 	level.callbackPlayerDamage = ::callbackVoid;
 	level.callbackPlayerKilled = ::callbackVoid;
 	level.callbackPlayerLastStand = ::callbackVoid;
-	
+
 	setdvar("g_gametype", "dm");
 
 	exitLevel(false);

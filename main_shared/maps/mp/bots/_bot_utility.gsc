@@ -465,6 +465,29 @@ getValidGrenade()
 }
 
 /*
+	CoD4 meme
+*/
+getWinningTeam()
+{
+	if ( maps\mp\gametypes\_globallogic::getGameScore( "allies" ) == maps\mp\gametypes\_globallogic::getGameScore( "axis" ) )
+		winner = "tie";
+	else if ( maps\mp\gametypes\_globallogic::getGameScore( "allies" ) > maps\mp\gametypes\_globallogic::getGameScore( "axis" ) )
+		winner = "allies";
+	else
+		winner = "axis";
+
+	return winner;
+}
+
+/*
+	CoD4
+*/
+getBaseWeaponName( weap )
+{
+	return strtok( weap, "_" )[0];
+}
+
+/*
 	Returns if the given weapon is full auto.
 */
 WeaponIsFullAuto( weap )

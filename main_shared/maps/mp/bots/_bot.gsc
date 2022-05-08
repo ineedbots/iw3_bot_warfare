@@ -226,6 +226,14 @@ onPlayerKilled( eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sH
 		self maps\mp\bots\_bot_script::onKilled( eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, timeOffset, deathAnimDuration );
 	}
 
+	self.lastAttacker = eAttacker;
+
+	if ( isDefined( eAttacker ) )
+	{
+		eAttacker.lastKilledPlayer = self;
+		eAttacker notify( "killed_enemy" );
+	}
+
 	self [[level.prevCallbackPlayerKilled]]( eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, timeOffset, deathAnimDuration );
 }
 
