@@ -1,35 +1,6 @@
-# Ignore everything in repository root
-/*
-
-# Files to not ignore
-!/.gitignore
-!/.editorconfig
-!/.gitattributes
-
-!/z_server.bat
-
-# Folder to not ignore
-!/main_shared/
-!/.vscode
-*.gsx
-!/main_shared/maps/mp/gametypes/_callbacksetup.gsx
-main_shared/maps/mp/gametypes/_globallogic.gsx
-main_shared/maps/mp/gametypes/_hardpoints.gsx
-!/README.md
 *.zip
-!/out
-
-!/.astylerc
-!/z_deploy.bat
-!/deploy.bat
-!/deploy.js
-
-!/main/
-/main/*
-!/main/server.cfg
-!/main/botnames.txt
-!/main/waypoints/
-!/main/plugins/
-/main/plugins/*
-!/main/plugins/httpget.dll
-!/main/plugins/httpget.so
+*.log
+*.stat
+logs/
+demos/
+missingasset.csv
