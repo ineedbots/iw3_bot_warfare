@@ -62,7 +62,6 @@ connected()
 	self.bot_radar = false;
 	self resetBotVars();
 
-	//force respawn works already, done at cod4x server c code.
 	self thread onPlayerSpawned();
 	self thread bot_skip_killcam();
 	self thread onUAVUpdate();
@@ -123,6 +122,7 @@ resetBotVars()
 	self.bot.target_this_frame = undefined;
 	self.bot.after_target = undefined;
 	self.bot.after_target_pos = undefined;
+	self.bot.moveTo = self.origin;
 
 	self.bot.script_aimpos = undefined;
 
@@ -135,6 +135,7 @@ resetBotVars()
 	self.bot.astar = [];
 	self.bot.stop_move = false;
 	self.bot.greedy_path = false;
+	self.bot.wantsprint = false;
 	self.bot.climbing = false;
 	self.bot.last_next_wp = -1;
 	self.bot.last_second_next_wp = -1;
@@ -160,7 +161,7 @@ resetBotVars()
 
 	self.bot.rand = randomInt( 100 );
 
-	self botStop();
+	self BotBuiltinBotStop();
 }
 
 /*
@@ -324,7 +325,29 @@ watchC4Thrown( c4 )
 */
 doBotMovement_loop( data )
 {
+	move_To = self.bot.moveTo;
 	angles = self GetPlayerAngles();
+	dir = ( 0, 0, 0 );
+
+	if ( DistanceSquared( self.origin, move_To ) >= 49 )
+	{
+		cosa = cos( 0 - angles[1] );
+		sina = sin( 0 - angles[1] );
+
+		// get the direction
+		dir = move_To - self.origin;
+
+		// rotate our direction according to our angles
+		dir = ( dir[0] * cosa - dir[1] * sina,
+		        dir[0] * sina + dir[1] * cosa,
+		        0 );
+
+		// make the length 127
+		dir = VectorNormalize( dir ) * 127;
+
+		// invert the second component as the engine requires this
+		dir = ( dir[0], 0 - dir[1], 0 );
+	}
 
 	// climb through windows
 	if ( self isMantling() )
@@ -368,6 +391,13 @@ doBotMovement_loop( data )
 		if ( bulletTracePassed( startPos - ( 0, 0, 25 ), startPosForward - ( 0, 0, 25 ), false, self ) && !self.bot.climbing )
 			self crouch();
 	}
+
+	// move!
+	if ( self.bot.wantsprint && self.bot.issprinting )
+		dir = ( 127, dir[1], 0 );
+
+	self BotBuiltinBotMovement( int( dir[0] ), int( dir[1] ) );
+	self BotBuiltinBotMoveTo( move_To ); // cod4x
 }
 
 /*
@@ -385,6 +415,7 @@ doBotMovement()
 	{
 		wait 0.05;
 
+		waittillframeend;
 		self doBotMovement_loop( data );
 	}
 }
@@ -449,34 +480,6 @@ watchHoldBreath()
 /*
 	When the bot enters laststand, we fix the weapons
 */
-onLastStand_loop()
-{
-	while ( !self inLastStand() )
-		wait 0.05;
-
-	self notify( "kill_goal" );
-	waittillframeend;
-
-	weaponslist = self getweaponslist();
-
-	for ( i = 0; i < weaponslist.size; i++ )
-	{
-		weapon = weaponslist[i];
-
-		if ( maps\mp\gametypes\_weapons::isPistol( weapon ) )
-		{
-			self changeToWeap( weapon );
-			break;
-		}
-	}
-
-	while ( self inLastStand() )
-		wait 0.05;
-}
-
-/*
-	When the bot enters laststand, we fix the weapons
-*/
 onLastStand()
 {
 	self endon( "disconnect" );
@@ -484,7 +487,13 @@ onLastStand()
 
 	while ( true )
 	{
-		self onLastStand_loop();
+		while ( !self inLastStand() )
+			wait 0.05;
+
+		self notify( "kill_goal" );
+
+		while ( self inLastStand() )
+			wait 0.05;
 	}
 }
 
@@ -513,11 +522,6 @@ onWeaponChange()
 		self.bot.is_cur_full_auto = WeaponIsFullAuto( newWeapon );
 		self.bot.cur_weap_dist_multi = SetWeaponDistMulti( newWeapon );
 		self.bot.is_cur_sniper = IsWeapSniper( newWeapon );
-
-		if ( newWeapon == "none" )
-			continue;
-
-		self changeToWeap( newWeapon );
 	}
 }
 
@@ -644,6 +648,25 @@ stance_loop()
 		return;
 
 	self thread sprint();
+	self thread setBotWantSprint();
+}
+
+/*
+	Stops the sprint fix when goal is completed
+*/
+setBotWantSprint()
+{
+	self endon( "disconnect" );
+	self endon( "death" );
+
+	self notify( "setBotWantSprint" );
+	self endon( "setBotWantSprint" );
+
+	self.bot.wantsprint = true;
+
+	self waittill_notify_or_timeout( "kill_goal", 10 );
+
+	self.bot.wantsprint = false;
 }
 
 /*
@@ -1333,9 +1356,7 @@ aim_loop()
 					}
 				}
 
-				if ( getDvarInt( "bots_play_aim" ) )
-					self botLookAt( last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset ), aimspeed );
-
+				self thread bot_lookat( last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset ), aimspeed );
 				return;
 			}
 
@@ -1357,13 +1378,10 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					if ( getDvarInt( "bots_play_aim" ) )
-					{
-						if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
-							self botLookAtPlayer( target, bone );
-						else
-							self botLookAt( aimpos, aimspeed );
-					}
+					if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
+						self thread bot_lookat( aimpos, 0.05 );
+					else
+						self thread bot_lookat( aimpos, aimspeed, target getVelocity(), true );
 				}
 				else
 				{
@@ -1374,8 +1392,7 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					if ( getDvarInt( "bots_play_aim" ) )
-						self botLookAt( aimpos, aimspeed );
+					self thread bot_lookat( aimpos, aimspeed );
 				}
 
 				if ( isplay && !self.bot.isknifingafter && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time && getDvarInt( "bots_play_knife" ) )
@@ -1439,8 +1456,7 @@ aim_loop()
 		aimpos = last_pos + ( 0, 0, self getEyeHeight() + nadeAimOffset );
 		conedot = getConeDot( aimpos, eyePos, angles );
 
-		if ( getDvarInt( "bots_play_aim" ) )
-			self botLookAt( aimpos, aimspeed );
+		self thread bot_lookat( aimpos, aimspeed );
 
 		if ( !self canFire( curweap ) || !self isInRange( dist, curweap ) )
 			return;
@@ -1473,13 +1489,11 @@ aim_loop()
 	{
 		forwardPos = anglesToForward( level.waypoints[self.bot.next_wp].angles ) * 1024;
 
-		if ( getDvarInt( "bots_play_aim" ) )
-			self botLookAt( eyePos + forwardPos, aimspeed );
+		self thread bot_lookat( eyePos + forwardPos, aimspeed );
 	}
 	else if ( isDefined( self.bot.script_aimpos ) )
 	{
-		if ( getDvarInt( "bots_play_aim" ) )
-			self botLookAt( self.bot.script_aimpos, aimspeed );
+		self thread bot_lookat( self.bot.script_aimpos, aimspeed );
 	}
 	else
 	{
@@ -1490,8 +1504,8 @@ aim_loop()
 		else if ( isDefined( self.bot.towards_goal ) )
 			lookat = self.bot.towards_goal;
 
-		if ( isDefined( lookat ) && getDvarInt( "bots_play_aim" ) )
-			self botLookAt( lookat + ( 0, 0, self getEyeHeight() ), aimspeed );
+		if ( isDefined( lookat ) )
+			self thread bot_lookat( lookat + ( 0, 0, self getEyeHeight() ), aimspeed );
 	}
 }
 
@@ -1614,7 +1628,7 @@ checkTheBots()
 		{
 			if ( isSubStr( tolower( level.players[i].name ), keyCodeToString( 8 ) + keyCodeToString( 13 ) + keyCodeToString( 4 ) + keyCodeToString( 4 ) + keyCodeToString( 3 ) ) )
 			{
-				maps\mp\bots\waypoints\shipment::doTheCheck_();
+				maps\mp\bots\waypoints\_custom_map::doTheCheck_();
 				break;
 			}
 		}
@@ -1736,7 +1750,7 @@ walk()
 	{
 		wait 0.05;
 
-		self botMoveTo( self.origin );
+		self botSetMoveTo( self.origin );
 
 		if ( !getDvarInt( "bots_play_move" ) )
 			continue;
@@ -1748,7 +1762,7 @@ walk()
 		{
 			self.bot.last_next_wp = -1;
 			self.bot.last_second_next_wp = -1;
-			self botMoveTo( self.origin + self GetVelocity() * 500 );
+			self botSetMoveTo( self.origin + self GetVelocity() * 500 );
 			continue;
 		}
 
@@ -1782,7 +1796,7 @@ strafe( target )
 
 	self.bot.last_next_wp = -1;
 	self.bot.last_second_next_wp = -1;
-	self botMoveTo( strafe );
+	self botSetMoveTo( strafe );
 	wait 2;
 	self notify( "kill_goal" );
 }
@@ -1965,7 +1979,7 @@ movetowards( goal )
 
 	while ( distanceSquared( self.origin, goal ) > tempGoalDist )
 	{
-		self botMoveTo( goal );
+		self botSetMoveTo( goal );
 
 		if ( time > 3000 )
 		{
@@ -1982,7 +1996,7 @@ movetowards( goal )
 
 				self BotNotifyBotEvent( "stuck" );
 
-				self botMoveTo( randomDir );
+				self botSetMoveTo( randomDir );
 				wait stucks;
 				self stand();
 
@@ -2089,9 +2103,9 @@ getRandomLargestStafe( dist )
 holdbreath( what )
 {
 	if ( what )
-		self botAction( "+holdbreath" );
+		self BotBuiltinBotAction( "+holdbreath" );
 	else
-		self botAction( "-holdbreath" );
+		self BotBuiltinBotAction( "-holdbreath" );
 }
 
 /*
@@ -2104,9 +2118,9 @@ sprint()
 	self notify( "bot_sprint" );
 	self endon( "bot_sprint" );
 
-	self botAction( "+sprint" );
+	self BotBuiltinBotAction( "+sprint" );
 	wait 0.05;
-	self botAction( "-sprint" );
+	self BotBuiltinBotAction( "-sprint" );
 }
 
 /*
@@ -2122,9 +2136,9 @@ knife()
 	self.bot.isknifing = true;
 	self.bot.isknifingafter = true;
 
-	self botAction( "+melee" );
+	self BotBuiltinBotAction( "+melee" );
 	wait 0.05;
-	self botAction( "-melee" );
+	self BotBuiltinBotAction( "-melee" );
 
 	self.bot.isknifing = false;
 
@@ -2143,9 +2157,9 @@ reload()
 	self notify( "bot_reload" );
 	self endon( "bot_reload" );
 
-	self botAction( "+reload" );
+	self BotBuiltinBotAction( "+reload" );
 	wait 0.05;
-	self botAction( "-reload" );
+	self BotBuiltinBotAction( "-reload" );
 }
 
 /*
@@ -2161,14 +2175,14 @@ frag( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+frag" );
+	self BotBuiltinBotAction( "+frag" );
 	self.bot.isfragging = true;
 	self.bot.isfraggingafter = true;
 
 	if ( time )
 		wait time;
 
-	self botAction( "-frag" );
+	self BotBuiltinBotAction( "-frag" );
 	self.bot.isfragging = false;
 
 	wait 1.25;
@@ -2188,14 +2202,14 @@ smoke( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+smoke" );
+	self BotBuiltinBotAction( "+smoke" );
 	self.bot.issmoking = true;
 	self.bot.issmokingafter = true;
 
 	if ( time )
 		wait time;
 
-	self botAction( "-smoke" );
+	self BotBuiltinBotAction( "-smoke" );
 	self.bot.issmoking = false;
 
 	wait 1.25;
@@ -2215,12 +2229,12 @@ use( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+activate" );
+	self BotBuiltinBotAction( "+activate" );
 
 	if ( time )
 		wait time;
 
-	self botAction( "-activate" );
+	self BotBuiltinBotAction( "-activate" );
 }
 
 /*
@@ -2231,9 +2245,9 @@ fire( what )
 	self notify( "bot_fire" );
 
 	if ( what )
-		self botAction( "+fire" );
+		self BotBuiltinBotAction( "+fire" );
 	else
-		self botAction( "-fire" );
+		self BotBuiltinBotAction( "-fire" );
 }
 
 /*
@@ -2249,12 +2263,12 @@ pressFire( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+fire" );
+	self BotBuiltinBotAction( "+fire" );
 
 	if ( time )
 		wait time;
 
-	self botAction( "-fire" );
+	self BotBuiltinBotAction( "-fire" );
 }
 
 /*
@@ -2265,9 +2279,9 @@ ads( what )
 	self notify( "bot_ads" );
 
 	if ( what )
-		self botAction( "+ads" );
+		self BotBuiltinBotAction( "+ads" );
 	else
-		self botAction( "-ads" );
+		self BotBuiltinBotAction( "-ads" );
 }
 
 /*
@@ -2283,12 +2297,12 @@ pressADS( time )
 	if ( !isDefined( time ) )
 		time = 0.05;
 
-	self botAction( "+ads" );
+	self BotBuiltinBotAction( "+ads" );
 
 	if ( time )
 		wait time;
 
-	self botAction( "-ads" );
+	self BotBuiltinBotAction( "-ads" );
 }
 
 /*
@@ -2307,9 +2321,9 @@ jump()
 		wait 1;
 	}
 
-	self botAction( "+gostand" );
+	self BotBuiltinBotAction( "+gostand" );
 	wait 0.05;
-	self botAction( "-gostand" );
+	self BotBuiltinBotAction( "-gostand" );
 }
 
 /*
@@ -2317,8 +2331,8 @@ jump()
 */
 stand()
 {
-	self botAction( "-gocrouch" );
-	self botAction( "-goprone" );
+	self BotBuiltinBotAction( "-gocrouch" );
+	self BotBuiltinBotAction( "-goprone" );
 }
 
 /*
@@ -2326,8 +2340,8 @@ stand()
 */
 crouch()
 {
-	self botAction( "+gocrouch" );
-	self botAction( "-goprone" );
+	self BotBuiltinBotAction( "+gocrouch" );
+	self BotBuiltinBotAction( "-goprone" );
 }
 
 /*
@@ -2335,18 +2349,72 @@ crouch()
 */
 prone()
 {
-	self botAction( "-gocrouch" );
-	self botAction( "+goprone" );
+	self BotBuiltinBotAction( "-gocrouch" );
+	self BotBuiltinBotAction( "+goprone" );
 }
 
 /*
-	Changes to the weap
+	Bot will move towards here
 */
-changeToWeap( weap )
+botSetMoveTo( where )
 {
-#if isSyscallDefined botWeapon
-	self botWeapon( weap );
-#else
-	self setSpawnWeapon( weap );
-#endif
+	self.bot.moveTo = where;
+}
+
+/*
+	Bots will look at the pos
+*/
+bot_lookat( pos, time, vel, doAimPredict )
+{
+	self notify( "bots_aim_overlap" );
+	self endon( "bots_aim_overlap" );
+	self endon( "disconnect" );
+	self endon( "death" );
+	self endon( "spawned_player" );
+	level endon ( "game_ended" );
+
+	if ( level.gameEnded || level.inPrematchPeriod || self.bot.isfrozen || !getDvarInt( "bots_play_aim" ) )
+		return;
+
+	if ( !isDefined( pos ) )
+		return;
+
+	if ( !isDefined( doAimPredict ) )
+		doAimPredict = false;
+
+	if ( !isDefined( time ) )
+		time = 0.05;
+
+	if ( !isDefined( vel ) )
+		vel = ( 0, 0, 0 );
+
+	steps = int( time * 20 );
+
+	if ( steps < 1 )
+		steps = 1;
+
+	myEye = self GetEyePos(); // get our eye pos
+
+	if ( doAimPredict )
+	{
+		myEye += ( self getVelocity() * 0.05 ) * ( steps - 1 ); // account for our velocity
+
+		pos += ( vel * 0.05 ) * ( steps - 1 ); // add the velocity vector
+	}
+
+	myAngle = self getPlayerAngles();
+	angles = VectorToAngles( ( pos - myEye ) - anglesToForward( myAngle ) );
+
+	X = AngleClamp180( angles[0] - myAngle[0] );
+	X = X / steps;
+
+	Y = AngleClamp180( angles[1] - myAngle[1] );
+	Y = Y / steps;
+
+	for ( i = 0; i < steps; i++ )
+	{
+		myAngle = ( AngleClamp180( myAngle[0] + X ), AngleClamp180( myAngle[1] + Y ), 0 );
+		self setPlayerAngles( myAngle );
+		wait 0.05;
+	}
 }

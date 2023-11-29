@@ -16,6 +16,9 @@ init()
 	if ( !getDvarInt( "bots_main" ) )
 		return;
 
+	if ( !wait_for_builtins() )
+		PrintLn( "FATAL: NO BUILT-INS FOR BOTS" );
+
 	thread load_waypoints();
 	cac_init_patch();
 	thread hook_callbacks();
@@ -177,8 +180,6 @@ init()
 
 	level thread onPlayerConnect();
 	level thread handleBots();
-
-	level thread maps\mp\bots\_bot_http::doVersionCheck();
 }
 
 /*
@@ -198,7 +199,12 @@ handleBots()
 	if ( !getDvarInt( "bots_main_kickBotsAtEnd" ) )
 		return;
 
-	removeAllTestClients();
+	bots = getBotArray();
+
+	for ( i = 0; i < bots.size; i++ )
+	{
+		kick( bots[i] getEntityNumber() );
+	}
 }
 
 /*
@@ -399,9 +405,36 @@ watchBotDebugEvent()
 	{
 		self waittill( "bot_event", msg, str, b, c, d, e, f, g );
 
-		if ( msg == "debug" && GetDvarInt( "bots_main_debug" ) )
+		if ( GetDvarInt( "bots_main_debug" ) >= 2 )
 		{
-			printToConsole( "Bot Warfare debug: " + self.name + ": " + str );
+			big_str = "Bot Warfare debug: " + self.name + ": " + msg;
+
+			if ( isDefined( str ) && isString( str ) )
+				big_str += ", " + str;
+
+			if ( isDefined( b ) && isString( b ) )
+				big_str += ", " + b;
+
+			if ( isDefined( c ) && isString( c ) )
+				big_str += ", " + c;
+
+			if ( isDefined( d ) && isString( d ) )
+				big_str += ", " + d;
+
+			if ( isDefined( e ) && isString( e ) )
+				big_str += ", " + e;
+
+			if ( isDefined( f ) && isString( f ) )
+				big_str += ", " + f;
+
+			if ( isDefined( g ) && isString( g ) )
+				big_str += ", " + g;
+
+			BotBuiltinPrintConsole( big_str );
+		}
+		else if ( msg == "debug" && GetDvarInt( "bots_main_debug" ) )
+		{
+			BotBuiltinPrintConsole( "Bot Warfare debug: " + self.name + ": " + str );
 		}
 	}
 }
@@ -422,6 +455,7 @@ added()
 */
 add_bot()
 {
+	// cod4x specific
 	name = getABotName();
 
 	bot = undefined;
@@ -791,7 +825,10 @@ addBots_loop()
 		setDvar( "bots_manage_add", 1 );
 	else if ( amount > fillAmount && getDvarInt( "bots_manage_fill_kick" ) )
 	{
-		RemoveTestClient(); //cod4x
+		tempBot = PickRandom( getBotArray() );
+
+		if ( isDefined( tempBot ) )
+			kick( tempBot getEntityNumber() );
 	}
 }
 

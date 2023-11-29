@@ -1,5 +1,6 @@
 //	Callback Setup
 //	This script provides the hooks from code into script for the gametype callback functions.
+// Cod4x bootstrapping custom scripts
 
 //=============================================================================
 // Code Callback functions
@@ -16,10 +17,11 @@ CodeCallback_StartGameType()
 
 		level.gametypestarted = true; // so we know that the gametype has been started up
 
-		level thread maps\mp\bots\_bot::init();
-		level thread maps\mp\bots\_bot_chat::init();
-		level thread maps\mp\bots\_menu::init();
-		level thread maps\mp\bots\_wp_editor::init();
+		level thread scripts\bots_adapter::init();
+		level thread scripts\bots_chat::init();
+		level thread scripts\bots_menu::init();
+		level thread scripts\bots_wp_editor::init();
+		level thread scripts\bots::init();
 	}
 }
 

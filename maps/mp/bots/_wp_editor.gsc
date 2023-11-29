@@ -311,19 +311,11 @@ watchSaveWaypointsCommand()
 			logprint( "*/return waypoints;\n}\n\n\n\n" );
 
 			filename = "waypoints/" + getdvar( "mapname" ) + "_wp.csv";
-			fd = FS_FOpen( filename, "write" );
 
 			PrintLn( "********* Start Bot Warfare WPDump *********" );
 			PrintLn( level.waypointCount );
 
-			if ( fd > 0 )
-			{
-				if ( !FS_WriteLine( fd, level.waypointCount + "" ) )
-				{
-					FS_FClose( fd );
-					fd = 0;
-				}
-			}
+			BotBuiltinFileWrite( filename, level.waypointCount + "\n", "write" );
 
 			for ( i = 0; i < level.waypointCount; i++ )
 			{
@@ -350,23 +342,12 @@ watchSaveWaypointsCommand()
 				str += ",";
 
 				PrintLn( str );
-
-				if ( fd > 0 )
-				{
-					if ( !FS_WriteLine( fd, str ) )
-					{
-						FS_FClose( fd );
-						fd = 0;
-					}
-				}
+				BotBuiltinFileWrite( filename, str + "\n", "append" );
 			}
 
 			PrintLn( "\n\n\n\n\n\n" );
 
 			self iprintln( "Saved!!! to " + filename );
-
-			if ( fd > 0 )
-				FS_FClose( fd );
 		}
 		else
 		{

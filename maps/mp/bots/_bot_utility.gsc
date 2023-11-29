@@ -3,6 +3,120 @@
 #include maps\mp\gametypes\_hud_util;
 
 /*
+	Waits for the built-ins to be defined
+*/
+wait_for_builtins()
+{
+	for ( i = 0; i < 20; i++ )
+	{
+		if ( isDefined( level.bot_builtins ) )
+			return true;
+
+		if ( i < 18 )
+			waittillframeend;
+		else
+			wait 0.05;
+	}
+
+	return false;
+}
+
+/*
+	Prints to console without dev script on
+*/
+BotBuiltinPrintConsole( s )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["printconsole"] ) )
+	{
+		[[ level.bot_builtins["printconsole" ]]]( s );
+	}
+}
+
+/*
+	Writes to the file, mode can be "append" or "write"
+*/
+BotBuiltinFileWrite( file, contents, mode )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["filewrite"] ) )
+	{
+		[[ level.bot_builtins["filewrite" ]]]( file, contents, mode );
+	}
+}
+
+/*
+	Returns the whole file as a string
+*/
+BotBuiltinFileRead( file )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fileread"] ) )
+	{
+		return [[ level.bot_builtins["fileread" ]]]( file );
+	}
+
+	return undefined;
+}
+
+/*
+	Test if a file exists
+*/
+BotBuiltinFileExists( file )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fileexists"] ) )
+	{
+		return [[ level.bot_builtins["fileexists" ]]]( file );
+	}
+
+	return false;
+}
+
+/*
+	Bot action, does a bot action
+	<client> botAction(<action string (+ or - then action like frag or smoke)>)
+*/
+BotBuiltinBotAction( action )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["botaction"] ) )
+	{
+		self [[ level.bot_builtins["botaction" ]]]( action );
+	}
+}
+
+/*
+	Clears the bot from movement and actions
+	<client> botStop()
+*/
+BotBuiltinBotStop()
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["botstop"] ) )
+	{
+		self [[ level.bot_builtins["botstop" ]]]();
+	}
+}
+
+/*
+	Sets the bot's movement
+	<client> botMovement(<int left>, <int forward>)
+*/
+BotBuiltinBotMovement( left, forward )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["botmovement"] ) )
+	{
+		self [[ level.bot_builtins["botmovement" ]]]( left, forward );
+	}
+}
+
+/*
+	Cod4x built-in
+*/
+BotBuiltinBotMoveTo( where )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["botmoveto"] ) )
+	{
+		self [[ level.bot_builtins["botmoveto" ]]]( where );
+	}
+}
+
+/*
 	Returns if player is the host
 */
 is_host()
@@ -24,7 +138,7 @@ doHostCheck()
 
 	if ( getDvar( "bots_main_firstIsHost" ) != "0" )
 	{
-		printToConsole( "WARNING: bots_main_firstIsHost is enabled" );
+		BotBuiltinPrintConsole( "WARNING: bots_main_firstIsHost is enabled" );
 
 		if ( getDvar( "bots_main_firstIsHost" ) == "1" )
 		{
@@ -81,14 +195,6 @@ BotSetStance( stance )
 			self maps\mp\bots\_bot_internal::prone();
 			break;
 	}
-}
-
-/*
-	Bot changes to the weap
-*/
-BotChangeToWeapon( weap )
-{
-	self maps\mp\bots\_bot_internal::changeToWeap( weap );
 }
 
 /*
@@ -477,6 +583,17 @@ getWinningTeam()
 		winner = "axis";
 
 	return winner;
+}
+
+/*
+	Picks a random thing
+*/
+PickRandom( arr )
+{
+	if ( !arr.size )
+		return undefined;
+
+	return arr[randomInt( arr.size )];
 }
 
 /*
@@ -1335,20 +1452,29 @@ getABotName()
 
 		filename = "botnames.txt";
 
-		if ( FS_TestFile( filename ) )
+		if ( BotBuiltinFileExists( filename ) )
 		{
-			f = FS_FOpen( filename, "read" );
+			names_str = BotBuiltinFileRead( filename );
 
-			name = FS_ReadLine( f );
-
-			while ( isDefined( name ) && name != "" )
+			if ( isDefined( names_str ) )
 			{
-				level.bot_names[level.bot_names.size] = name;
+				line = "";
 
-				name = FS_ReadLine( f );
+				for ( i = 0; i < names_str.size; i++ )
+				{
+					c = names_str[i];
+
+					if ( c == "\n" )
+					{
+						level.bot_names[level.bot_names.size] = line;
+
+						line = "";
+						continue;
+					}
+
+					line += c;
+				}
 			}
-
-			FS_FClose( f );
 		}
 	}
 
@@ -1363,15 +1489,38 @@ getABotName()
 }
 
 /*
-	Prints to the console
+	Returns an array of each line
 */
-printToConsole( str )
+getWaypointLinesFromFile( filename )
 {
-#if isSyscallDefined PrintConsole
-	PrintConsole( str + "\n" );
-#else
-	println( str );
-#endif
+	result = spawnStruct();
+	result.lines = [];
+
+	waypointStr = BotBuiltinFileRead( filename );
+
+	if ( !isDefined( waypointStr ) )
+		return result;
+
+	line = "";
+
+	for ( i = 0; i < waypointStr.size; i++ )
+	{
+		c = waypointStr[i];
+
+		if ( c == "\n" )
+		{
+			result.lines[result.lines.size] = line;
+
+			line = "";
+			continue;
+		}
+
+		line += c;
+	}
+
+	result.lines[result.lines.size] = line;
+
+	return result;
 }
 
 /*
@@ -1382,38 +1531,27 @@ readWpsFromFile( mapname )
 	waypoints = [];
 	filename = "waypoints/" + mapname + "_wp.csv";
 
-	if ( !FS_TestFile( filename ) )
+	if ( !BotBuiltinFileExists( filename ) )
 		return waypoints;
 
-	printToConsole( "Attempting to read waypoints from " + filename );
+	res = getWaypointLinesFromFile( filename );
 
-	csv = FS_FOpen( filename, "read" );
+	if ( !res.lines.size )
+		return waypoints;
 
-	for ( ;; )
+	BotBuiltinPrintConsole( "Attempting to read waypoints from " + filename );
+
+	waypointCount = int( res.lines[0] );
+
+	for ( i = 1; i <= waypointCount; i++ )
 	{
-		waypointCount = int( FS_ReadLine( csv ) );
+		tokens = tokenizeLine( res.lines[i], "," );
 
-		if ( waypointCount <= 0 )
-			break;
+		waypoint = parseTokensIntoWaypoint( tokens );
 
-		for ( i = 1; i <= waypointCount; i++ )
-		{
-			line = FS_ReadLine( csv );
-
-			if ( !isDefined( line ) || line == "" )
-				continue;
-
-			tokens = tokenizeLine( line, "," );
-
-			waypoint = parseTokensIntoWaypoint( tokens );
-
-			waypoints[i - 1] = waypoint;
-		}
-
-		break;
+		waypoints[i - 1] = waypoint;
 	}
 
-	FS_FClose( csv );
 	return waypoints;
 }
 
@@ -1435,105 +1573,19 @@ load_waypoints()
 	if ( wps.size )
 	{
 		level.waypoints = wps;
-		printToConsole( "Loaded " + wps.size + " waypoints from file." );
+		BotBuiltinPrintConsole( "Loaded " + wps.size + " waypoints from file." );
 	}
 	else
 	{
 		switch ( mapname )
 		{
-			case "mp_convoy":
-				level.waypoints = maps\mp\bots\waypoints\ambush::Ambush();
-				break;
-
-			case "mp_backlot":
-				level.waypoints = maps\mp\bots\waypoints\backlot::Backlot();
-				break;
-
-			case "mp_bloc":
-				level.waypoints = maps\mp\bots\waypoints\bloc::Bloc();
-				break;
-
-			case "mp_bog":
-				level.waypoints = maps\mp\bots\waypoints\bog::Bog();
-				break;
-
-			case "mp_countdown":
-				level.waypoints = maps\mp\bots\waypoints\countdown::Countdown();
-				break;
-
-			case "mp_crash":
-			case "mp_crash_snow":
-				level.waypoints = maps\mp\bots\waypoints\crash::Crash();
-				break;
-
-			case "mp_crossfire":
-				level.waypoints = maps\mp\bots\waypoints\crossfire::Crossfire();
-				break;
-
-			case "mp_citystreets":
-				level.waypoints = maps\mp\bots\waypoints\district::District();
-				break;
-
-			case "mp_farm":
-				level.waypoints = maps\mp\bots\waypoints\downpour::Downpour();
-				break;
-
-			case "mp_overgrown":
-				level.waypoints = maps\mp\bots\waypoints\overgrown::Overgrown();
-				break;
-
-			case "mp_pipeline":
-				level.waypoints = maps\mp\bots\waypoints\pipeline::Pipeline();
-				break;
-
-			case "mp_shipment":
-				level.waypoints = maps\mp\bots\waypoints\shipment::Shipment();
-				break;
-
-			case "mp_showdown":
-				level.waypoints = maps\mp\bots\waypoints\showdown::Showdown();
-				break;
-
-			case "mp_strike":
-				level.waypoints = maps\mp\bots\waypoints\strike::Strike();
-				break;
-
-			case "mp_vacant":
-				level.waypoints = maps\mp\bots\waypoints\vacant::Vacant();
-				break;
-
-			case "mp_cargoship":
-				level.waypoints = maps\mp\bots\waypoints\wetwork::Wetwork();
-				break;
-
-			case "mp_broadcast":
-				level.waypoints = maps\mp\bots\waypoints\broadcast::Broadcast();
-				break;
-
-			case "mp_creek":
-				level.waypoints = maps\mp\bots\waypoints\creek::Creek();
-				break;
-
-			case "mp_carentan":
-				level.waypoints = maps\mp\bots\waypoints\chinatown::Chinatown();
-				break;
-
-			case "mp_killhouse":
-				level.waypoints = maps\mp\bots\waypoints\killhouse::Killhouse();
-				break;
-
 			default:
 				maps\mp\bots\waypoints\_custom_map::main( mapname );
 				break;
 		}
 
 		if ( level.waypoints.size )
-			printToConsole( "Loaded " + level.waypoints.size + " waypoints from script." );
-	}
-
-	if ( !level.waypoints.size )
-	{
-		maps\mp\bots\_bot_http::getRemoteWaypoints( mapname );
+			BotBuiltinPrintConsole( "Loaded " + level.waypoints.size + " waypoints from script." );
 	}
 
 	if ( !level.waypoints.size )
@@ -1541,7 +1593,12 @@ load_waypoints()
 		level.waypoints = FrontLinesWaypoints();
 
 		if ( level.waypoints.size )
-			printToConsole( "Loaded " + level.waypoints.size + " waypoints from frontlines." );
+			BotBuiltinPrintConsole( "Loaded " + level.waypoints.size + " waypoints from frontlines." );
+	}
+
+	if ( !level.waypoints.size )
+	{
+		BotBuiltinPrintConsole( "No waypoints loaded!" );
 	}
 
 	level.waypointCount = level.waypoints.size;

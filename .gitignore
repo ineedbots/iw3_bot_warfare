@@ -4,3 +4,5 @@
 logs/
 demos/
 missingasset.csv
+q3config_server.cfg
+qconsole.log.old
