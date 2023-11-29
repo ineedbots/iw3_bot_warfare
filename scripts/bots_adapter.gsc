@@ -8,6 +8,7 @@ init()
 	level.bot_builtins["botstop"] = ::do_botstop;
 	level.bot_builtins["botmovement"] = ::do_botmovement;
 	level.bot_builtins["botmoveto"] = ::do_botmoveto;
+	level.bot_builtins["isbot"] = ::do_isbot;
 }
 
 do_printconsole( s )
@@ -72,4 +73,9 @@ do_botmovement( left, forward )
 do_botmoveto( where )
 {
 	self BotMoveTo( where );
+}
+
+do_isbot()
+{
+	return self.isbot;
 }
