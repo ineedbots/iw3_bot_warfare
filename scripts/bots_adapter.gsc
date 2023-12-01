@@ -9,6 +9,10 @@ init()
 	level.bot_builtins["botmovement"] = ::do_botmovement;
 	level.bot_builtins["botmoveto"] = ::do_botmoveto;
 	level.bot_builtins["isbot"] = ::do_isbot;
+	level.bot_builtins["fs_fopen"] = ::do_fs_fopen;
+	level.bot_builtins["fs_fclose"] = ::do_fs_fclose;
+	level.bot_builtins["fs_readline"] = ::do_fs_readline;
+	level.bot_builtins["fs_writeline"] = ::do_fs_writeline;
 }
 
 do_printconsole( s )
@@ -24,7 +28,7 @@ do_filewrite( file, contents, mode )
 	// always adds newline, strip from contents
 	if ( contents[contents.size - 1] == "\n" )
 	{
-		contents = getsubstr(contents, 0, contents.size - 1);
+		contents = getsubstr( contents, 0, contents.size - 1 );
 	}
 
 	FS_WriteLine( f, contents );
@@ -78,4 +82,26 @@ do_botmoveto( where )
 do_isbot()
 {
 	return self.isbot;
+}
+
+do_fs_fopen( file, mode )
+{
+	file = "scriptdata/" + file;
+	return FS_FOpen( file, mode );
+}
+
+do_fs_fclose( file )
+{
+	file = "scriptdata/" + file;
+	FS_FClose( file );
+}
+
+do_fs_readline( fh )
+{
+	return FS_ReadLine( fh );
+}
+
+do_fs_writeline( fh, contents )
+{
+	FS_WriteLine( fh, contents );
 }

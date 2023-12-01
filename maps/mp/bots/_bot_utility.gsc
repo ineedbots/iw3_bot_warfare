@@ -130,6 +130,54 @@ BotBuiltinIsBot()
 }
 
 /*
+	Opens the file
+*/
+BotBuiltinFileOpen( file, mode )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fs_fopen"] ) )
+	{
+		return [[ level.bot_builtins["fs_fopen" ]]]( file, mode );
+	}
+
+	return 0;
+}
+
+/*
+	Closes the file
+*/
+BotBuiltinFileClose( fh )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fs_fclose"] ) )
+	{
+		[[ level.bot_builtins["fs_fclose" ]]]( fh );
+	}
+}
+
+/*
+	Closes the file
+*/
+BotBuiltinReadLine( fh )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fs_readline"] ) )
+	{
+		return [[ level.bot_builtins["fs_readline" ]]]( fh );
+	}
+
+	return undefined;
+}
+
+/*
+	Closes the file
+*/
+BotBuiltinWriteLine( fh, contents )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["fs_writeline"] ) )
+	{
+		[[ level.bot_builtins["fs_writeline" ]]]( fh, contents );
+	}
+}
+
+/*
 	Returns if player is the host
 */
 is_host()
