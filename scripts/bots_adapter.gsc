@@ -90,10 +90,9 @@ do_fs_fopen( file, mode )
 	return FS_FOpen( file, mode );
 }
 
-do_fs_fclose( file )
+do_fs_fclose( fh )
 {
-	file = "scriptdata/" + file;
-	FS_FClose( file );
+	FS_FClose( fh );
 }
 
 do_fs_readline( fh )

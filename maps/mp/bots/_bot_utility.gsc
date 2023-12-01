@@ -1466,34 +1466,6 @@ FrontLinesWaypoints()
 }
 
 /*
-	Tokenizes a string (strtok has limits...) (only one char tok)
-*/
-tokenizeLine( line, tok )
-{
-	tokens = [];
-
-	token = "";
-
-	for ( i = 0; i < line.size; i++ )
-	{
-		c = line[i];
-
-		if ( c == tok )
-		{
-			tokens[tokens.size] = token;
-			token = "";
-			continue;
-		}
-
-		token += c;
-	}
-
-	tokens[tokens.size] = token;
-
-	return tokens;
-}
-
-/*
 	Parses tokens into a waypoint obj
 */
 parseTokensIntoWaypoint( tokens )
@@ -1541,26 +1513,16 @@ getABotName()
 
 		if ( BotBuiltinFileExists( filename ) )
 		{
-			names_str = BotBuiltinFileRead( filename );
+			f = BotBuiltinFileOpen( filename, "read" );
 
-			if ( isDefined( names_str ) )
+			if ( f > 0 )
 			{
-				line = "";
-
-				for ( i = 0; i < names_str.size; i++ )
+				for ( line = BotBuiltinReadLine( f ); isDefined( line ); line = BotBuiltinReadLine( f ) )
 				{
-					c = names_str[i];
-
-					if ( c == "\n" )
-					{
-						level.bot_names[level.bot_names.size] = line;
-
-						line = "";
-						continue;
-					}
-
-					line += c;
+					level.bot_names[level.bot_names.size] = line;
 				}
+
+				BotBuiltinFileClose( f );
 			}
 		}
 	}
@@ -1576,41 +1538,6 @@ getABotName()
 }
 
 /*
-	Returns an array of each line
-*/
-getWaypointLinesFromFile( filename )
-{
-	result = spawnStruct();
-	result.lines = [];
-
-	waypointStr = BotBuiltinFileRead( filename );
-
-	if ( !isDefined( waypointStr ) )
-		return result;
-
-	line = "";
-
-	for ( i = 0; i < waypointStr.size; i++ )
-	{
-		c = waypointStr[i];
-
-		if ( c == "\n" )
-		{
-			result.lines[result.lines.size] = line;
-
-			line = "";
-			continue;
-		}
-
-		line += c;
-	}
-
-	result.lines[result.lines.size] = line;
-
-	return result;
-}
-
-/*
 	Read from file a csv, and returns an array of waypoints
 */
 readWpsFromFile( mapname )
@@ -1621,23 +1548,35 @@ readWpsFromFile( mapname )
 	if ( !BotBuiltinFileExists( filename ) )
 		return waypoints;
 
-	res = getWaypointLinesFromFile( filename );
+	f = BotBuiltinFileOpen( filename, "read" );
 
-	if ( !res.lines.size )
+	if ( f < 1 )
 		return waypoints;
 
 	BotBuiltinPrintConsole( "Attempting to read waypoints from " + filename );
 
-	waypointCount = int( res.lines[0] );
+	line = BotBuiltinReadLine( f );
 
-	for ( i = 1; i <= waypointCount; i++ )
+	if ( isDefined( line ) )
 	{
-		tokens = tokenizeLine( res.lines[i], "," );
+		waypointCount = int( line );
 
-		waypoint = parseTokensIntoWaypoint( tokens );
+		for ( i = 1; i <= waypointCount; i++ )
+		{
+			line = BotBuiltinReadLine( f );
 
-		waypoints[i - 1] = waypoint;
+			if ( !isDefined( line ) )
+				break;
+
+			tokens = strtok( line, "," );
+
+			waypoint = parseTokensIntoWaypoint( tokens );
+
+			waypoints[i - 1] = waypoint;
+		}
 	}
+
+	BotBuiltinFileClose( f );
 
 	return waypoints;
 }
