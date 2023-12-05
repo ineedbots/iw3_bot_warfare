@@ -1173,6 +1173,16 @@ DistanceSquared2D( to, from )
 }
 
 /*
+	converts a string into a float
+*/
+float_old( num )
+{
+	setdvar( "temp_dvar_bot_util", num );
+
+	return GetDvarFloat( "temp_dvar_bot_util" );
+}
+
+/*
 	Rounds to the nearest whole number.
 */
 Round( x )
@@ -1444,9 +1454,9 @@ FrontLinesWaypoints()
 
 		waypoint = spawnStruct();
 		wp_num = int( toks[0] );
-		x = float( toks[1] );
-		y = float( toks[2] );
-		z = float( toks[3] );
+		x = float_old( toks[1] );
+		y = float_old( toks[2] );
+		z = float_old( toks[3] );
 		waypoint.origin = ( x, y, z );
 
 		waypoint.type = toks[4];
@@ -1474,7 +1484,7 @@ parseTokensIntoWaypoint( tokens )
 
 	orgStr = tokens[0];
 	orgToks = strtok( orgStr, " " );
-	waypoint.origin = ( float( orgToks[0] ), float( orgToks[1] ), float( orgToks[2] ) );
+	waypoint.origin = ( float_old( orgToks[0] ), float_old( orgToks[1] ), float_old( orgToks[2] ) );
 
 	childStr = tokens[1];
 	childToks = strtok( childStr, " " );
@@ -1491,7 +1501,9 @@ parseTokensIntoWaypoint( tokens )
 	if ( isDefined( anglesStr ) && anglesStr != "" )
 	{
 		anglesToks = strtok( anglesStr, " " );
-		waypoint.angles = ( float( anglesToks[0] ), float( anglesToks[1] ), float( anglesToks[2] ) );
+
+		if ( anglesToks.size >= 2 )
+			waypoint.angles = ( float_old( anglesToks[0] ), float_old( anglesToks[1] ), float_old( anglesToks[2] ) );
 	}
 
 	return waypoint;
