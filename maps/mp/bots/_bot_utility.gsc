@@ -1502,7 +1502,7 @@ parseTokensIntoWaypoint( tokens )
 	{
 		anglesToks = strtok( anglesStr, " " );
 
-		if ( anglesToks.size >= 2 )
+		if ( anglesToks.size >= 3 )
 			waypoint.angles = ( float_old( anglesToks[0] ), float_old( anglesToks[1] ), float_old( anglesToks[2] ) );
 	}
 
