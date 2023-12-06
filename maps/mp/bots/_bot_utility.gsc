@@ -1601,10 +1601,12 @@ load_waypoints()
 	mapname = getDvar( "mapname" );
 
 	level.waypointCount = 0;
-	level.waypoints = [];
 	level.waypointUsage = [];
 	level.waypointUsage["allies"] = [];
 	level.waypointUsage["axis"] = [];
+
+	if ( !isDefined( level.waypoints ) )
+		level.waypoints = [];
 
 	wps = readWpsFromFile( mapname );
 
