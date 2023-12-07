@@ -70,7 +70,7 @@ do_botstop()
 	self BotStop();
 }
 
-do_botmovement( left, forward )
+do_botmovement( forward, right )
 {
 }
 
