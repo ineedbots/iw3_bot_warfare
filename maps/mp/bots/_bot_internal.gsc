@@ -150,6 +150,7 @@ resetBotVars()
 	self.bot.issmokingafter = false;
 	self.bot.isknifing = false;
 	self.bot.isknifingafter = false;
+	self.bot.knifing_target = undefined;
 
 	self.bot.semi_time = false;
 	self.bot.jump_time = undefined;
@@ -395,7 +396,7 @@ doBotMovement_loop( data )
 	}
 
 	// move!
-	if ( self.bot.wantsprint && self.bot.issprinting )
+	if ( ( self.bot.wantsprint && self.bot.issprinting ) || isDefined( self.bot.knifing_target ) )
 		dir = ( 127, dir[1], 0 );
 
 	self BotBuiltinBotMovement( int( dir[0] ), int( dir[1] ) );
@@ -1351,7 +1352,7 @@ aim_loop()
 				}
 				else
 				{
-					if ( self canAds( dist, curweap ) )
+					if ( self canFire( curweap ) && self isInRange( dist, curweap ) && self canAds( dist, curweap ) )
 					{
 						if ( !self.bot.is_cur_sniper || !self.pers["bots"]["behavior"]["quickscope"] )
 							self thread pressAds();
@@ -1380,7 +1381,9 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
+					if ( isDefined( self.bot.knifing_target ) )
+						self thread bot_lookat( target getTagOrigin( "j_spine4" ), 0.05 );
+					else if ( !nadeAimOffset && conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
 						self thread bot_lookat( aimpos, 0.05 );
 					else
 						self thread bot_lookat( aimpos, aimspeed, target getVelocity(), true );
@@ -1394,13 +1397,16 @@ aim_loop()
 
 					conedot = getConeDot( aimpos, eyePos, angles );
 
-					self thread bot_lookat( aimpos, aimspeed );
+					if ( conedot > 0.999 && lengthsquared( aimoffset ) < 0.05 )
+						self thread bot_lookat( aimpos, 0.05 );
+					else
+						self thread bot_lookat( aimpos, aimspeed );
 				}
 
 				if ( isplay && !self.bot.isknifingafter && conedot > 0.9 && dist < level.bots_maxKnifeDistance && trace_time > reaction_time && getDvarInt( "bots_play_knife" ) )
 				{
 					self clear_bot_after_target();
-					self thread knife();
+					self thread knife( target );
 					return;
 				}
 
@@ -2126,14 +2132,52 @@ sprint()
 }
 
 /*
+	Performs melee target
+*/
+do_knife_target( target )
+{
+	self endon( "death" );
+	self endon( "disconnect" );
+	self endon( "bot_knife" );
+
+	if ( !isDefined( target ) || !isPlayer( target ) )
+	{
+		self.bot.knifing_target = undefined;
+		self BotBuiltinBotMeleeParams( 0, 0 );
+		return;
+	}
+
+	dist = distance( target.origin, self.origin );
+
+	if ( dist > getDvarFloat( "aim_automelee_range" ) )
+	{
+		self.bot.knifing_target = undefined;
+		self BotBuiltinBotMeleeParams( 0, 0 );
+		return;
+	}
+
+	self.bot.knifing_target = target;
+
+	angles = VectorToAngles( target.origin - self.origin );
+	self BotBuiltinBotMeleeParams( angles[1], dist );
+
+	wait 1;
+
+	self.bot.knifing_target = undefined;
+	self BotBuiltinBotMeleeParams( 0, 0 );
+}
+
+/*
 	Bot will knife.
 */
-knife()
+knife( target )
 {
 	self endon( "death" );
 	self endon( "disconnect" );
 	self notify( "bot_knife" );
 	self endon( "bot_knife" );
+
+	self thread do_knife_target( target );
 
 	self.bot.isknifing = true;
 	self.bot.isknifingafter = true;

@@ -17,7 +17,7 @@ CodeCallback_StartGameType()
 
 		level.gametypestarted = true; // so we know that the gametype has been started up
 
-		level thread scripts\bots_adapter::init();
+		level thread scripts\bots_adapter_cod4x::init();
 		level thread scripts\bots_chat::init();
 		level thread scripts\bots_menu::init();
 		level thread scripts\bots_wp_editor::init();

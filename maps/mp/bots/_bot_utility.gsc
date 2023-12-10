@@ -117,6 +117,17 @@ BotBuiltinBotMoveTo( where )
 }
 
 /*
+	Sets melee params
+*/
+BotBuiltinBotMeleeParams( yaw, dist )
+{
+	if ( isDefined( level.bot_builtins ) && isDefined( level.bot_builtins["botmeleeparams"] ) )
+	{
+		self [[ level.bot_builtins["botmeleeparams" ]]]( yaw, dist );
+	}
+}
+
+/*
 	Test if is a bot
 */
 BotBuiltinIsBot()
