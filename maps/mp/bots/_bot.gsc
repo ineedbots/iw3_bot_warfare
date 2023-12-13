@@ -825,7 +825,7 @@ addBots_loop()
 		setDvar( "bots_manage_add", 1 );
 	else if ( amount > fillAmount && getDvarInt( "bots_manage_fill_kick" ) )
 	{
-		tempBot = PickRandom( getBotArray() );
+		tempBot = getBotToKick();
 
 		if ( isDefined( tempBot ) )
 			kick( tempBot getEntityNumber() );
