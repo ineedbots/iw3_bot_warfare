@@ -1919,7 +1919,7 @@ getBotToKick()
 {
 	bots = getBotArray();
 
-	if ( !isDefined( bots ) || !isDefined( bots.size ) || bots.size <= 0 || !isArray( bots ) || !isDefined( bots[0] ) )
+	if ( !isDefined( bots ) || !isDefined( bots.size ) || bots.size <= 0 || !isDefined( bots[0] ) )
 		return undefined;
 
 	tokick = undefined;
@@ -2739,7 +2739,6 @@ array_combine( array1, array2 )
 */
 array_average( array )
 {
-	assert( IsArray( array ) );
 	assert( array.size > 0 );
 	total = 0;
 
@@ -2757,7 +2756,6 @@ array_average( array )
 */
 array_std_deviation( array, mean )
 {
-	assert( IsArray( array ) );
 	assert( array.size > 0 );
 	tmp = [];
 
