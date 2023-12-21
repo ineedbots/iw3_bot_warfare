@@ -12,60 +12,82 @@
 
 init()
 {
-	if ( getDvar( "bots_main_debug" ) == "" )
-		setDvar( "bots_main_debug", 0 );
+	if ( getdvar( "bots_main_debug" ) == "" )
+	{
+		setdvar( "bots_main_debug", 0 );
+	}
 
-	if ( !getDVarint( "bots_main_debug" ) )
+	if ( !getdvarint( "bots_main_debug" ) )
+	{
 		return;
+	}
 
-	if ( !getDVarint( "developer" ) )
+	if ( !getdvarint( "developer" ) )
 	{
 		setdvar( "developer_script", 1 );
 		setdvar( "developer", 1 );
 
-		setdvar( "sv_mapRotation", "map " + getDvar( "mapname" ) );
-		exitLevel( false );
+		setdvar( "sv_mapRotation", "map " + getdvar( "mapname" ) );
+		exitlevel( false );
 	}
 
-	setDvar( "bots_main", 0 );
+	setdvar( "bots_main", 0 );
 	setdvar( "bots_main_menu", 0 );
 	setdvar( "bots_manage_fill_mode", 0 );
 	setdvar( "bots_manage_fill", 0 );
 	setdvar( "bots_manage_add", 0 );
 	setdvar( "bots_manage_fill_kick", 1 );
-	setDvar( "bots_manage_fill_spec", 1 );
+	setdvar( "bots_manage_fill_spec", 1 );
 
-	if ( getDvar( "bots_main_debug_distance" ) == "" )
-		setDvar( "bots_main_debug_distance", 512.0 );
+	if ( getdvar( "bots_main_debug_distance" ) == "" )
+	{
+		setdvar( "bots_main_debug_distance", 512.0 );
+	}
 
-	if ( getDvar( "bots_main_debug_cone" ) == "" )
-		setDvar( "bots_main_debug_cone", 0.65 );
+	if ( getdvar( "bots_main_debug_cone" ) == "" )
+	{
+		setdvar( "bots_main_debug_cone", 0.65 );
+	}
 
-	if ( getDvar( "bots_main_debug_minDist" ) == "" )
-		setDvar( "bots_main_debug_minDist", 32.0 );
+	if ( getdvar( "bots_main_debug_minDist" ) == "" )
+	{
+		setdvar( "bots_main_debug_minDist", 32.0 );
+	}
 
-	if ( getDvar( "bots_main_debug_drawThrough" ) == "" )
-		setDvar( "bots_main_debug_drawThrough", false );
+	if ( getdvar( "bots_main_debug_drawThrough" ) == "" )
+	{
+		setdvar( "bots_main_debug_drawThrough", false );
+	}
 
-	if ( getDvar( "bots_main_debug_commandWait" ) == "" )
-		setDvar( "bots_main_debug_commandWait", 0.5 );
+	if ( getdvar( "bots_main_debug_commandWait" ) == "" )
+	{
+		setdvar( "bots_main_debug_commandWait", 0.5 );
+	}
 
-	if ( getDvar( "bots_main_debug_framerate" ) == "" )
-		setDvar( "bots_main_debug_framerate", 58 );
+	if ( getdvar( "bots_main_debug_framerate" ) == "" )
+	{
+		setdvar( "bots_main_debug_framerate", 58 );
+	}
 
-	if ( getDvar( "bots_main_debug_lineDuration" ) == "" )
-		setDvar( "bots_main_debug_lineDuration", 3 );
+	if ( getdvar( "bots_main_debug_lineDuration" ) == "" )
+	{
+		setdvar( "bots_main_debug_lineDuration", 3 );
+	}
 
-	if ( getDvar( "bots_main_debug_printDuration" ) == "" )
-		setDvar( "bots_main_debug_printDuration", 3 );
+	if ( getdvar( "bots_main_debug_printDuration" ) == "" )
+	{
+		setdvar( "bots_main_debug_printDuration", 3 );
+	}
 
-	if ( getDvar( "bots_main_debug_debugRate" ) == "" )
-		setDvar( "bots_main_debug_debugRate", 0.5 );
+	if ( getdvar( "bots_main_debug_debugRate" ) == "" )
+	{
+		setdvar( "bots_main_debug_debugRate", 0.5 );
+	}
 
-	setDvar( "player_sustainAmmo", 1 );
+	setdvar( "player_sustainAmmo", 1 );
 
 	level.waypoints = [];
-	level.waypointCount = 0;
+	level.waypointcount = 0;
 
 	level waittill( "connected", player );
 
@@ -88,17 +110,17 @@ beginDebug()
 	self endon( "disconnect" );
 	self endon( "death" );
 
-	level.wpToLink = -1;
-	level.autoLink = false;
+	level.wptolink = -1;
+	level.autolink = false;
 	self.closest = -1;
 	self.command = undefined;
 
 	self clearPerks();
-	self takeAllWeapons();
+	self takeallweapons();
 	self.specialty = [];
-	self giveWeapon( "m16_gl_mp" );
-	self SetActionSlot( 3, "altMode" );
-	self giveWeapon( "frag_grenade_mp" );
+	self giveweapon( "m16_gl_mp" );
+	self setactionslot( 3, "altMode" );
+	self giveweapon( "frag_grenade_mp" );
 	self freezecontrols( false );
 
 	self thread debug();
@@ -108,7 +130,7 @@ beginDebug()
 	self thread watchSaveWaypointsCommand();
 	self thread sayExtras();
 
-	self thread textScroll( "^1SecondaryOffhand - ^2Add Waypoint; ^3MeleeButton - ^4Link Waypoint; ^5FragButton - ^6Delete Waypoint; ^7UseButton + AttackButton - ^8Save" );
+	self thread textScroll( "^1SecondaryOffhand - ^2Add Waypoint; ^3MeleeButton - ^4Link Waypoint; ^5FragButton - ^6delete Waypoint; ^7UseButton + AttackButton - ^8Save" );
 }
 
 sayExtras()
@@ -124,36 +146,46 @@ debug()
 	self endon( "disconnect" );
 	self endon( "death" );
 
-	self setClientDvar( "com_maxfps", getDvarInt( "bots_main_debug_framerate" ) );
+	self setclientdvar( "com_maxfps", getdvarint( "bots_main_debug_framerate" ) );
 
 	for ( ;; )
 	{
-		wait getDvarFloat( "bots_main_debug_debugRate" );
+		wait getdvarfloat( "bots_main_debug_debugRate" );
 
-		if ( isDefined( self.command ) )
+		if ( isdefined( self.command ) )
+		{
 			continue;
+		}
 
 		closest = -1;
-		myEye = self getTagOrigin( "j_head" );
-		myAngles = self GetPlayerAngles();
+		myEye = self gettagorigin( "j_head" );
+		myAngles = self getplayerangles();
 
-		for ( i = 0; i < level.waypointCount; i++ )
+		for ( i = 0; i < level.waypointcount; i++ )
 		{
-			if ( closest == -1 || closer( self.origin, level.waypoints[i].origin, level.waypoints[closest].origin ) )
-				closest = i;
-
-			wpOrg = level.waypoints[i].origin + ( 0, 0, 25 );
-
-			if ( distance( level.waypoints[i].origin, self.origin ) < getDvarFloat( "bots_main_debug_distance" ) && ( bulletTracePassed( myEye, wpOrg, false, self ) || getDVarint( "bots_main_debug_drawThrough" ) ) )
+			if ( closest == -1 || closer( self.origin, level.waypoints[ i ].origin, level.waypoints[ closest ].origin ) )
 			{
-				for ( h = level.waypoints[i].children.size - 1; h >= 0; h-- )
-					line( wpOrg, level.waypoints[level.waypoints[i].children[h]].origin + ( 0, 0, 25 ), ( 1, 0, 1 ), 1, 1, getDvarInt( "bots_main_debug_lineDuration" ) );
+				closest = i;
+			}
 
-				if ( getConeDot( wpOrg, myEye, myAngles ) > getDvarFloat( "bots_main_debug_cone" ) )
+			wpOrg = level.waypoints[ i ].origin + ( 0, 0, 25 );
+
+			if ( distance( level.waypoints[ i ].origin, self.origin ) < getdvarfloat( "bots_main_debug_distance" ) && ( bullettracepassed( myEye, wpOrg, false, self ) || getdvarint( "bots_main_debug_drawThrough" ) ) )
+			{
+				for ( h = level.waypoints[ i ].children.size - 1; h >= 0; h-- )
+				{
+					line( wpOrg, level.waypoints[ level.waypoints[ i ].children[ h ] ].origin + ( 0, 0, 25 ), ( 1, 0, 1 ), 1, 1, getdvarint( "bots_main_debug_lineDuration" ) );
+				}
+
+				if ( getConeDot( wpOrg, myEye, myAngles ) > getdvarfloat( "bots_main_debug_cone" ) )
+				{
 					print3d( wpOrg, i, ( 1, 0, 0 ), 2, 1, 6 );
+				}
 
-				if ( isDefined( level.waypoints[i].angles ) && level.waypoints[i].type != "stand" )
-					line( wpOrg, wpOrg + AnglesToForward( level.waypoints[i].angles ) * 64, ( 1, 1, 1 ), 1, 1, getDvarInt( "bots_main_debug_lineDuration" ) );
+				if ( isdefined( level.waypoints[ i ].angles ) && level.waypoints[ i ].type != "stand" )
+				{
+					line( wpOrg, wpOrg + anglestoforward( level.waypoints[ i ].angles ) * 64, ( 1, 1, 1 ), 1, 1, getdvarint( "bots_main_debug_lineDuration" ) );
+				}
 			}
 		}
 
@@ -163,32 +195,38 @@ debug()
 		{
 			stringChildren = "";
 
-			for ( i = 0; i < level.waypoints[closest].children.size; i++ )
+			for ( i = 0; i < level.waypoints[ closest ].children.size; i++ )
 			{
 				if ( i != 0 )
-					stringChildren = stringChildren + "," + level.waypoints[closest].children[i];
+				{
+					stringChildren = stringChildren + "," + level.waypoints[ closest ].children[ i ];
+				}
 				else
-					stringChildren = stringChildren + level.waypoints[closest].children[i];
+				{
+					stringChildren = stringChildren + level.waypoints[ closest ].children[ i ];
+				}
 			}
 
-			print3d( level.waypoints[closest].origin + ( 0, 0, 35 ), stringChildren, ( 0, 1, 0 ), 2, 1, getDvarInt( "bots_main_debug_printDuration" ) );
+			print3d( level.waypoints[ closest ].origin + ( 0, 0, 35 ), stringChildren, ( 0, 1, 0 ), 2, 1, getdvarint( "bots_main_debug_printDuration" ) );
 
-			print3d( level.waypoints[closest].origin + ( 0, 0, 15 ), level.waypoints[closest].type, ( 0, 1, 0 ), 2, 1, getDvarInt( "bots_main_debug_printDuration" ) );
+			print3d( level.waypoints[ closest ].origin + ( 0, 0, 15 ), level.waypoints[ closest ].type, ( 0, 1, 0 ), 2, 1, getdvarint( "bots_main_debug_printDuration" ) );
 		}
 	}
 }
 
-AddWaypoints()
+addWaypoints()
 {
 	self endon( "disconnect" );
 	self endon( "death" );
 
 	for ( ;; )
 	{
-		while ( !self SecondaryOffhandButtonPressed() || isDefined( self.command ) )
+		while ( !self SecondaryOffhandButtonPressed() || isdefined( self.command ) )
+		{
 			wait 0.05;
+		}
 
-		pos = self getOrigin();
+		pos = self getorigin();
 		self.command = true;
 
 		self iprintln( "Adding a waypoint..." );
@@ -196,14 +234,16 @@ AddWaypoints()
 		self iprintln( "Attack - grenade; Use - claymore" );
 		self iprintln( "Else(wait) - your stance" );
 
-		wait getDvarFloat( "bots_main_debug_commandWait" );
+		wait getdvarfloat( "bots_main_debug_commandWait" );
 
 		self addWaypoint( pos );
 
 		self.command = undefined;
 
 		while ( self SecondaryOffhandButtonPressed() )
+		{
 			wait 0.05;
+		}
 	}
 }
 
@@ -214,24 +254,32 @@ linkWaypoints()
 
 	for ( ;; )
 	{
-		while ( !self MeleeButtonPressed() || isDefined( self.command ) )
+		while ( !self meleebuttonpressed() || isdefined( self.command ) )
+		{
 			wait 0.05;
+		}
 
 		self.command = true;
 
-		self iprintln( "ADS - Unlink; Else(wait) - Link" );
+		self iprintln( "ADS - unlink; Else(wait) - Link" );
 
-		wait getDvarFloat( "bots_main_debug_commandWait" );
+		wait getdvarfloat( "bots_main_debug_commandWait" );
 
-		if ( !self adsButtonPressed() )
+		if ( !self adsbuttonpressed() )
+		{
 			self LinkWaypoint( self.closest );
+		}
 		else
+		{
 			self UnLinkWaypoint( self.closest );
+		}
 
 		self.command = undefined;
 
-		while ( self MeleeButtonPressed() )
+		while ( self meleebuttonpressed() )
+		{
 			wait 0.05;
+		}
 	}
 }
 
@@ -242,27 +290,37 @@ deleteWaypoints()
 
 	for ( ;; )
 	{
-		while ( !self fragButtonPressed() || isDefined( self.command ) )
+		while ( !self fragButtonPressed() || isdefined( self.command ) )
+		{
 			wait 0.05;
+		}
 
 		self.command = true;
 
-		self iprintln( "Attack - DeleteAll; ADS - Load" );
-		self iprintln( "Else(wait) - Delete" );
+		self iprintln( "Attack - deleteAll; ADS - Load" );
+		self iprintln( "Else(wait) - delete" );
 
-		wait getDvarFloat( "bots_main_debug_commandWait" );
+		wait getdvarfloat( "bots_main_debug_commandWait" );
 
-		if ( self attackButtonPressed() )
+		if ( self attackbuttonpressed() )
+		{
 			self deleteAllWaypoints();
-		else if ( self adsButtonPressed() )
+		}
+		else if ( self adsbuttonpressed() )
+		{
 			self LoadWaypoints();
+		}
 		else
-			self DeleteWaypoint( self.closest );
+		{
+			self deleteWaypoint( self.closest );
+		}
 
 		self.command = undefined;
 
 		while ( self fragButtonPressed() )
+		{
 			wait 0.05;
+		}
 	}
 }
 
@@ -273,16 +331,18 @@ watchSaveWaypointsCommand()
 
 	for ( ;; )
 	{
-		while ( !self useButtonPressed() || !self attackButtonPressed() || isDefined( self.command ) )
+		while ( !self usebuttonpressed() || !self attackbuttonpressed() || isdefined( self.command ) )
+		{
 			wait 0.05;
+		}
 
 		self.command = true;
 
 		self iprintln( "ADS - Autolink; Else(wait) - Save" );
 
-		wait getDvarFloat( "bots_main_debug_commandWait" );
+		wait getdvarfloat( "bots_main_debug_commandWait" );
 
-		if ( !self adsButtonPressed() )
+		if ( !self adsbuttonpressed() )
 		{
 			self checkForWarnings();
 			wait 1;
@@ -293,97 +353,113 @@ watchSaveWaypointsCommand()
 			logprint( "\n\n" + mpnm + "()\n{\n/*" );
 			logprint( "*/waypoints = [];\n/*" );
 
-			for ( i = 0; i < level.waypointCount; i++ )
+			for ( i = 0; i < level.waypointcount; i++ )
 			{
-				logprint( "*/waypoints[" + i + "] = spawnstruct();\n/*" );
-				logprint( "*/waypoints[" + i + "].origin = " + level.waypoints[i].origin + ";\n/*" );
-				logprint( "*/waypoints[" + i + "].type = \"" + level.waypoints[i].type + "\";\n/*" );
+				logprint( "*/waypoints[ " + i + " ] = spawnstruct();\n/*" );
+				logprint( "*/waypoints[ " + i + " ].origin = " + level.waypoints[ i ].origin + ";\n/*" );
+				logprint( "*/waypoints[ " + i + " ].type = \"" + level.waypoints[ i ].type + "\";\n/*" );
 
-				for ( c = 0; c < level.waypoints[i].children.size; c++ )
+				for ( c = 0; c < level.waypoints[ i ].children.size; c++ )
 				{
-					logprint( "*/waypoints[" + i + "].children[" + c + "] = " + level.waypoints[i].children[c] + ";\n/*" );
+					logprint( "*/waypoints[ " + i + " ].children[ " + c + " ] = " + level.waypoints[ i ].children[ c ] + ";\n/*" );
 				}
 
-				if ( isDefined( level.waypoints[i].angles ) && ( level.waypoints[i].type == "claymore" || level.waypoints[i].type == "tube" || ( level.waypoints[i].type == "crouch" && level.waypoints[i].children.size == 1 ) || level.waypoints[i].type == "climb" || level.waypoints[i].type == "grenade" ) )
-					logprint( "*/waypoints[" + i + "].angles = " + level.waypoints[i].angles + ";\n/*" );
+				if ( isdefined( level.waypoints[ i ].angles ) && ( level.waypoints[ i ].type == "claymore" || level.waypoints[ i ].type == "tube" || ( level.waypoints[ i ].type == "crouch" && level.waypoints[ i ].children.size == 1 ) || level.waypoints[ i ].type == "climb" || level.waypoints[ i ].type == "grenade" ) )
+				{
+					logprint( "*/waypoints[ " + i + " ].angles = " + level.waypoints[ i ].angles + ";\n/*" );
+				}
 			}
 
 			logprint( "*/return waypoints;\n}\n\n\n\n" );
 
 			filename = "waypoints/" + getdvar( "mapname" ) + "_wp.csv";
 
-			PrintLn( "********* Start Bot Warfare WPDump *********" );
-			PrintLn( level.waypointCount );
+			println( "********* Start Bot Warfare WPDump *********" );
+			println( level.waypointcount );
 
 			f = BotBuiltinFileOpen( filename, "write" );
 
 			if ( f > 0 )
-				BotBuiltinWriteLine( f, level.waypointCount );
+			{
+				BotBuiltinWriteLine( f, level.waypointcount );
+			}
 
-			for ( i = 0; i < level.waypointCount; i++ )
+			for ( i = 0; i < level.waypointcount; i++ )
 			{
 				str = "";
-				wp = level.waypoints[i];
+				wp = level.waypoints[ i ];
 
-				str += wp.origin[0] + " " + wp.origin[1] + " " + wp.origin[2] + ",";
+				str += wp.origin[ 0 ] + " " + wp.origin[ 1 ] + " " + wp.origin[ 2 ] + ",";
 
 				for ( h = 0; h < wp.children.size; h++ )
 				{
-					str += wp.children[h];
+					str += wp.children[ h ];
 
 					if ( h < wp.children.size - 1 )
+					{
 						str += " ";
+					}
 				}
 
 				str += "," + wp.type + ",";
 
-				if ( isDefined( wp.angles ) )
-					str += wp.angles[0] + " " + wp.angles[1] + " " + wp.angles[2] + ",";
+				if ( isdefined( wp.angles ) )
+				{
+					str += wp.angles[ 0 ] + " " + wp.angles[ 1 ] + " " + wp.angles[ 2 ] + ",";
+				}
 				else
+				{
 					str += ",";
+				}
 
 				str += ",";
 
-				PrintLn( str );
+				println( str );
 
 				if ( f > 0 )
+				{
 					BotBuiltinWriteLine( f, str );
+				}
 			}
 
 			if ( f > 0 )
+			{
 				BotBuiltinFileClose( f );
+			}
 
-			PrintLn( "\n\n\n\n\n\n" );
+			println( "\n\n\n\n\n\n" );
 
 			self iprintln( "Saved!!! to " + filename );
 		}
 		else
 		{
-			if ( level.autoLink )
+			if ( level.autolink )
 			{
-				self iPrintlnBold( "Auto link disabled" );
-				level.autoLink = false;
-				level.wpToLink = -1;
+				self iprintlnbold( "Auto link disabled" );
+				level.autolink = false;
+				level.wptolink = -1;
 			}
 			else
 			{
-				self iPrintlnBold( "Auto link enabled" );
-				level.autoLink = true;
-				level.wpToLink = self.closest;
+				self iprintlnbold( "Auto link enabled" );
+				level.autolink = true;
+				level.wptolink = self.closest;
 			}
 		}
 
 		self.command = undefined;
 
-		while ( self useButtonPressed() && self attackButtonPressed() )
+		while ( self usebuttonpressed() && self attackbuttonpressed() )
+		{
 			wait 0.05;
+		}
 	}
 }
 
 LoadWaypoints()
 {
-	self DeleteAllWaypoints();
-	self iPrintlnBold( "Loading WPS..." );
+	self deleteAllWaypoints();
+	self iprintlnbold( "Loading WPS..." );
 	load_waypoints();
 
 	wait 1;
@@ -393,188 +469,214 @@ LoadWaypoints()
 
 checkForWarnings()
 {
-	if ( level.waypointCount <= 0 )
-		self iprintln( "WARNING: waypointCount is " + level.waypointCount );
-
-	if ( level.waypointCount != level.waypoints.size )
-		self iprintln( "WARNING: waypointCount is not " + level.waypoints.size );
-
-	for ( i = 0; i < level.waypointCount; i++ )
+	if ( level.waypointcount <= 0 )
 	{
-		if ( !isDefined( level.waypoints[i] ) )
+		self iprintln( "WARNING: waypointCount is " + level.waypointcount );
+	}
+
+	if ( level.waypointcount != level.waypoints.size )
+	{
+		self iprintln( "WARNING: waypointCount is not " + level.waypoints.size );
+	}
+
+	for ( i = 0; i < level.waypointcount; i++ )
+	{
+		if ( !isdefined( level.waypoints[ i ] ) )
 		{
 			self iprintln( "WARNING: waypoint " + i + " is undefined" );
 			continue;
 		}
 
-		if ( level.waypoints[i].children.size <= 0 )
-			self iprintln( "WARNING: waypoint " + i + " childCount is " + level.waypoints[i].children.size );
+		if ( level.waypoints[ i ].children.size <= 0 )
+		{
+			self iprintln( "WARNING: waypoint " + i + " childCount is " + level.waypoints[ i ].children.size );
+		}
 		else
 		{
-			if ( !isDefined( level.waypoints[i].children ) || !isDefined( level.waypoints[i].children.size ) )
+			if ( !isdefined( level.waypoints[ i ].children ) || !isdefined( level.waypoints[ i ].children.size ) )
 			{
 				self iprintln( "WARNING: waypoint " + i + " children is not defined" );
 			}
 			else
 			{
-				for ( h = level.waypoints[i].children.size - 1; h >= 0; h-- )
+				for ( h = level.waypoints[ i ].children.size - 1; h >= 0; h-- )
 				{
-					child = level.waypoints[i].children[h];
+					child = level.waypoints[ i ].children[ h ];
 
-					if ( !isDefined( level.waypoints[child] ) )
+					if ( !isdefined( level.waypoints[ child ] ) )
+					{
 						self iprintln( "WARNING: waypoint " + i + " child " + child + " is undefined" );
+					}
 					else if ( child == i )
+					{
 						self iprintln( "WARNING: waypoint " + i + " child " + child + " is itself" );
+					}
 				}
 			}
 		}
 
-		if ( !isDefined( level.waypoints[i].type ) )
+		if ( !isdefined( level.waypoints[ i ].type ) )
 		{
 			self iprintln( "WARNING: waypoint " + i + " type is undefined" );
 			continue;
 		}
 
-		if ( !isDefined( level.waypoints[i].angles ) && ( level.waypoints[i].type == "claymore" || level.waypoints[i].type == "tube" || ( level.waypoints[i].type == "crouch" && level.waypoints[i].children.size == 1 ) || level.waypoints[i].type == "climb" || level.waypoints[i].type == "grenade" ) )
+		if ( !isdefined( level.waypoints[ i ].angles ) && ( level.waypoints[ i ].type == "claymore" || level.waypoints[ i ].type == "tube" || ( level.waypoints[ i ].type == "crouch" && level.waypoints[ i ].children.size == 1 ) || level.waypoints[ i ].type == "climb" || level.waypoints[ i ].type == "grenade" ) )
+		{
 			self iprintln( "WARNING: waypoint " + i + " angles is undefined" );
+		}
 	}
 }
 
-DeleteAllWaypoints()
+deleteAllWaypoints()
 {
 	level.waypoints = [];
-	level.waypointCount = 0;
+	level.waypointcount = 0;
 
 	self iprintln( "DelAllWps" );
 }
 
-DeleteWaypoint( nwp )
+deleteWaypoint( nwp )
 {
-	if ( nwp == -1 || distance( self.origin, level.waypoints[nwp].origin ) > getDvarFloat( "bots_main_debug_minDist" ) )
+	if ( nwp == -1 || distance( self.origin, level.waypoints[ nwp ].origin ) > getdvarfloat( "bots_main_debug_minDist" ) )
 	{
 		self iprintln( "No close enough waypoint to delete." );
 		return;
 	}
 
-	level.wpToLink = -1;
+	level.wptolink = -1;
 
-	for ( i = level.waypoints[nwp].children.size - 1; i >= 0; i-- )
+	for ( i = level.waypoints[ nwp ].children.size - 1; i >= 0; i-- )
 	{
-		child = level.waypoints[nwp].children[i];
+		child = level.waypoints[ nwp ].children[ i ];
 
-		level.waypoints[child].children = array_remove( level.waypoints[child].children, nwp );
+		level.waypoints[ child ].children = array_remove( level.waypoints[ child ].children, nwp );
 	}
 
-	for ( i = 0; i < level.waypointCount; i++ )
+	for ( i = 0; i < level.waypointcount; i++ )
 	{
-		for ( h = level.waypoints[i].children.size - 1; h >= 0; h-- )
+		for ( h = level.waypoints[ i ].children.size - 1; h >= 0; h-- )
 		{
-			if ( level.waypoints[i].children[h] > nwp )
-				level.waypoints[i].children[h]--;
+			if ( level.waypoints[ i ].children[ h ] > nwp )
+			{
+				level.waypoints[ i ].children[ h ]--;
+			}
 		}
 	}
 
-	for ( entry = 0; entry < level.waypointCount; entry++ )
+	for ( entry = 0; entry < level.waypointcount; entry++ )
 	{
 		if ( entry == nwp )
 		{
-			while ( entry < level.waypointCount - 1 )
+			while ( entry < level.waypointcount - 1 )
 			{
-				level.waypoints[entry] = level.waypoints[entry + 1];
+				level.waypoints[ entry ] = level.waypoints[ entry + 1 ];
 				entry++;
 			}
 
-			level.waypoints[entry] = undefined;
+			level.waypoints[ entry ] = undefined;
 			break;
 		}
 	}
 
-	level.waypointCount--;
+	level.waypointcount--;
 
 	self iprintln( "DelWp " + nwp );
 }
 
 addWaypoint( pos )
 {
-	level.waypoints[level.waypointCount] = spawnstruct();
+	level.waypoints[ level.waypointcount ] = spawnstruct();
 
-	level.waypoints[level.waypointCount].origin = pos;
+	level.waypoints[ level.waypointcount ].origin = pos;
 
-	if ( self AdsButtonPressed() )
-		level.waypoints[level.waypointCount].type = "climb";
-	else if ( self AttackButtonPressed() && self UseButtonPressed() )
-		level.waypoints[level.waypointCount].type = "tube";
-	else if ( self AttackButtonPressed() )
-		level.waypoints[level.waypointCount].type = "grenade";
-	else if ( self UseButtonPressed() )
-		level.waypoints[level.waypointCount].type = "claymore";
-	else
-		level.waypoints[level.waypointCount].type = self getStance();
-
-	level.waypoints[level.waypointCount].angles = self getPlayerAngles();
-
-	level.waypoints[level.waypointCount].children = [];
-
-	self iprintln( level.waypoints[level.waypointCount].type + " Waypoint " + level.waypointCount + " Added at " + pos );
-
-	if ( level.autoLink )
+	if ( self adsbuttonpressed() )
 	{
-		if ( level.wpToLink == -1 )
-			level.wpToLink = level.waypointCount - 1;
-
-		level.waypointCount++;
-		self LinkWaypoint( level.waypointCount - 1 );
+		level.waypoints[ level.waypointcount ].type = "climb";
+	}
+	else if ( self attackbuttonpressed() && self usebuttonpressed() )
+	{
+		level.waypoints[ level.waypointcount ].type = "tube";
+	}
+	else if ( self attackbuttonpressed() )
+	{
+		level.waypoints[ level.waypointcount ].type = "grenade";
+	}
+	else if ( self usebuttonpressed() )
+	{
+		level.waypoints[ level.waypointcount ].type = "claymore";
 	}
 	else
 	{
-		level.waypointCount++;
+		level.waypoints[ level.waypointcount ].type = self getstance();
+	}
+
+	level.waypoints[ level.waypointcount ].angles = self getplayerangles();
+
+	level.waypoints[ level.waypointcount ].children = [];
+
+	self iprintln( level.waypoints[ level.waypointcount ].type + " Waypoint " + level.waypointcount + " Added at " + pos );
+
+	if ( level.autolink )
+	{
+		if ( level.wptolink == -1 )
+		{
+			level.wptolink = level.waypointcount - 1;
+		}
+
+		level.waypointcount++;
+		self LinkWaypoint( level.waypointcount - 1 );
+	}
+	else
+	{
+		level.waypointcount++;
 	}
 }
 
 UnLinkWaypoint( nwp )
 {
-	if ( nwp == -1 || distance( self.origin, level.waypoints[nwp].origin ) > getDvarFloat( "bots_main_debug_minDist" ) )
+	if ( nwp == -1 || distance( self.origin, level.waypoints[ nwp ].origin ) > getdvarfloat( "bots_main_debug_minDist" ) )
 	{
-		self iprintln( "Waypoint Unlink Cancelled " + level.wpToLink );
-		level.wpToLink = -1;
+		self iprintln( "Waypoint unlink Cancelled " + level.wptolink );
+		level.wptolink = -1;
 		return;
 	}
 
-	if ( level.wpToLink == -1 || nwp == level.wpToLink )
+	if ( level.wptolink == -1 || nwp == level.wptolink )
 	{
-		level.wpToLink = nwp;
-		self iprintln( "Waypoint Unlink Started " + nwp );
+		level.wptolink = nwp;
+		self iprintln( "Waypoint unlink Started " + nwp );
 		return;
 	}
 
-	level.waypoints[nwp].children = array_remove( level.waypoints[nwp].children, level.wpToLink );
-	level.waypoints[level.wpToLink].children = array_remove( level.waypoints[level.wpToLink].children, nwp );
+	level.waypoints[ nwp ].children = array_remove( level.waypoints[ nwp ].children, level.wptolink );
+	level.waypoints[ level.wptolink ].children = array_remove( level.waypoints[ level.wptolink ].children, nwp );
 
-	self iprintln( "Waypoint " + nwp + " Broken to " + level.wpToLink );
-	level.wpToLink = -1;
+	self iprintln( "Waypoint " + nwp + " Broken to " + level.wptolink );
+	level.wptolink = -1;
 }
 
 LinkWaypoint( nwp )
 {
-	if ( nwp == -1 || distance( self.origin, level.waypoints[nwp].origin ) > getDvarFloat( "bots_main_debug_minDist" ) )
+	if ( nwp == -1 || distance( self.origin, level.waypoints[ nwp ].origin ) > getdvarfloat( "bots_main_debug_minDist" ) )
 	{
-		self iprintln( "Waypoint Link Cancelled " + level.wpToLink );
-		level.wpToLink = -1;
+		self iprintln( "Waypoint Link Cancelled " + level.wptolink );
+		level.wptolink = -1;
 		return;
 	}
 
-	if ( level.wpToLink == -1 || nwp == level.wpToLink )
+	if ( level.wptolink == -1 || nwp == level.wptolink )
 	{
-		level.wpToLink = nwp;
+		level.wptolink = nwp;
 		self iprintln( "Waypoint Link Started " + nwp );
 		return;
 	}
 
 	weGood = true;
 
-	for ( i = level.waypoints[level.wpToLink].children.size - 1; i >= 0; i-- )
+	for ( i = level.waypoints[ level.wptolink ].children.size - 1; i >= 0; i-- )
 	{
-		if ( level.waypoints[level.wpToLink].children[i] == nwp )
+		if ( level.waypoints[ level.wptolink ].children[ i ] == nwp )
 		{
 			weGood = false;
 			break;
@@ -583,9 +685,9 @@ LinkWaypoint( nwp )
 
 	if ( weGood )
 	{
-		for ( i = level.waypoints[nwp].children.size - 1; i >= 0; i-- )
+		for ( i = level.waypoints[ nwp ].children.size - 1; i >= 0; i-- )
 		{
-			if ( level.waypoints[nwp].children[i] == level.wpToLink )
+			if ( level.waypoints[ nwp ].children[ i ] == level.wptolink )
 			{
 				weGood = false;
 				break;
@@ -595,16 +697,16 @@ LinkWaypoint( nwp )
 
 	if ( !weGood )
 	{
-		self iprintln( "Waypoint Link Cancelled " + nwp + " and " + level.wpToLink + " already linked." );
-		level.wpToLink = -1;
+		self iprintln( "Waypoint Link Cancelled " + nwp + " and " + level.wptolink + " already linked." );
+		level.wptolink = -1;
 		return;
 	}
 
-	level.waypoints[level.wpToLink].children[level.waypoints[level.wpToLink].children.size] = nwp;
-	level.waypoints[nwp].children[level.waypoints[nwp].children.size] = level.wpToLink;
+	level.waypoints[ level.wptolink ].children[ level.waypoints[ level.wptolink ].children.size ] = nwp;
+	level.waypoints[ nwp ].children[ level.waypoints[ nwp ].children.size ] = level.wptolink;
 
-	self iprintln( "Waypoint " + nwp + " Linked to " + level.wpToLink );
-	level.wpToLink = -1;
+	self iprintln( "Waypoint " + nwp + " Linked to " + level.wptolink );
+	level.wptolink = -1;
 }
 
 destroyOnDeath( hud )
@@ -618,20 +720,20 @@ textScroll( string )
 {
 	self endon( "death" );
 	self endon( "disconnect" );
-	//thanks ActionScript
+	// thanks ActionScript
 
-	back = createBar( ( 0, 0, 0 ), 1000, 30 );
-	back setPoint( "CENTER", undefined, 0, 220 );
+	back = createbar( ( 0, 0, 0 ), 1000, 30 );
+	back setpoint( "CENTER", undefined, 0, 220 );
 	self thread destroyOnDeath( back );
 
-	text = createFontString( "default", 1.5 );
-	text setText( string );
+	text = createfontstring( "default", 1.5 );
+	text settext( string );
 	self thread destroyOnDeath( text );
 
 	for ( ;; )
 	{
-		text setPoint( "CENTER", undefined, 1200, 220 );
-		text setPoint( "CENTER", undefined, -1200, 220, 20 );
+		text setpoint( "CENTER", undefined, 1200, 220 );
+		text setpoint( "CENTER", undefined, -1200, 220, 20 );
 		wait 20;
 	}
 }
