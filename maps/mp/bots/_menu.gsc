@@ -136,7 +136,7 @@ doGreetings()
 	wait 1;
 	self iprintln( "Welcome to Bot Warfare " + self.name + "!" );
 	wait 5;
-	self iprintln( "Press [ {+frag} ] + [ {+smoke} ] to open menu!" );
+	self iprintln( "Press [{+frag}] + [{+smoke}] to open menu!" );
 }
 
 watchPlayerOpenMenu()
