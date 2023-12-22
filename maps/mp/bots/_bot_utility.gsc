@@ -3116,7 +3116,7 @@ bombPlantedFix( destroyedObj, player )
 	level.tickingobject = destroyedObj.visuals[ 0 ];
 
 	level.timelimitoverride = true;
-	setGameEndTime( int( gettime() + ( level.bombtimer * 1000 ) ) );
+	setgameendtime( int( gettime() + ( level.bombtimer * 1000 ) ) );
 	setdvar( "ui_bomb_timer", 1 );
 
 	if ( !level.multibomb )
@@ -3128,7 +3128,6 @@ bombPlantedFix( destroyedObj, player )
 	}
 	else
 	{
-
 		for ( index = 0; index < level.players.size; index++ )
 		{
 			if ( isdefined( level.players[ index ].carryicon ) )
@@ -3223,7 +3222,7 @@ bombPlantedFix( destroyedObj, player )
 
 	defuseObject maps\mp\gametypes\_gameobjects::disableobject();
 
-	setGameEndTime( 0 );
+	setgameendtime( 0 );
 
 	wait 3;
 

@@ -115,7 +115,7 @@ beginDebug()
 	self.closest = -1;
 	self.command = undefined;
 
-	self clearPerks();
+	self clearperks();
 	self takeallweapons();
 	self.specialty = [];
 	self giveweapon( "m16_gl_mp" );
@@ -221,7 +221,7 @@ addWaypoints()
 
 	for ( ;; )
 	{
-		while ( !self SecondaryOffhandButtonPressed() || isdefined( self.command ) )
+		while ( !self secondaryoffhandbuttonpressed() || isdefined( self.command ) )
 		{
 			wait 0.05;
 		}
@@ -240,7 +240,7 @@ addWaypoints()
 
 		self.command = undefined;
 
-		while ( self SecondaryOffhandButtonPressed() )
+		while ( self secondaryoffhandbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -290,7 +290,7 @@ deleteWaypoints()
 
 	for ( ;; )
 	{
-		while ( !self fragButtonPressed() || isdefined( self.command ) )
+		while ( !self fragbuttonpressed() || isdefined( self.command ) )
 		{
 			wait 0.05;
 		}
@@ -317,7 +317,7 @@ deleteWaypoints()
 
 		self.command = undefined;
 
-		while ( self fragButtonPressed() )
+		while ( self fragbuttonpressed() )
 		{
 			wait 0.05;
 		}

@@ -146,7 +146,7 @@ watchPlayerOpenMenu()
 
 	for ( ;; )
 	{
-		while ( !self FragButtonPressed() || !self SecondaryOffhandButtonPressed() )
+		while ( !self fragbuttonpressed() || !self secondaryoffhandbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -179,7 +179,7 @@ watchPlayerOpenMenu()
 			}
 		}
 
-		while ( self FragButtonPressed() && self SecondaryOffhandButtonPressed() )
+		while ( self fragbuttonpressed() && self secondaryoffhandbuttonpressed() )
 		{
 			wait 0.05;
 		}
