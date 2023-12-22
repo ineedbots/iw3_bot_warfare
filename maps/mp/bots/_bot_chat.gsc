@@ -48,8 +48,7 @@ BotDoChat( chance, string, isTeam )
 		return;
 	}
 
-	if ( chance >= 100 || mod >= 100.0 ||
-	    ( randomint( 100 ) < ( chance * mod ) + 0 ) )
+	if ( chance >= 100 || mod >= 100.0 || ( randomint( 100 ) < ( chance * mod ) + 0 ) )
 	{
 		if ( isdefined( isTeam ) && isTeam )
 		{

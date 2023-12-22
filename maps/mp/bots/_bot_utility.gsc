@@ -820,11 +820,7 @@ allowTeamChoice()
 */
 waittill_any_timeout( timeOut, string1, string2, string3, string4, string5 )
 {
-	if ( ( !isdefined( string1 ) || string1 != "death" ) &&
-	    ( !isdefined( string2 ) || string2 != "death" ) &&
-	    ( !isdefined( string3 ) || string3 != "death" ) &&
-	    ( !isdefined( string4 ) || string4 != "death" ) &&
-	    ( !isdefined( string5 ) || string5 != "death" ) )
+	if ( ( !isdefined( string1 ) || string1 != "death" ) && ( !isdefined( string2 ) || string2 != "death" ) && ( !isdefined( string3 ) || string3 != "death" ) && ( !isdefined( string4 ) || string4 != "death" ) && ( !isdefined( string5 ) || string5 != "death" ) )
 	{
 		self endon( "death" );
 	}
