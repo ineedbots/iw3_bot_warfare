@@ -2465,6 +2465,12 @@ do_knife_target( target )
 	self endon( "disconnect" );
 	self endon( "bot_knife" );
 
+	// dedi doesnt have this registered
+	if ( getdvar( "aim_automelee_enabled" ) == "" )
+	{
+		setdvar( "aim_automelee_enabled", 1 );
+	}
+
 	if ( !getdvarint( "aim_automelee_enabled" ) || !self isonground() || self getstance() == "prone" || self inLastStand() )
 	{
 		self.bot.knifing_target = undefined;
