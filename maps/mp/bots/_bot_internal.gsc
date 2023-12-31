@@ -2471,6 +2471,11 @@ do_knife_target( target )
 		setdvar( "aim_automelee_enabled", 1 );
 	}
 
+	if ( getdvar( "aim_automelee_range" ) == "" )
+	{
+		setdvar( "aim_automelee_range", 128 );
+	}
+
 	if ( !getdvarint( "aim_automelee_enabled" ) || !self isonground() || self getstance() == "prone" || self inLastStand() )
 	{
 		self.bot.knifing_target = undefined;
