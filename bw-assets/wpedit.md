@@ -14,17 +14,15 @@ The Bot Warfare mod comes with the Waypoint Editor out of the box, so its just a
 
 Start your server with the Bot Warfare mod.
 
-In the server console, type in ```set bots_main_debug 1```.<br>
+In the server console, type in `set bots_main_debug 1`.<br>
 ![Setting the dvar](/bw-assets/console.png)
 
 Now start a match with the map you want to edit with the `devmap <mapname>` command.<br>
 ![Starting a map](/bw-assets/console-map.png)
 
-It should be noted that waypoints load in this following order;
-1. checks the 'waypoints' folder (FS_Game\waypoints) for a csv file
-2. loads the waypoints from GSC (maps\mp\bots\waypoints)
+It should be noted that waypoints load from the 'waypoints' folder (<fs_game>\scriptdata\waypoints) for a csv file.
 
-If all fail to load waypoints, there will be no waypoints and the bots will not know how to navigate the map.
+If csv fails to load waypoints, then the bots will not know how to navigate the map.
 
 Connect to the server with the CoD4x client, you'll be introduced to the Waypoint Editor.
 
@@ -92,5 +90,5 @@ Once you feel like you are done, press the Save buttons. This will generate a [C
 
 That is it! The waypoints should load next time you start your game!
 
-Your waypoints CSV file will be located at ```<fs_game>/waypoints/<mapname>_wp.csv```. (main folder if fs_game is blank)<br>
+Your waypoints CSV file will be located at `<fs_game>\scriptdata\waypoints\<mapname>_wp.csv`. (main folder if fs_game is blank)<br>
 ![Location](/bw-assets/saved.png)

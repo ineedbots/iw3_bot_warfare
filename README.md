@@ -8,11 +8,11 @@ It aims to add playable AI to the multiplayer games of CoD4.
 You can find the ModDB release post [here](https://www.moddb.com/mods/bot-warfare/downloads/iw3-bot-warfare-latest).
 
 ## <span style="color:red">Important to public dedicated servers</span>
-The ```bots_main_firstIsHost``` DVAR is enabled by default!
+The `bots_main_firstIsHost` DVAR is enabled by default!
 
 This is so inexperienced users of the mod can access with menu without any configuration.
 
-Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in your server config!
+Make sure to disable this DVAR by adding `set bots_main_firstIsHost 0` in your server config!
 
 ## Contents
 - [Features](#Features)
@@ -31,41 +31,41 @@ Make sure to disable this DVAR by adding ```set bots_main_firstIsHost 0``` in yo
 - This mod does not edit ANY stock .gsc files, meaning EVERY other mod is compatible with this mod. Mod doesn't add anything unnecessary, what you see is what you get.
 
 - Adds AI clients to multiplayer games to simulate playing real players. (essentially Combat Training for CoD4)
-  - Bots move around the maps with native engine input. (all normal maps)
-  - Bots press all the buttons with native engine input (ads, sprint, jump, etc)
-  - Bots play all gamemodes/objectives, they capture flags, plant, defuse bombs, etc. (all normal modes)
-  - Bots use all killstreaks.
-  - Bots target helicopters.
-  - Bots target equipment.
-  - Bots can camp randomly.
-  - Bots can follow others on own will.
-  - Bots have smooth and realistic aim.
-  - Bots respond smartly to their surroundings, they will go to you if you shoot, uav, etc.
-  - Bots use all perks and weapons.
-  - Bots difficulty level can be customized and are accurate. (hard is hard, easy is easy, etc.)
-  - Bots each all have different classes, traits, and difficulty and remember it all.
-  - Bots switch from between primaries and secondaries.
-  - Bots can grenade, place claymores, they even use grenades and tubes in preset map locations.
-  - Bots use grenade launchers.
-  - Bots can melee people.
-  - Bots can run!
-  - Bots can climb ladders!
-  - Bots jump shot and drop shot.
-  - Bots detect smoke grenades, stun grenades, flashed and airstrike slows.
-  - Bots will remember their class, skill and traits, even on multiround based gametypes.
-  - Bots can throwback grenades.
-  - ... And pretty much everything you expect a Combat Training bot to have
+	- Bots move around the maps with native engine input. (all normal maps)
+	- Bots press all the buttons with native engine input (ads, sprint, jump, etc)
+	- Bots play all gamemodes/objectives, they capture flags, plant, defuse bombs, etc. (all normal modes)
+	- Bots use all killstreaks.
+	- Bots target helicopters.
+	- Bots target equipment.
+	- Bots can camp randomly.
+	- Bots can follow others on own will.
+	- Bots have smooth and realistic aim.
+	- Bots respond smartly to their surroundings, they will go to you if you shoot, uav, etc.
+	- Bots use all perks and weapons.
+	- Bots difficulty level can be customized and are accurate. (hard is hard, easy is easy, etc.)
+	- Bots each all have different classes, traits, and difficulty and remember it all.
+	- Bots switch from between primaries and secondaries.
+	- Bots can grenade, place claymores, they even use grenades and tubes in preset map locations.
+	- Bots use grenade launchers.
+	- Bots can melee people.
+	- Bots can run!
+	- Bots can climb ladders!
+	- Bots jump shot and drop shot.
+	- Bots detect smoke grenades, stun grenades, flashed and airstrike slows.
+	- Bots will remember their class, skill and traits, even on multiround based gametypes.
+	- Bots can throwback grenades.
+	- ... And pretty much everything you expect a Combat Training bot to have
 
 ## Installation
 You can easily setup a local LAN dedicated server for you to join and play on. Have a look at [Setting up a CoD4x server](https://github.com/callofduty4x/CoD4x_Server/wiki/Server-setup).
 
 0. Make sure that [CoD4x server + client](https://cod4x.ovh/) is installed, updated and working properly.
-    - Download the [latest release](https://github.com/ineedbots/iw3_bot_warfare/releases) of Bot Warfare.
+	- Download the [latest release](https://github.com/ineedbots/iw3_bot_warfare/releases) of Bot Warfare.
 1. Locate your CoD4x server install folder.
-2. Move the files/folders found in 'Add to root of CoD4x server' from the Bot Warfare release archive you downloaded to the root of your CoD4x server folder.
-    - The folder/file structure should follow as `.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc`.
+2. Move the files/folders found in `Add to root of CoD4x server` from the Bot Warfare release archive you downloaded to the root of your CoD4x server folder.
+	- The folder/file structure should follow as `.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc`.
 3. The mod is now installed, now start your server, change the DVARs and start a map.
-4. Now start your CoD4x client and connect to your server ('connect 127.0.0.1' in the console most likely) and play!
+4. Now start your CoD4x client and connect to your server (`connect 127.0.0.1` in the console most likely) and play!
 
 ## Documentation
 
@@ -96,7 +96,7 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 | bots_team_amount                 | When `bots_team` is set to `custom`. The amount of bots to be placed on the axis team. The remainder will be placed on the allies team. | 0 |
 | bots_team_force                  | If the server should force bots' teams according to the `bots_team` value. When `bots_team` is `autoassign`, unbalanced teams will be balanced. This dvar is ignored when `bots_team` is `custom`. | 0     |
 | bots_team_mode                   | When `bots_team_force` is `true` and `bots_team` is `autoassign`, players/bots counting method. <ul><li>`0` - counts both players and bots.</li><li>`1` - only counts bots</li></ul> | 0 |
-| bots_skill                       | Bots' difficulty.<ul><li>`0` - Random difficulty for each bot.</li><li>`1` - Easiest difficulty for all bots.</li><li>`2` to `6` - Between easy and hard difficulty for all bots.</li><li>`7` - The hardest difficulty for all bots.</li><li>`8` - custom (look at the `bots_skill_<team>_<difficulty>` dvars</li></ul> | 0 |
+| bots_skill                       | Bots' difficulty.<ul><li>`0` - Random difficulty for each bot.</li><li>`1` - Easiest difficulty for all bots.</li><li>`2` to `6` - Between easy and hard difficulty for all bots.</li><li>`7` - The hardest difficulty for all bots.</li><li>`8` - custom (look at the `bots_skill_<team>_<difficulty>` dvars)</li></ul> | 0 |
 | bots_skill_axis_hard             | When `bots_skill` is set to `8`, the amount of hard difficulty bots to set on the axis team. | 0            |
 | bots_skill_axis_med              | When `bots_skill` is set to `8`, the amount of medium difficulty bots to set on the axis team. The remaining bots on the team will be set to easy difficulty. | 0 |
 | bots_skill_allies_hard           | When `bots_skill` is set to `8`, the amount of hard difficulty bots to set on the allies team. | 0          |
@@ -120,35 +120,41 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 
 
 ## Changelog
+- v2.2.0
+	- Fixed some chat related script runtime errors
+	- Waypoints only load from csv now
+	- Fix bots possibly being stuck in sab
+	- Major cleanup
+
 - v2.1.0
-  - Bot chatter system, bots_main_chat
-  - Greatly reduce script variable usage
-  - Improved bots mantling and stuck
-  - Fix some runtime errors
-  - Bots sprint more
-  - Improved bots sight on enemies
-  - Bots do random actions while waiting at an objective
-  - Improved bots from getting stuck
-  - Better bot difficulty management, bots_skill_min and bots_skill_max
+	- Bot chatter system, bots_main_chat
+	- Greatly reduce script variable usage
+	- Improved bots mantling and stuck
+	- Fix some runtime errors
+	- Bots sprint more
+	- Improved bots sight on enemies
+	- Bots do random actions while waiting at an objective
+	- Improved bots from getting stuck
+	- Better bot difficulty management, bots_skill_min and bots_skill_max
 
 - v2.0.1
-  - Reduced bots crouching
-  - Increased bots sprinting
-  - Improved bots mantling, crouching and knifing glass when needed
-  - Fixed possible script runtime errors
-  - Improved domination
-  - Bots use explosives more if they have it
-  - Bots aim slower when ads'ing
-  - Fixed bots holding breath
-  - Fixed bots rubberbanding movement when their goal changes
-  - Added bots quickscoping with snipers
-  - Added bots reload canceling and fast swaps
-  - Bots use C4
-  - Improved revenge
-  - Bots can swap weapons on spawn more likely
+	- Reduced bots crouching
+	- Increased bots sprinting
+	- Improved bots mantling, crouching and knifing glass when needed
+	- Fixed possible script runtime errors
+	- Improved domination
+	- Bots use explosives more if they have it
+	- Bots aim slower when ads'ing
+	- Fixed bots holding breath
+	- Fixed bots rubberbanding movement when their goal changes
+	- Added bots quickscoping with snipers
+	- Added bots reload canceling and fast swaps
+	- Bots use C4
+	- Improved revenge
+	- Bots can swap weapons on spawn more likely
 
 - v2.0.0
-  - Initial reboot release
+	- Initial reboot release
 
 ## Credits
 - CoD4x Team - https://github.com/callofduty4x/CoD4x_Server
