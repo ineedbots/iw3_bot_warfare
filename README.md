@@ -63,8 +63,8 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 	- Download the [latest release](https://github.com/ineedbots/iw3_bot_warfare/releases) of Bot Warfare.
 1. Locate your CoD4x server install folder.
 2. Move the files/folders found in `Add to root of CoD4x server` from the Bot Warfare release archive you downloaded to the root of your CoD4x server folder.
-	- The folder/file structure should follow as `.CoD4x server folder\main_shared\maps\mp\bots\_bot.gsc`.
-3. The mod is now installed, now start your server, change the DVARs and start a map.
+	- The folder/file structure should follow as `.CoD4x server folder\mods\mp_bots\z_svr_bots.iwd`.
+3. The mod is now installed. Now before you start your server, you will need to set the `fs_game` DVAR to `mods/mp_bots` as a commandline argument (`+set fs_game "mods/mp_bots"`).
 4. Now start your CoD4x client and connect to your server (`connect 127.0.0.1` in the console most likely) and play!
 
 ## Documentation
