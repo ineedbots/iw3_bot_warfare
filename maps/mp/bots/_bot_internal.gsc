@@ -485,7 +485,7 @@ IsWeapSniper( weap )
 		return false;
 	}
 	
-	if ( maps\mp\gametypes\_missions::getweaponclass( weap ) != "weapon_sniper" )
+	if ( getweaponclass( weap ) != "weapon_sniper" )
 	{
 		return false;
 	}
@@ -1508,7 +1508,7 @@ aim_loop()
 			}
 			else if ( curweap != "none" && weaponclass( curweap ) == "grenade" )
 			{
-				if ( maps\mp\gametypes\_missions::getweaponclass( curweap ) == "weapon_projectile" )
+				if ( getweaponclass( curweap ) == "weapon_projectile" )
 				{
 					nadeAimOffset = dist / 16000;
 				}
@@ -1680,7 +1680,7 @@ aim_loop()
 		}
 		else if ( curweap != "none" && weaponclass( curweap ) == "grenade" )
 		{
-			if ( maps\mp\gametypes\_missions::getweaponclass( curweap ) == "weapon_projectile" )
+			if ( getweaponclass( curweap ) == "weapon_projectile" )
 			{
 				nadeAimOffset = dist / 16000;
 			}

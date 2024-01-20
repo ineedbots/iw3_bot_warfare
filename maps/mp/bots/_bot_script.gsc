@@ -347,6 +347,21 @@ classWatch()
 		
 		if ( !maps\mp\gametypes\_globallogic::isvalidclass( self.class ) || !isdefined( self.bot_change_class ) )
 		{
+			// mod warfare shtuff
+			if ( isdefined( level.serverdvars ) )
+			{
+				a = [];
+				a[ a.size ] = "assault";
+				a[ a.size ] = "specops";
+				a[ a.size ] = "heavygunner";
+				a[ a.size ] = "demolitions";
+				a[ a.size ] = "sniper";
+				
+				self notify( "menuresponse", game[ "menu_changeclass_" + self.pers[ "team" ] ], random( a ) );
+
+				wait 0.5;
+			}
+			
 			self notify( "menuresponse", game[ "menu_changeclass" ], self chooseRandomClass() );
 		}
 		

@@ -1030,6 +1030,22 @@ isItemUnlocked( what, lvl )
 }
 
 /*
+	ModWarfare removes this func from _missions
+*/
+getweaponclass( weapon )
+{
+	tokens = strtok( weapon, "_" );
+	weaponClass = tablelookup( "mp/statstable.csv", 4, tokens[ 0 ], 2 );
+	
+	if ( ismg( weapon ) )
+	{
+		weaponClass = "weapon_mg";
+	}
+	
+	return weaponClass;
+}
+
+/*
 	If the weapon  is allowed to be dropped
 */
 isWeaponDroppable( weap )
