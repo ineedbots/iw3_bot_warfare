@@ -208,6 +208,11 @@ init()
 	{
 		setdvar( "bots_play_aim", true );
 	}
+
+	if ( getdvar( "bots_randomize_names" ) == "" )
+	{
+		setdvar( "bots_randomize_names", false );
+	}
 	
 	if ( !isdefined( game[ "botWarfare" ] ) )
 	{

@@ -118,6 +118,7 @@ You can easily setup a local LAN dedicated server for you to join and play on. H
 | bots_play_killstreak             | If the bots can call in killstreaks.                                                           | 1          |
 | bots_play_ads                    | If the bots can aim down sights.                                                               | 1          |
 | bots_play_aim                    | If the bots can aim.                                                                           | 1          |
+| bots_randomize_names             | How bot names are loaded.<ul><li>`0` - Names are loaded sequentially.</li><li>`1` - Names are loaded randomly.</li></ul> | 0 |
 
 
 ## Changelog

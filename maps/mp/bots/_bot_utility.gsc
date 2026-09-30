@@ -1664,6 +1664,17 @@ getABotName()
 				}
 				
 				BotBuiltinFileClose( f );
+
+				if ( getdvar( "bots_randomize_names" ) == "1" )
+				{
+					for ( i = level.bot_names.size - 1; i > 0; i-- )
+					{
+						j = randomint( i + 1 );
+						temp = level.bot_names[i];
+						level.bot_names[i] = level.bot_names[j];
+						level.bot_names[j] = temp;
+					}
+				}
 			}
 		}
 	}
